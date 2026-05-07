@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: FrugalGPT
+Version: 0.0.1
+Summary: The FrugalGPT library
+Author: Lingjiao Chen, Matei Zaharia, and James Zou
+Author-email: lingjiao@stanford.edu
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.10
+License-File: LICENSE

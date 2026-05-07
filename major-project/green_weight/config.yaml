@@ -1,0 +1,175 @@
+# green-weight configuration — single source of truth for all tunable parameters
+
+# ==============================================================================
+# Model Configuration (Phase 4)
+# ==============================================================================
+
+model:
+  # HuggingFace model ID for all three tiers
+  base_model_id: "meta-llama/Llama-2-7b-hf"
+  
+  # Quantization settings per tier
+  quantization:
+    4bit:
+      enabled: true
+      compute_dtype: "float32"
+      bnb_4bit_quant_type: "nf4"
+      bnb_4bit_use_double_quant: true
+      bnb_4bit_compute_dtype: "float32"
+    
+    8bit:
+      enabled: true
+      load_in_8bit: true
+    
+    16bit:
+      enabled: true
+      dtype: "bfloat16"
+  
+  # Memory optimization
+  lazy_16bit: false  # Set to true if running on 16GB GPU; load 16-bit on demand
+  device_map: "auto"
+  max_memory_per_gpu: null  # None = auto-detect; or set to (e.g.) {"0": "12GB", "1": "12GB"}
+  
+  # Generation defaults
+  max_new_tokens: 256
+  temperature: 0.7
+  top_p: 0.95
+  top_k: 50
+  do_sample: true
+
+# ==============================================================================
+# Router Configuration (Phase 3–4 Bridge)
+# ==============================================================================
+
+router:
+  # Complexity scorer features
+  complexity_scorer:
+    # Feature ranges for normalization
+    max_token_length: 512
+    max_parse_depth: 20
+    spacy_model: "en_core_web_sm"
+  
+  # Fuzzy controller membership function breakpoints
+  fuzzy_controller:
+    # Flesch-Kincaid readability grade (0–18 scale, normalized to 0–1)
+    flesch_kincaid_breakpoints: [6, 12, 18]  # LOW/MID/HIGH transitions
+    
+    # Token length (normalized to 0–1 where 1 = 512 tokens)
+    token_length_breakpoints: [0.2, 0.5, 0.8]  # LOW/MID/HIGH
+    
+    # Shannon entropy (0–1 scale)
+    entropy_breakpoints: [2.0, 5.0, 7.0]  # LOW/MID/HIGH (bits)
+    
+    # Syntax parse depth (0–1 scale)
+    syntax_depth_breakpoints: [3, 8, 15]  # LOW/MID/HIGH
+    
+    # Code/math detection is binary, not fuzzy
+    
+    # Tier assignment from defuzzified complexity output (0–100)
+    tier_thresholds:
+      4bit_upper: 33    # complexity <= 33 → 4-bit
+      8bit_upper: 66    # 33 < complexity <= 66 → 8-bit
+      16bit_lower: 67   # complexity > 66 → 16-bit
+  
+  # RouteLLM router configuration
+  routellm:
+    router_type: "mf"  # Options: "mf" (matrix factorization), "bert", "sw_ranking"
+    # "mf" is recommended by RouteLLM paper as best-performing
+    mf_checkpoint: "routellm/mf_gpt4_augmented"
+    # Models are mapped: "16bit" → strong, "4bit" → weak, "8bit" → bypass
+    # When fuzzy output is in MID zone (0.33–0.66), skip RouteLLM and use 8-bit directly
+
+# ==============================================================================
+# Cascade Configuration (Phase 4)
+# ==============================================================================
+
+cascade:
+  # FrugalGPT cascade order (attempted in this sequence on escalation)
+  service_order:
+    - local/4bit
+    - local/8bit
+    - local/16bit
+  
+  # Generation judger fine-tuning
+  judger:
+    # Pre-trained DistilBERT from FrugalGPT; fine-tune on OpenOrca subset
+    base_model: "distilbert-base-uncased"
+    
+    # Fine-tuning dataset (OpenOrca subset)
+    finetune_dataset_path: "data/openorca_finetune_500.csv"
+    train_test_split: 0.8  # 80% train, 20% test
+    
+    # Threshold for stop-judger (when judger score < threshold, escalate)
+    # This is the key lever for energy-accuracy tradeoff
+    # Will be optimized by cascade optimizer given energy budget
+    threshold: 0.5  # Placeholder; override with optimize_cascade_threshold()
+    
+    # Fine-tuning hyperparameters
+    learning_rate: 2e-5
+    num_epochs: 3
+    batch_size: 16
+    device: "cuda"
+
+# ==============================================================================
+# Benchmarking Configuration (Phase 5)
+# ==============================================================================
+
+benchmark:
+  # Energy tracking
+  energy_tracker:
+    # CodeCarbon configuration
+    country_code: "USA"  # ISO 3166-1 alpha-3 code
+    output_dir: "results/energy_logs"
+    save_interval: 100  # Save after every N prompts
+  
+  # Accuracy evaluation
+  accuracy_eval:
+    # lm-eval-harness benchmark tasks
+    tasks: ["mmlu", "hellaswag"]  # Add more as needed
+    num_fewshot: 0
+    output_dir: "results/accuracy_logs"
+    
+    # RouteLLM evaluation metrics (computed automatically)
+    # CPT (call-performance threshold), APGR (average performance gap recovered)
+    compute_metrics: true
+  
+  # Evaluation dataset
+  eval_dataset:
+    path: "data/eval_prompts.jsonl"
+    size: 500
+    difficulty_split:
+      easy: 200      # Simple factual questions
+      medium: 150    # Summarization / explanation
+      hard: 150      # Reasoning / math / code
+  
+  # Output visualization
+  tradeoff_plotter:
+    output_dir: "results/figures"
+    dpi: 300
+    plot_formats: ["png", "pdf"]
+
+# ==============================================================================
+# Pipeline Configuration
+# ==============================================================================
+
+pipeline:
+  # Dry-run mode: process only first N prompts
+  dry_run: false
+  dry_run_prompts: 10
+  
+  # Logging
+  log_output_dir: "results/pipeline_logs"
+  log_level: "INFO"
+  
+  # Model pool warmup
+  warmup_enabled: true
+  warmup_prompts: 5
+
+# ==============================================================================
+# Hardware / System
+# ==============================================================================
+
+hardware:
+  gpu_device: 0  # GPU index if multiple GPUs available
+  cpu_threads: 4
+  seed: 42  # For reproducibility

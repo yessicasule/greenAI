@@ -1,0 +1,14 @@
+numpy
+cohere
+smart-open
+jsonlines
+anthropic
+scikit-learn
+evaluate
+scipy
+pandas
+sqlitedict
+torch
+transformers
+accelerate
+ai21

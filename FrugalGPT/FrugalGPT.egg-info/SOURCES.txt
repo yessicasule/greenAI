@@ -1,0 +1,8 @@
+LICENSE
+README.md
+setup.py
+FrugalGPT.egg-info/PKG-INFO
+FrugalGPT.egg-info/SOURCES.txt
+FrugalGPT.egg-info/dependency_links.txt
+FrugalGPT.egg-info/requires.txt
+FrugalGPT.egg-info/top_level.txt

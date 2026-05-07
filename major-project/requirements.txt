@@ -1,0 +1,42 @@
+# Core dependencies for green-weight system
+
+# LLM Model Loading
+torch==2.0.1
+transformers==4.35.0
+bitsandbytes==0.41.1  # Quantization support (4-bit, 8-bit)
+accelerate==0.25.0
+
+# FrugalGPT Integration
+# Note: Install from GitHub repo
+# git clone https://github.com/stanford-futuredata/FrugalGPT.git
+# cd FrugalGPT && pip install -e .
+
+# RouteLLM Integration
+# Note: Install from GitHub repo
+# git clone https://github.com/lm-sys/RouteLLM.git
+# cd RouteLLM && pip install -e .
+
+# Routing Components
+scikit-fuzzy==0.4.2  # Fuzzy logic controllers
+scipy==1.10.1  # Scientific computing
+textstat==0.7.2  # Readability metrics
+spacy==3.7.2  # NLP parsing (download model with: python -m spacy download en_core_web_sm)
+
+# Benchmarking
+lm-eval==0.4.0  # Harness for LLM benchmarking
+CodeCarbon==3.2.0  # Energy tracking
+
+# Utilities
+pandas==2.0.3  # Data manipulation
+numpy==1.24.3  # Numerical computing
+matplotlib==3.8.0  # Plotting
+pyyaml==6.0  # YAML config parsing
+datasets==2.14.0  # HuggingFace datasets
+tqdm==4.65.0  # Progress bars
+
+# Development (optional)
+pytest==7.4.0  # Testing
+black==23.9.1  # Code formatting
+flake8==6.1.0  # Linting
+mypy==1.5.1  # Type checking
+ipython==8.15.0  # Interactive shell
