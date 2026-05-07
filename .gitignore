@@ -1,0 +1,66 @@
+# --- Node / JS ---
+node_modules/
+**/node_modules/
+
+# Package manager caches
+.npm/
+**/.npm/
+.yarn/
+**/.yarn/
+.yarn/cache/
+**/.yarn/cache/
+.pnpm-store/
+**/.pnpm-store/
+
+# Tool caches (common)
+.cache/
+**/.cache/
+cache/
+**/cache/
+.parcel-cache/
+**/.parcel-cache/
+.vite/
+**/.vite/
+.next/
+**/.next/
+.nuxt/
+**/.nuxt/
+.svelte-kit/
+**/.svelte-kit/
+.angular/cache/
+**/.angular/cache/
+.turbo/
+**/.turbo/
+*.tsbuildinfo
+.eslintcache
+.stylelintcache
+
+# Build outputs (common)
+dist/
+**/dist/
+build/
+**/build/
+out/
+**/out/
+coverage/
+**/coverage/
+
+# --- Python env "library" dirs / caches ---
+.venv/
+venv/
+env/
+ENV/
+**/.venv/
+**/venv/
+**/env/
+**/ENV/
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
