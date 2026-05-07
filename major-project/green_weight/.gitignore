@@ -1,5 +1,4 @@
 # Model files
-models/
 adapters/
 *.bin
 *.safetensors
@@ -35,3 +34,10 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+# Virtual environment
+venv/
+env/
+
+# Environment variables
+.env
+*.env
