@@ -228,3 +228,23 @@ def warmup(num_prompts: int = 5) -> None:
                 break
 
     logger.info("[OK] Warmup complete")
+
+    def infer(prompt: str, tier: str = "8bit", max_new_tokens: int = 256) -> str:
+    """
+    Convenience function: run inference on a single prompt at a given tier.
+    
+    Args:
+        prompt: Input text
+        tier: "4bit", "8bit", or "16bit"
+        max_new_tokens: Max tokens to generate
+    
+    Returns:
+        Generated response string
+    """
+    from models.local_llm_adapter import LocalLLMforAll
+    llm = LocalLLMforAll()
+    return llm.get_completion(
+        prompt,
+        service_name=f"local/{tier}",
+        genparams={"max_tokens": max_new_tokens}
+    )
