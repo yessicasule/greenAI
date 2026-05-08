@@ -1,8 +1,11 @@
-const BASE = '/api'
+const BASE = 'https://contented-sherrill-nondistributive.ngrok-free.dev'
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'ngrok-skip-browser-warning': 'true',
+    },
     ...options,
   })
   if (!res.ok) {
@@ -13,10 +16,10 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  health:   ()          => request('/health'),
-  route:    (body)      => request('/route',    { method: 'POST', body: JSON.stringify(body) }),
-  infer:    (body)      => request('/infer',    { method: 'POST', body: JSON.stringify(body) }),
-  results:  ()          => request('/results'),
-  energy:   ()          => request('/energy'),
-  accuracy: ()          => request('/accuracy'),
+  health: () => request('/health'),
+  route: (body) => request('/route', { method: 'POST', body: JSON.stringify(body) }),
+  infer: (body) => request('/infer', { method: 'POST', body: JSON.stringify(body) }),
+  results: () => request('/results'),
+  energy: () => request('/energy'),
+  accuracy: () => request('/accuracy'),
 }
