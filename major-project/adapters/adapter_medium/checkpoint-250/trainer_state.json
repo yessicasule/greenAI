@@ -1,0 +1,154 @@
+{
+  "best_global_step": null,
+  "best_metric": null,
+  "best_model_checkpoint": null,
+  "epoch": 1.0,
+  "eval_steps": 500,
+  "global_step": 250,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "entropy": 2.189990234375,
+      "epoch": 0.08,
+      "grad_norm": 1.109375,
+      "learning_rate": 0.00018480000000000002,
+      "loss": 4.467853164672851,
+      "mean_token_accuracy": 0.5601225510239601,
+      "num_tokens": 40960.0,
+      "step": 20
+    },
+    {
+      "entropy": 1.963134765625,
+      "epoch": 0.16,
+      "grad_norm": 1.1015625,
+      "learning_rate": 0.0001688,
+      "loss": 3.814174270629883,
+      "mean_token_accuracy": 0.6012500047683715,
+      "num_tokens": 81920.0,
+      "step": 40
+    },
+    {
+      "entropy": 1.93369140625,
+      "epoch": 0.24,
+      "grad_norm": 1.3203125,
+      "learning_rate": 0.0001528,
+      "loss": 3.847078323364258,
+      "mean_token_accuracy": 0.5937254846096038,
+      "num_tokens": 122880.0,
+      "step": 60
+    },
+    {
+      "entropy": 1.87626953125,
+      "epoch": 0.32,
+      "grad_norm": 1.296875,
+      "learning_rate": 0.00013680000000000002,
+      "loss": 3.6484161376953126,
+      "mean_token_accuracy": 0.6140196055173874,
+      "num_tokens": 163840.0,
+      "step": 80
+    },
+    {
+      "entropy": 1.814697265625,
+      "epoch": 0.4,
+      "grad_norm": 1.6328125,
+      "learning_rate": 0.0001208,
+      "loss": 3.5019481658935545,
+      "mean_token_accuracy": 0.6249264627695084,
+      "num_tokens": 204800.0,
+      "step": 100
+    },
+    {
+      "entropy": 1.822216796875,
+      "epoch": 0.48,
+      "grad_norm": 1.5078125,
+      "learning_rate": 0.00010480000000000001,
+      "loss": 3.50084228515625,
+      "mean_token_accuracy": 0.6222303926944732,
+      "num_tokens": 245760.0,
+      "step": 120
+    },
+    {
+      "entropy": 1.85244140625,
+      "epoch": 0.56,
+      "grad_norm": 1.59375,
+      "learning_rate": 8.88e-05,
+      "loss": 3.5176883697509767,
+      "mean_token_accuracy": 0.6257107943296433,
+      "num_tokens": 286720.0,
+      "step": 140
+    },
+    {
+      "entropy": 1.924951171875,
+      "epoch": 0.64,
+      "grad_norm": 1.5078125,
+      "learning_rate": 7.280000000000001e-05,
+      "loss": 3.7147342681884767,
+      "mean_token_accuracy": 0.6036274522542954,
+      "num_tokens": 327680.0,
+      "step": 160
+    },
+    {
+      "entropy": 1.9236328125,
+      "epoch": 0.72,
+      "grad_norm": 1.578125,
+      "learning_rate": 5.68e-05,
+      "loss": 3.663949966430664,
+      "mean_token_accuracy": 0.6051470667123795,
+      "num_tokens": 368640.0,
+      "step": 180
+    },
+    {
+      "entropy": 1.751123046875,
+      "epoch": 0.8,
+      "grad_norm": 1.640625,
+      "learning_rate": 4.08e-05,
+      "loss": 3.3312973022460937,
+      "mean_token_accuracy": 0.6368137210607528,
+      "num_tokens": 409600.0,
+      "step": 200
+    },
+    {
+      "entropy": 1.76767578125,
+      "epoch": 0.88,
+      "grad_norm": 1.7734375,
+      "learning_rate": 2.48e-05,
+      "loss": 3.372157669067383,
+      "mean_token_accuracy": 0.6374754875898361,
+      "num_tokens": 450560.0,
+      "step": 220
+    },
+    {
+      "entropy": 1.903271484375,
+      "epoch": 0.96,
+      "grad_norm": 1.6640625,
+      "learning_rate": 8.8e-06,
+      "loss": 3.6470111846923827,
+      "mean_token_accuracy": 0.6110539376735687,
+      "num_tokens": 491520.0,
+      "step": 240
+    }
+  ],
+  "logging_steps": 20,
+  "max_steps": 250,
+  "num_input_tokens_seen": 0,
+  "num_train_epochs": 1,
+  "save_steps": 500,
+  "stateful_callbacks": {
+    "TrainerControl": {
+      "args": {
+        "should_epoch_stop": false,
+        "should_evaluate": false,
+        "should_log": false,
+        "should_save": true,
+        "should_training_stop": true
+      },
+      "attributes": {}
+    }
+  },
+  "total_flos": 2992122101760000.0,
+  "train_batch_size": 8,
+  "trial_name": null,
+  "trial_params": null
+}

@@ -1,0 +1,154 @@
+{
+  "best_global_step": null,
+  "best_metric": null,
+  "best_model_checkpoint": null,
+  "epoch": 1.0,
+  "eval_steps": 500,
+  "global_step": 250,
+  "is_hyper_param_search": false,
+  "is_local_process_zero": true,
+  "is_world_process_zero": true,
+  "log_history": [
+    {
+      "entropy": 1.448095703125,
+      "epoch": 0.08,
+      "grad_norm": 0.75390625,
+      "learning_rate": 0.00018480000000000002,
+      "loss": 2.9443115234375,
+      "mean_token_accuracy": 0.7508088186383247,
+      "num_tokens": 40960.0,
+      "step": 20
+    },
+    {
+      "entropy": 0.8842529296875,
+      "epoch": 0.16,
+      "grad_norm": 0.77734375,
+      "learning_rate": 0.0001688,
+      "loss": 1.5384010314941405,
+      "mean_token_accuracy": 0.8281862705945968,
+      "num_tokens": 81920.0,
+      "step": 40
+    },
+    {
+      "entropy": 0.787890625,
+      "epoch": 0.24,
+      "grad_norm": 0.91015625,
+      "learning_rate": 0.0001528,
+      "loss": 1.3924123764038085,
+      "mean_token_accuracy": 0.839166659116745,
+      "num_tokens": 122880.0,
+      "step": 60
+    },
+    {
+      "entropy": 0.7072021484375,
+      "epoch": 0.32,
+      "grad_norm": 0.859375,
+      "learning_rate": 0.00013680000000000002,
+      "loss": 1.3407325744628906,
+      "mean_token_accuracy": 0.8413970649242402,
+      "num_tokens": 163840.0,
+      "step": 80
+    },
+    {
+      "entropy": 0.6718505859375,
+      "epoch": 0.4,
+      "grad_norm": 0.86328125,
+      "learning_rate": 0.0001208,
+      "loss": 1.3145320892333985,
+      "mean_token_accuracy": 0.8427695989608764,
+      "num_tokens": 204800.0,
+      "step": 100
+    },
+    {
+      "entropy": 0.609912109375,
+      "epoch": 0.48,
+      "grad_norm": 0.89453125,
+      "learning_rate": 0.00010480000000000001,
+      "loss": 1.180245590209961,
+      "mean_token_accuracy": 0.8606617659330368,
+      "num_tokens": 245760.0,
+      "step": 120
+    },
+    {
+      "entropy": 0.6106689453125,
+      "epoch": 0.56,
+      "grad_norm": 1.0234375,
+      "learning_rate": 8.88e-05,
+      "loss": 1.1722591400146485,
+      "mean_token_accuracy": 0.8602696120738983,
+      "num_tokens": 286720.0,
+      "step": 140
+    },
+    {
+      "entropy": 0.68359375,
+      "epoch": 0.64,
+      "grad_norm": 1.21875,
+      "learning_rate": 7.280000000000001e-05,
+      "loss": 1.3151809692382812,
+      "mean_token_accuracy": 0.841053918004036,
+      "num_tokens": 327680.0,
+      "step": 160
+    },
+    {
+      "entropy": 0.6598388671875,
+      "epoch": 0.72,
+      "grad_norm": 0.98828125,
+      "learning_rate": 5.68e-05,
+      "loss": 1.2826803207397461,
+      "mean_token_accuracy": 0.8455392211675644,
+      "num_tokens": 368640.0,
+      "step": 180
+    },
+    {
+      "entropy": 0.57740478515625,
+      "epoch": 0.8,
+      "grad_norm": 1.0390625,
+      "learning_rate": 4.08e-05,
+      "loss": 1.1004430770874023,
+      "mean_token_accuracy": 0.8673529475927353,
+      "num_tokens": 409600.0,
+      "step": 200
+    },
+    {
+      "entropy": 0.63740234375,
+      "epoch": 0.88,
+      "grad_norm": 1.0625,
+      "learning_rate": 2.48e-05,
+      "loss": 1.2086166381835937,
+      "mean_token_accuracy": 0.8543872505426406,
+      "num_tokens": 450560.0,
+      "step": 220
+    },
+    {
+      "entropy": 0.6917236328125,
+      "epoch": 0.96,
+      "grad_norm": 1.078125,
+      "learning_rate": 8.8e-06,
+      "loss": 1.3173200607299804,
+      "mean_token_accuracy": 0.8424509793519974,
+      "num_tokens": 491520.0,
+      "step": 240
+    }
+  ],
+  "logging_steps": 20,
+  "max_steps": 250,
+  "num_input_tokens_seen": 0,
+  "num_train_epochs": 1,
+  "save_steps": 500,
+  "stateful_callbacks": {
+    "TrainerControl": {
+      "args": {
+        "should_epoch_stop": false,
+        "should_evaluate": false,
+        "should_log": false,
+        "should_save": true,
+        "should_training_stop": true
+      },
+      "attributes": {}
+    }
+  },
+  "total_flos": 2994739347456000.0,
+  "train_batch_size": 8,
+  "trial_name": null,
+  "trial_params": null
+}
