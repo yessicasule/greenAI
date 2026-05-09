@@ -93,59 +93,24 @@ class RouteLLMBridge:
         
     def decide(self, prompt: str, win_probability: float) -> str:
         """
-        Make a routing decision using RouteLLM if in extreme zones,
-        or use 8-bit directly if in middle zone.
-        
-        Args:
-            prompt: Input text
-            win_probability: Fuzzy controller's win probability (0–1)
-        
-        Returns:
-            Tier: "4bit", "8bit", or "16bit"
+        Route based on win_probability zones.
+        < 0.33  -> 4-bit (simple)
+        0.33-0.66 -> 8-bit (medium), upper half (>=0.5) -> 16-bit (complex)
+        > 0.66  -> 16-bit (complex)
         """
-        # If in middle zone, use 8-bit directly (bypass RouteLLM)
-        if self.mid_zone_lower <= win_probability <= self.mid_zone_upper:
-            logger.debug(
-                f"Win probability {win_probability:.3f} in MID zone -> using 8bit directly"
-            )
+        if win_probability < self.mid_zone_lower:
+            logger.debug(f"Win probability {win_probability:.3f} -> 4bit")
+            return "4bit"
+        elif win_probability > self.mid_zone_upper:
+            logger.debug(f"Win probability {win_probability:.3f} -> 16bit")
+            return "16bit"
+        else:
+            # MID zone: >= 0.5 goes to 16-bit (complex-leaning), < 0.5 stays 8-bit
+            if win_probability >= 0.5:
+                logger.debug(f"Win probability {win_probability:.3f} MID-high -> 16bit")
+                return "16bit"
+            logger.debug(f"Win probability {win_probability:.3f} MID-low -> 8bit")
             return "8bit"
-        
-        # If RouteLLM not available, use fuzzy decision
-        if self.controller is None:
-            logger.debug("RouteLLM not available, using fuzzy mapping")
-            if win_probability < 0.5:
-                return "4bit"
-            elif win_probability < 0.75:
-                return "8bit"
-            else:
-                return "16bit"
-        
-        # Use RouteLLM's router with win_probability as threshold
-        # The router outputs 0 (weak) or 1 (strong)
-        # We interpret:
-        #   0 (weak) -> 4-bit
-        #   1 (strong) -> 16-bit
-        try:
-            # RouteLLM's Controller.route() expects:
-            #   prompt: str
-            #   threshold: float (decision boundary)
-            # Returns: 0 (weak) or 1 (strong)
-            decision = self.controller.route(prompt, threshold=win_probability)
-            
-            tier = "16bit" if decision == 1 else "4bit"
-            logger.debug(
-                f"RouteLLM decision: {decision} (threshold={win_probability:.3f}) -> {tier}"
-            )
-            return tier
-            
-        except Exception as e:
-            logger.error(f"RouteLLM routing failed: {e}. Falling back to fuzzy mapping.")
-            if win_probability < 0.5:
-                return "4bit"
-            elif win_probability < 0.75:
-                return "8bit"
-            else:
-                return "16bit"
     
     def get_controller(self):
         """Get the underlying RouteLLM controller (for advanced use)."""

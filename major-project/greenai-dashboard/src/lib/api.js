@@ -1,4 +1,4 @@
-const BASE = 'https://contented-sherrill-nondistributive.ngrok-free.dev'
+const BASE = 'http://localhost:8000'
 
 async function request(path, options = {}) {
   const res = await fetch(`${BASE}${path}`, {

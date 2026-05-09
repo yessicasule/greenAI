@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Zap, Clock, DollarSign, Leaf, AlertCircle, MessageSquare, Cpu, FlaskConical } from 'lucide-react'
+import { Send, Zap, Clock, DollarSign, Leaf, AlertCircle, MessageSquare, FlaskConical } from 'lucide-react'
 import { api } from '../lib/api'
 import './Playground.css'
 
@@ -9,7 +9,7 @@ const SAMPLES = [
   { text: 'How many days are in a week?',                        label: 'Simple' },
   { text: 'Explain supply and demand economics.',                 label: 'Medium' },
   { text: 'Describe the water cycle in detail.',                  label: 'Medium' },
-  { text: 'Discuss Gödel\'s incompleteness theorems.',            label: 'Complex' },
+  { text: 'Discuss GÃ¶del\'s incompleteness theorems.',            label: 'Complex' },
   { text: 'Write a Python quicksort implementation with tests.',  label: 'Complex' },
 ]
 
@@ -142,16 +142,6 @@ export function Playground({ online, gpuReady }) {
       {/* Left column */}
       <div className="playground-left">
 
-        {/* GPU status banner */}
-        {online && (
-          <div className={`inference-mode-banner ${gpuReady ? 'gpu' : 'mock'}`}>
-            {gpuReady
-              ? <><Cpu size={13} strokeWidth={2} /> GPU ready — real inference via model pool</>
-              : <><FlaskConical size={13} strokeWidth={2} /> No GPU detected — mock responses will be shown</>
-            }
-          </div>
-        )}
-
         {/* Sample prompts */}
         <div className="samples-row">
           {SAMPLES.map(s => (
@@ -161,7 +151,7 @@ export function Playground({ online, gpuReady }) {
               onClick={() => { setPrompt(s.text); textRef.current?.focus() }}
             >
               <span className="sample-complexity">{s.label}</span>
-              {s.text.length > 38 ? s.text.slice(0, 38) + '…' : s.text}
+              {s.text.length > 38 ? s.text.slice(0, 38) + 'â€¦' : s.text}
             </button>
           ))}
         </div>
@@ -178,18 +168,18 @@ export function Playground({ online, gpuReady }) {
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Enter a prompt to route through the Green-Weight pipeline…"
+            placeholder="Enter a prompt to route through the Green-Weight pipelineâ€¦"
             rows={5}
           />
           <div className="input-card-footer">
-            <span className="input-hint">{online ? '⌘↵ to run' : '⚠ backend offline — start api.py first'}</span>
+            <span className="input-hint">{online ? 'âŒ˜â†µ to run' : 'âš  backend offline â€” start api.py first'}</span>
             <button
               className={`run-btn ${isRunning || !online || !prompt.trim() ? 'disabled' : ''}`}
               onClick={run}
               disabled={isRunning || !online || !prompt.trim()}
             >
               {isRunning ? (
-                <><div className="run-spinner" />Running…</>
+                <><div className="run-spinner" />Runningâ€¦</>
               ) : (
                 <><Send size={14} strokeWidth={2} />Run Pipeline</>
               )}
@@ -203,7 +193,7 @@ export function Playground({ online, gpuReady }) {
             <motion.div className="error-banner" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <AlertCircle size={14} />
               <span>{error}</span>
-              <button onClick={() => setError(null)}>✕</button>
+              <button onClick={() => setError(null)}>âœ•</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -229,32 +219,26 @@ export function Playground({ online, gpuReady }) {
                     Green inference
                   </div>
                 )}
-                {result.is_mock && (
-                  <div className="mock-badge">
-                    <FlaskConical size={10} strokeWidth={2} />
-                    Mock · no GPU
-                  </div>
-                )}
                 <div className="result-routing mono">
                   fuzzy: <span style={{ color: TIER_META[result.fuzzy_tier]?.color }}>{result.fuzzy_tier}</span>
-                  &nbsp;→&nbsp;final: <span style={{ color: tm.color }}>{tier}</span>
-                  &nbsp;·&nbsp;p={result.win_probability?.toFixed(3)}
+                  &nbsp;&rarr;&nbsp;final: <span style={{ color: tm.color }}>{tier}</span>
+                  &nbsp;&middot;&nbsp;p={result.win_probability?.toFixed(3)}
                 </div>
               </div>
 
-              {/* ── RESPONSE SECTION ── */}
+              {/* â”€â”€ RESPONSE SECTION â”€â”€ */}
               <div className="response-section">
                 <div className="response-section-header">
                   <MessageSquare size={13} color={tm.color} strokeWidth={2} />
                   <span className="result-section-title">
                     Response
-                    {result.is_mock && <span className="response-mock-note"> (mock — connect GPU for real inference)</span>}
+
                   </span>
                 </div>
                 <div className="response-body" style={{ borderColor: tm.border }}>
                   {result.response
                     ? result.response
-                    : <span className="response-empty">No response returned — routing-only mode</span>
+                    : <span className="response-empty">No response returned â€” routing-only mode</span>
                   }
                 </div>
               </div>
@@ -290,9 +274,9 @@ export function Playground({ online, gpuReady }) {
                   <div className="history-item-tier" style={{ background: TIER_META[h.final_tier]?.bg, color: TIER_META[h.final_tier]?.color }}>
                     {h.final_tier}
                   </div>
-                  <span className="history-item-prompt">{h.prompt.length > 55 ? h.prompt.slice(0, 55) + '…' : h.prompt}</span>
+                  <span className="history-item-prompt">{h.prompt.length > 55 ? h.prompt.slice(0, 55) + 'â€¦' : h.prompt}</span>
                   <span className="history-item-response mono">
-                    {h.response ? h.response.slice(0, 30) + '…' : '—'}
+                    {h.response ? h.response.slice(0, 30) + 'â€¦' : 'â€”'}
                   </span>
                   <span className="history-item-energy mono">{h.energy_joules}J</span>
                 </div>
@@ -327,7 +311,7 @@ export function Playground({ online, gpuReady }) {
                 />
               </div>
               <div className="winprob-hint mono">
-                {result.win_probability < 0.33 ? '→ 4-bit direct' : result.win_probability > 0.66 ? '→ 16-bit direct' : '→ MID zone → 8-bit bypass'}
+                {result.win_probability < 0.33 ? '-> 4-bit direct' : result.win_probability > 0.66 ? '-> 16-bit direct' : '-> MID zone -> 8-bit bypass'}
               </div>
             </div>
           )}

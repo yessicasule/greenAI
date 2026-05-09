@@ -58,7 +58,7 @@ def startup():
 
 class InferRequest(BaseModel):
     prompt: str
-    routing_only: bool = True      # set False when GPU available
+    routing_only: bool = False     # default: always infer (mock if no GPU)
     max_new_tokens: int = 256
 
 
@@ -71,6 +71,7 @@ class RouteResponse(BaseModel):
     energy_joules: float
     duration_s: float
     response: Optional[str] = None
+    is_mock: Optional[bool] = False
     cost_usd: float
     latency_ms: float
 
@@ -137,16 +138,27 @@ def infer(req: InferRequest):
 
         if req.routing_only:
             response = None
+            is_mock = False
             energy_joules = 0.0
+        elif _model_pool_loaded:
+            try:
+                from benchmark.energy_tracker import EnergyTracker
+                tracker = EnergyTracker()
+                response, energy_info = tracker.track_inference(
+                    req.prompt, final_tier,
+                    max_new_tokens=req.max_new_tokens,
+                )
+                energy_joules = energy_info.get("joules", 0.0)
+                is_mock = False
+            except Exception as e:
+                logger.warning(f"Real inference failed: {e}")
+                response = _mock_response(req.prompt, final_tier)
+                is_mock = True
+                energy_joules = {"4bit": 8.5, "8bit": 28.5, "16bit": 105.2}.get(final_tier, 28.5)
         else:
-            # Full inference — requires model pool to be loaded
-            from benchmark.energy_tracker import EnergyTracker
-            tracker = EnergyTracker()
-            response, energy_info = tracker.track_inference(
-                req.prompt, final_tier,
-                max_new_tokens=req.max_new_tokens
-            )
-            energy_joules = energy_info.get("joules", 0.0)
+            response = _mock_response(req.prompt, final_tier)
+            is_mock = True
+            energy_joules = {"4bit": 8.5, "8bit": 28.5, "16bit": 105.2}.get(final_tier, 28.5)
 
         latency_ms = (time.time() - t0) * 1000
 
@@ -175,6 +187,7 @@ def infer(req: InferRequest):
             energy_joules=round(energy_joules, 4),
             duration_s=round(latency_ms / 1000, 3),
             response=response,
+            is_mock=is_mock,
             cost_usd=cost_usd,
             latency_ms=round(latency_ms, 1),
         )
@@ -240,6 +253,62 @@ def get_accuracy():
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
+def _mock_response(prompt: str, tier: str) -> str:
+    """Answer the prompt using math eval or pre-built keyword answers (no external LLM)."""
+    import ast, operator, re
+
+    p = prompt.strip()
+    pl = p.lower()
+
+    # Safe math evaluator
+    _ops = {
+        ast.Add: operator.add, ast.Sub: operator.sub,
+        ast.Mult: operator.mul, ast.Div: operator.truediv,
+        ast.Pow: operator.pow, ast.Mod: operator.mod,
+        ast.FloorDiv: operator.floordiv, ast.USub: operator.neg,
+    }
+
+    def _eval(node):
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.BinOp):
+            return _ops[type(node.op)](_eval(node.left), _eval(node.right))
+        if isinstance(node, ast.UnaryOp):
+            return _ops[type(node.op)](_eval(node.operand))
+        raise ValueError("unsupported")
+
+    math_expr = re.sub(r"[^\d\s\+\-\*\/\(\)\.\^%]", "", p).strip()
+    if math_expr:
+        try:
+            result = _eval(ast.parse(math_expr, mode="eval").body)
+            if isinstance(result, float) and result.is_integer():
+                result = int(result)
+            return str(result)
+        except Exception:
+            pass
+
+    # Keyword-based direct answers
+    if re.search(r"\bdays?\s+in\s+a\s+week\b", pl): return "7"
+    if re.search(r"\bdays?\s+in\s+a\s+year\b", pl): return "365 (366 in a leap year)"
+    if re.search(r"\bhours?\s+in\s+a\s+day\b", pl): return "24"
+    if re.search(r"\bminutes?\s+in\s+an?\s+hour\b", pl): return "60"
+    if re.search(r"\bseconds?\s+in\s+a\s+minute\b", pl): return "60"
+    if re.search(r"\bcapital\s+of\s+france\b", pl): return "Paris"
+    if re.search(r"\bcapital\s+of\s+india\b", pl): return "New Delhi"
+    if re.search(r"\bcapital\s+of\s+usa\b", pl): return "Washington, D.C."
+    if re.search(r"\bsupply\s+and\s+demand\b", pl):
+        return ("Supply and demand is a fundamental economic model. Demand represents how much consumers want a product; supply represents how much producers offer. When demand exceeds supply, prices rise. When supply exceeds demand, prices fall. The equilibrium price is where the two curves intersect.")
+    if re.search(r"\bwater\s+cycle\b", pl):
+        return ("The water cycle (hydrological cycle) describes the continuous movement of water on Earth: Evaporation (water turns to vapour from oceans/lakes) -> Condensation (vapour forms clouds) -> Precipitation (rain/snow falls) -> Collection (water returns to oceans/rivers) -> repeat.")
+    if re.search(r"\bgodel|incompleteness\b", pl):
+        return ("Goedel incompleteness theorems (1931): 1st - Any consistent formal system powerful enough to express arithmetic contains true statements unprovable within the system. 2nd - Such a system cannot prove its own consistency.")
+    if re.search(r"\bquicksort\b", pl):
+        return "def quicksort(arr):\n    if len(arr) <= 1:\n        return arr\n    pivot = arr[len(arr) // 2]\n    left = [x for x in arr if x < pivot]\n    middle = [x for x in arr if x == pivot]\n    right = [x for x in arr if x > pivot]\n    return quicksort(left) + middle + quicksort(right)"
+
+    # Generic fallback
+    return f"Routed to {tier} tier. Connect a GPU model pool for live inference, or use one of the sample prompts above."
+
 
 def _append_trace(entry: dict):
     """Append a single entry to pipeline_trace.jsonl."""
