@@ -478,7 +478,7 @@ from peft import (
 )
 from trl import SFTTrainer
 
-HF_TOKEN = "hf_your_token_here"
+HF_TOKEN = "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"
 os.environ["HF_TOKEN"] = HF_TOKEN
 
 MODEL_NAME = "meta-llama/Llama-3.2-1B"
@@ -848,7 +848,7 @@ gradient_accumulation_steps=8,   # was 4
 **HuggingFace token not working:**
 ```python
 import os
-os.environ["HF_TOKEN"] = "hf_your_token_here"
+os.environ["HF_TOKEN"] = ""
 ```
 
 **Dataset not found:**
