@@ -154,11 +154,31 @@ def has_code_or_math(text: str) -> bool:
         r'≈|≠|≤|≥|∈|∉',  # Math relations
     ]
     
-    # Check for matches
+    # Check for code/math syntax matches
     for pattern in code_patterns + latex_patterns + math_operators:
         if re.search(pattern, text, re.DOTALL):
             return True
-    
+
+    # Also detect natural-language requests for code/algorithms
+    code_request_keywords = [
+        r'\bwrite\s+a\b',
+        r'\bimplement\b',
+        r'\bimplementation\b',
+        r'\balgorithm\b',
+        r'\bfunction\b',
+        r'\bclass\b',
+        r'\bprogram\b',
+        r'\bscript\b',
+        r'\bcode\b',
+        r'\bsort\b',
+        r'\brecursion\b',
+        r'\bdynamic\s+programming\b',
+    ]
+    text_lower = text.lower()
+    for kw in code_request_keywords:
+        if re.search(kw, text_lower):
+            return True
+
     return False
 
 

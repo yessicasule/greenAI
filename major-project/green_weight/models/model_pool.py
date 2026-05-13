@@ -18,7 +18,6 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# Try GPU-dependent imports gracefully
 try:
     import torch
     TORCH_AVAILABLE = True
@@ -162,34 +161,30 @@ def load_pool(lazy_16bit: bool = False) -> None:
             "Gated models (e.g. Llama-2) will fail without it."
         )
 
-    # Resolve adapter paths (relative to project root)
     from pathlib import Path
     project_root = Path(__file__).parent.parent
     adapter_4bit = project_root / "adapters" / "adapter_4bit"
     adapter_8bit = project_root / "adapters" / "adapter_8bit"
     adapter_16bit = project_root / "adapters" / "adapter_16bit"
 
-    adapter_4bit = str(adapter_4bit) if adapter_4bit.exists() else None
-    adapter_8bit = str(adapter_8bit) if adapter_8bit.exists() else None
+    adapter_4bit  = str(adapter_4bit)  if adapter_4bit.exists()  else None
+    adapter_8bit  = str(adapter_8bit)  if adapter_8bit.exists()  else None
     adapter_16bit = str(adapter_16bit) if adapter_16bit.exists() else None
 
     tokenizer = _load_tokenizer(model_id, hf_token)
 
-    # Load 4-bit
     try:
         model_4bit = _load_4bit(model_id, hf_token, adapter_4bit)
         register_model("local/4bit", model_4bit, tokenizer)
     except Exception as e:
         logger.error(f"Failed to load 4-bit model: {e}")
 
-    # Load 8-bit
     try:
         model_8bit = _load_8bit(model_id, hf_token, adapter_8bit)
         register_model("local/8bit", model_8bit, tokenizer)
     except Exception as e:
         logger.error(f"Failed to load 8-bit model: {e}")
 
-    # Load 16-bit (optionally lazy)
     if not lazy_16bit:
         try:
             model_16bit = _load_16bit(model_id, hf_token, adapter_16bit)
@@ -228,3 +223,24 @@ def warmup(num_prompts: int = 5) -> None:
                 break
 
     logger.info("[OK] Warmup complete")
+
+
+def infer(prompt: str, tier: str = "8bit", max_new_tokens: int = 256) -> str:
+    """
+    Convenience function: run inference on a single prompt at a given tier.
+
+    Args:
+        prompt: Input text
+        tier: "4bit", "8bit", or "16bit"
+        max_new_tokens: Max tokens to generate
+
+    Returns:
+        Generated response string
+    """
+    from models.local_llm_adapter import LocalLLMforAll
+    llm = LocalLLMforAll()
+    return llm.get_completion(
+        prompt,
+        service_name=f"local/{tier}",
+        genparams={"max_tokens": max_new_tokens}
+    )

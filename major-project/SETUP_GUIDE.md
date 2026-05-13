@@ -478,7 +478,7 @@ from peft import (
 )
 from trl import SFTTrainer
 
-HF_TOKEN = "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"
+HF_TOKEN = "YOUR_HF_TOKEN"
 os.environ["HF_TOKEN"] = HF_TOKEN
 
 MODEL_NAME = "meta-llama/Llama-3.2-1B"
