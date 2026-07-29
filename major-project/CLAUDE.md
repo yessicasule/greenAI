@@ -90,19 +90,22 @@ python -m green_weight.main benchmark
 | 4. Benchmark | 🔄 | Framework ready, need full evaluation |
 
 ## HuggingFace Token
-Token for model access: 'hf_your_token_here'
+Never store tokens in this repo. Set the `HF_TOKEN` environment variable locally,
+or use a Kaggle secret named `HF_TOKEN` on Kaggle (see KAGGLE_MANUAL.md).
 
 ## Key Design Decisions
 
 1. **Model**: Llama-3.2-1B (fits on Kaggle T4, good for research)
 2. **Quantization**: QLoRA with fake quantization for QAT
 3. **Fuzzy Logic**: Triangular membership functions, centroid defuzzification
-4. **Energy Model**: Linear scaling with bit-width (4-bit=0.25x, 8-bit=0.5x, 16-bit=1x)
+4. **Energy Model**: The linear bit-width scaling (4-bit=0.25x, 8-bit=0.5x, 16-bit=1x)
+   is a DEMO-ONLY assumption used by `evaluation/benchmark.py`. All publishable numbers
+   must come from measured NVML energy (see `scripts/kaggle_energy_benchmark.py`).
 
-## Expected Results
-- Energy savings: ~40%
-- Accuracy loss: <1%
-- Latency reduction: ~30%
+## Results
+No verified results yet. Energy savings, accuracy loss, and latency numbers are
+produced by the Kaggle sessions in KAGGLE_MANUAL.md and validated by
+`scripts/verify_results.py`; see CREDIBILITY_REPORT.md for status.
 
 ## Dependencies
 ```

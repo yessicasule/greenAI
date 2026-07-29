@@ -5,8 +5,9 @@
 # ==============================================================================
 
 model:
-  # HuggingFace model ID for all three tiers
-  base_model_id: "meta-llama/Llama-2-7b-hf"
+  # HuggingFace model ID for all three tiers.
+  # Must match the base model of the trained QAT adapters (adapters/*/adapter_config.json).
+  base_model_id: "meta-llama/Llama-3.2-1B"
   
   # Quantization settings per tier
   quantization:

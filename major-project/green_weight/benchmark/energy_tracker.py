@@ -48,8 +48,8 @@ class EnergyTracker:
         # Energy log: list of (prompt, tier, joules, response_len, prompt_len)
         self.energy_log: List[Dict[str, Any]] = []
         
-        # Per-tier statistics
-        self.tier_stats: Dict[str, List[float]] = {
+        # Per-tier statistics: list of (joules, carbon_g, tokens_out) tuples
+        self.tier_stats: Dict[str, List[Tuple[float, float, int]]] = {
             "4bit": [],
             "8bit": [],
             "16bit": [],
@@ -92,25 +92,25 @@ class EnergyTracker:
         
         try:
             # Create tracker
-            tracker = EmissionsTracker(country_iso_code=country)
+            tracker = EmissionsTracker(country_iso_code=country, save_to_file=False, log_level="error")
             tracker.start()
-            
+
             # Run cascade
             start_time = datetime.now()
             response, metadata = run_cascade(prompt, tier, max_new_tokens)
             end_time = datetime.now()
-            
-            # Stop tracker and get emissions
+
+            # Stop tracker and read energy DIRECTLY (kWh), never derived from CO2
             emissions_kg = tracker.stop()
-            
-            # Convert to joules (rough approximation from emissions)
-            # Carbon intensity varies by country; for now use rough estimate
-            # 1 kg CO2 ≈ 0.17 kWh = 612 kJ (approximate)
-            carbon_g = emissions_kg * 1000 if emissions_kg else 0.0
-            joules = carbon_g * 612 if carbon_g else 0.0  # Approximate
-            
+            energy_kwh = 0.0
+            if getattr(tracker, "final_emissions_data", None) is not None:
+                energy_kwh = tracker.final_emissions_data.energy_consumed or 0.0
+
+            joules = energy_kwh * 3.6e6  # 1 kWh = 3.6e6 J
+            carbon_g = (emissions_kg or 0.0) * 1000
+
             duration_s = (end_time - start_time).total_seconds()
-            
+
             energy_info = {
                 "joules": joules,
                 "carbon_g": carbon_g,
@@ -129,6 +129,13 @@ class EnergyTracker:
                 "error": str(e)
             }
         
+        # Count generated tokens. Prefer real counts from metadata; fall back to
+        # a whitespace approximation clearly labelled as such.
+        tokens_out = metadata.get("tokens_generated") if isinstance(metadata, dict) else None
+        tokens_approx = tokens_out is None
+        if tokens_out is None:
+            tokens_out = max(len(response.split()), 1)
+
         # Log entry
         log_entry = {
             "timestamp": datetime.now().isoformat(),
@@ -137,17 +144,21 @@ class EnergyTracker:
             "tier": tier,
             "response": response,
             "response_len": len(response),
+            "tokens_out": tokens_out,
+            "tokens_approx": tokens_approx,
             "joules": energy_info["joules"],
             "carbon_g": energy_info["carbon_g"],
             "duration_s": energy_info["duration_s"],
             "cascade_metadata": metadata
         }
-        
+
         self.energy_log.append(log_entry)
-        
-        # Track per-tier statistics
+
+        # Track per-tier statistics: (joules, carbon_g, tokens_out)
         if energy_info["tracked"]:
-            self.tier_stats[tier].append(energy_info["joules"])
+            self.tier_stats[tier].append(
+                (energy_info["joules"], energy_info["carbon_g"], tokens_out)
+            )
         
         logger.debug(
             f"Tracked {tier}: {energy_info['joules']:.1f}J, "
@@ -165,16 +176,19 @@ class EnergyTracker:
             with open(detailed_csv, "w", newline="") as f:
                 writer = csv.DictWriter(f, fieldnames=[
                     "timestamp", "tier", "prompt_len", "response_len",
+                    "tokens_out", "tokens_approx",
                     "joules", "carbon_g", "duration_s"
                 ])
                 writer.writeheader()
-                
+
                 for entry in self.energy_log:
                     writer.writerow({
                         "timestamp": entry["timestamp"],
                         "tier": entry["tier"],
                         "prompt_len": entry["prompt_len"],
                         "response_len": entry["response_len"],
+                        "tokens_out": entry["tokens_out"],
+                        "tokens_approx": entry["tokens_approx"],
                         "joules": entry["joules"],
                         "carbon_g": entry["carbon_g"],
                         "duration_s": entry["duration_s"],
@@ -194,23 +208,26 @@ class EnergyTracker:
             
             for tier in ["4bit", "8bit", "16bit"]:
                 if self.tier_stats[tier]:
-                    energies = self.tier_stats[tier]
+                    records = self.tier_stats[tier]
+                    energies = [r[0] for r in records]
+                    carbons = [r[1] for r in records]
+                    tokens = [r[2] for r in records]
                     count = len(energies)
                     mean = sum(energies) / count
                     std = (sum((e - mean) ** 2 for e in energies) / count) ** 0.5
                     total = sum(energies)
-                    
-                    # Estimate joules per output token (rough approximation)
-                    # Assuming ~50 avg output tokens
-                    joules_per_token = mean / 50.0 if mean > 0 else 0.0
-                    
+
+                    # Joules per output token from ACTUAL generated token counts
+                    total_tokens = sum(tokens)
+                    joules_per_token = total / total_tokens if total_tokens > 0 else 0.0
+
                     writer.writerow({
                         "tier": tier,
                         "count": count,
                         "mean_joules": mean,
                         "std_joules": std,
                         "total_joules": total,
-                        "mean_carbon_g": 0.0,  # Placeholder
+                        "mean_carbon_g": sum(carbons) / count,
                         "joules_per_token": joules_per_token,
                     })
         
@@ -221,11 +238,11 @@ class EnergyTracker:
         stats = {}
         for tier in ["4bit", "8bit", "16bit"]:
             if self.tier_stats[tier]:
-                energies = self.tier_stats[tier]
+                energies = [r[0] for r in self.tier_stats[tier]]
                 count = len(energies)
                 mean = sum(energies) / count
                 std = (sum((e - mean) ** 2 for e in energies) / count) ** 0.5
-                
+
                 stats[tier] = {
                     "count": count,
                     "mean_joules": mean,

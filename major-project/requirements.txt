@@ -25,6 +25,8 @@ spacy==3.7.2  # NLP parsing (download model with: python -m spacy download en_co
 # Benchmarking
 lm-eval==0.4.0  # Harness for LLM benchmarking
 CodeCarbon==3.2.0  # Energy tracking
+pynvml==11.5.0  # NVML GPU energy counter (measurement scripts)
+peft==0.7.1  # LoRA adapter loading
 
 # Utilities
 pandas==2.0.3  # Data manipulation
