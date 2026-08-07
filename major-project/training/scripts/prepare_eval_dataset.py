@@ -15,9 +15,10 @@ Guarantees for publication credibility:
     rather than silently duplicating prompts.
   - Deterministic under --seed.
 
-Usage (needs `pip install datasets`; run locally or in a Kaggle cell):
-    python scripts/prepare_eval_dataset.py --num-prompts 500 \
-        --output green_weight/data/eval_prompts.jsonl
+Usage (needs `pip install datasets`; run locally or in a Kaggle cell,
+from major-project/):
+    python training/scripts/prepare_eval_dataset.py --num-prompts 500 \
+        --output backend/src/green_weight/data/eval_prompts.jsonl
 """
 
 import argparse
@@ -116,7 +117,7 @@ def main():
     parser = argparse.ArgumentParser(description="Prepare stratified evaluation dataset")
     parser.add_argument("--num-prompts", type=int, default=500)
     parser.add_argument("--output", type=str,
-                        default="green_weight/data/eval_prompts.jsonl")
+                        default="backend/src/green_weight/data/eval_prompts.jsonl")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 

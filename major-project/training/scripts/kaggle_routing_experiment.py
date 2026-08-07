@@ -19,8 +19,8 @@ measured separately (it is CPU-only and reported, not ignored).
 
 How to run on Kaggle:
   1. New notebook -> Accelerator: GPU T4 x1. Secret HF_TOKEN set.
-  2. Upload eval_prompts.jsonl (from scripts/prepare_eval_dataset.py) as a
-     Kaggle dataset; adjust EVAL_FILE below if the path differs.
+  2. Upload eval_prompts.jsonl (from training/scripts/prepare_eval_dataset.py)
+     as a Kaggle dataset; adjust EVAL_FILE below if the path differs.
   3. Optional: upload adapters/ dataset and set ADAPTER_ROOT to use the
      QAT adapters per tier (the "full system" configuration).
   4. Paste this file into one cell and run. Budget: ~4-6 h for 500 prompts.
@@ -68,8 +68,8 @@ OUT_DIR = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(
 
 # ====================================================================
 # Complexity sensor + fuzzy gearbox
-# (verbatim logic from green_weight/core/prompt_complexity.py and
-#  green_weight/controllers/fuzzy_gearbox.py, embedded for portability)
+# (verbatim logic from backend/src/green_weight/core/prompt_complexity.py and
+#  backend/src/green_weight/controllers/fuzzy_gearbox.py, embedded for portability)
 # ====================================================================
 class ComplexityScorer:
     REASONING_KEYWORDS = {

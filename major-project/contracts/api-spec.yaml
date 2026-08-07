@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: Green-Weight API
+  version: "0.1.0"
+  description: >
+    Contract for major-project/backend/src/green_weight/api.py, verified
+    against the frontend's real client at
+    major-project/frontend/src/lib/api.js. backend-agent must update this
+    file in the same turn as any route/schema change in api.py;
+    frontend-agent must flag (not silently patch around) any mismatch it
+    finds between this file and actual backend behavior.
+servers:
+  - url: http://localhost:8000
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  routing_layer: { type: string, example: ready }
+                  gpu_ready: { type: boolean }
+
+  /route:
+    post:
+      summary: Routing-only — no GPU needed, energy_joules always 0
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InferRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RouteResponse" }
+        "500":
+          description: Routing error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /infer:
+    post:
+      summary: >
+        Full inference. With routing_only=true behaves like /route. With
+        routing_only=false: uses the real model pool if loaded, otherwise
+        falls back to a keyword/math mock response (RouteResponse.is_mock
+        will be true; the mock's energy_joules values are fixed placeholders
+        {4bit: 8.5, 8bit: 28.5, 16bit: 105.2} baked into api.py, NOT
+        measurements — never surface these as real numbers).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InferRequest" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RouteResponse" }
+        "500":
+          description: Inference error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  /results:
+    get:
+      summary: All entries from pipeline_trace.jsonl (routing/inference history)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  entries:
+                    type: array
+                    items: { type: object }
+
+  /energy:
+    get:
+      summary: energy_summary.csv as JSON rows (empty until Session 1 lands real data)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tiers:
+                    type: array
+                    items: { type: object }
+
+  /accuracy:
+    get:
+      summary: accuracy_results.json verbatim (currently `{}` — no Session 2 data yet)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { type: object }
+
+components:
+  schemas:
+    InferRequest:
+      type: object
+      required: [prompt]
+      properties:
+        prompt: { type: string }
+        routing_only: { type: boolean, default: false }
+        max_new_tokens: { type: integer, default: 256 }
+
+    RouteResponse:
+      type: object
+      properties:
+        prompt: { type: string }
+        features: { type: object }
+        fuzzy_tier: { type: string, example: "8bit" }
+        win_probability: { type: number }
+        final_tier: { type: string, example: "8bit" }
+        energy_joules: { type: number }
+        duration_s: { type: number }
+        response: { type: string, nullable: true }
+        is_mock: { type: boolean, default: false }
+        cost_usd: { type: number }
+        latency_ms: { type: number }
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail: { type: string }

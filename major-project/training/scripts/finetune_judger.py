@@ -5,9 +5,9 @@ Fine-tune Cascade Judger
 Fine-tunes FrugalGPT's DistilBERT generation judger on a local dataset
 so it can assess output quality for the green-weight cascade.
 
-Usage:
-    python scripts/finetune_judger.py \
-        --dataset green_weight/data/eval_prompts.jsonl \
+Usage (run from major-project/):
+    python training/scripts/finetune_judger.py \
+        --dataset backend/src/green_weight/data/eval_prompts.jsonl \
         --output models/judger_finetuned \
         --num-epochs 3
 """
@@ -125,7 +125,7 @@ def finetune_judger(dataset_path: Path, output_dir: Path, num_epochs: int, devic
 def main():
     parser = argparse.ArgumentParser(description="Fine-tune cascade judger")
     parser.add_argument("--dataset", type=str,
-                        default="green_weight/data/eval_prompts.jsonl",
+                        default="backend/src/green_weight/data/eval_prompts.jsonl",
                         help="Path to eval_prompts.jsonl")
     parser.add_argument("--output", type=str, default="models/judger_finetuned",
                         help="Output directory for fine-tuned model")
@@ -137,7 +137,7 @@ def main():
     dataset_path = Path(args.dataset)
     if not dataset_path.exists():
         print(f"[FAIL] Dataset not found: {dataset_path}")
-        print("Run first: python scripts/prepare_eval_dataset.py")
+        print("Run first: python training/scripts/prepare_eval_dataset.py")
         sys.exit(1)
 
     finetune_judger(

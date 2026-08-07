@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(pytest major-project/backend/tests*)",
+      "Bash(pytest major-project/frontend/tests*)",
+      "Bash(python major-project/training/scripts/verify_results.py*)",
+      "Bash(python major-project/training/scripts/make_figures.py*)",
+      "Bash(npm run *)",
+      "Bash(npm install)"
+    ],
+    "ask": [
+      "Bash(git commit*)",
+      "Bash(git push*)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)"
+    ]
+  }
+}

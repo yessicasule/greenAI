@@ -14,8 +14,8 @@ How to run on Kaggle:
      Pascal lacks the NVML energy counter).
   2. Add your HF token as a Kaggle secret named HF_TOKEN and accept the
      Llama-3.2 license on huggingface.co first.
-  3. Upload green_weight/data/eval_prompts.jsonl as a dataset (optional;
-     falls back to a built-in prompt list).
+  3. Upload backend/src/green_weight/data/eval_prompts.jsonl as a dataset
+     (optional; falls back to a built-in prompt list).
   4. Paste this whole file into one cell and run.
 
 Outputs (in /kaggle/working):

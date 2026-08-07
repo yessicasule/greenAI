@@ -1,7 +1,7 @@
 """
 api.py — Green-Weight FastAPI Backend
 ======================================
-Run from green_weight/ directory:
+Run from backend/src/green_weight/ directory:
     uvicorn api:app --reload --port 8000
 
 Endpoints:

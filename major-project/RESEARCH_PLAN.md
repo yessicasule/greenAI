@@ -22,12 +22,12 @@ Bugs that must be fixed before any result is citable:
 
 | Location | Problem |
 |---|---|
-| `green_weight/benchmark/energy_tracker.py:104-110` | Converts CO₂ back to joules with an inverted constant (`1 kg CO₂ ≈ 0.17 kWh` is backwards). CodeCarbon reports energy directly (`energy_consumed`, kWh) — use that, or better, NVML (see script). |
-| `green_weight/benchmark/energy_tracker.py:205` | J/token divides by a hard-coded "50 tokens" instead of counting real generated tokens. |
-| `green_weight/core/dynamic_inference.py:91,114` | Responses can be *simulated*; token counts estimated by word-split × 1.3. Fine for demos, must never feed the paper. |
-| `green_weight/evaluation/benchmark.py:57` | Energy = 1 pJ/op analytic guess. Can be reported as a *model*, never as a *measurement*. |
-| `green_weight/config.yaml:9` vs adapters | Config says `Llama-2-7b-hf`; the three trained QAT adapters are based on `Llama-3.2-1B`. Unify on Llama-3.2-1B. |
-| `router/routellm_bridge.py` | Broken against current RouteLLM API (`model_name_or_path` kwarg). Fix or drop to baseline-only. |
+| `backend/src/green_weight/benchmark/energy_tracker.py:104-110` | Converts CO₂ back to joules with an inverted constant (`1 kg CO₂ ≈ 0.17 kWh` is backwards). CodeCarbon reports energy directly (`energy_consumed`, kWh) — use that, or better, NVML (see script). |
+| `backend/src/green_weight/benchmark/energy_tracker.py:205` | J/token divides by a hard-coded "50 tokens" instead of counting real generated tokens. |
+| `backend/src/green_weight/core/dynamic_inference.py:91,114` | Responses can be *simulated*; token counts estimated by word-split × 1.3. Fine for demos, must never feed the paper. |
+| `backend/src/green_weight/evaluation/benchmark.py:57` | Energy = 1 pJ/op analytic guess. Can be reported as a *model*, never as a *measurement*. |
+| `backend/src/green_weight/config.yaml:9` vs adapters | Config says `Llama-2-7b-hf`; the three trained QAT adapters are based on `Llama-3.2-1B`. Unify on Llama-3.2-1B. |
+| `backend/src/green_weight/router/routellm_bridge.py` | Broken against current RouteLLM API (`model_name_or_path` kwarg). Fix or drop to baseline-only. |
 | `data/eval_prompts.jsonl` | Contains duplicate prompts — dedupe and re-stratify before evaluation. |
 | `CLAUDE.md` "HuggingFace Token" line | Never commit a real token; use Kaggle secrets / env vars. |
 
@@ -130,17 +130,17 @@ condition 4 and condition 1 accuracy.
 > Implementation status: all session scripts exist. Click-by-click
 > instructions live in **KAGGLE_MANUAL.md**; the verification policy and
 > claim status live in **CREDIBILITY_REPORT.md**. Scripts:
-> `scripts/kaggle_energy_benchmark.py` (S1), `scripts/kaggle_accuracy_eval.py`
-> (S2), `green_weight/training/kaggle_qat_trainer.py` (S3),
-> `scripts/kaggle_routing_experiment.py` (S4), `scripts/make_figures.py` +
-> `scripts/verify_results.py` (S5).
+> `training/scripts/kaggle_energy_benchmark.py` (S1), `training/scripts/kaggle_accuracy_eval.py`
+> (S2), `backend/src/green_weight/training/kaggle_qat_trainer.py` (S3),
+> `training/scripts/kaggle_routing_experiment.py` (S4), `training/scripts/make_figures.py` +
+> `training/scripts/verify_results.py` (S5).
 
 All sessions use **T4** accelerator. Estimated total: ~20–25 GPU hours.
 
 **Session 1 — Energy ground truth (~2–3 h). DO THIS FIRST.**
-Run `scripts/kaggle_energy_benchmark.py` (ready to paste). Produces
+Run `training/scripts/kaggle_energy_benchmark.py` (ready to paste). Produces
 `energy_summary.csv` = the paper's Table 1 and the go/no-go signal for §2.
-Upload `green_weight/data/eval_prompts.jsonl` (script dedupes it).
+Upload `backend/src/green_weight/data/eval_prompts.jsonl` (script dedupes it).
 
 **Session 2 — Per-tier accuracy (~4–6 h).**
 `pip install lm-eval`; evaluate each tier (fp16 / 8-bit / 4-bit, with and
@@ -150,7 +150,7 @@ Save per-task JSON results. This yields RQ4 and the per-tier quality column.
 **Session 3 — Adapter retraining only if needed (~6 h).**
 The three LoRA adapters already exist (`adapters/adapter_{simple,medium,complex}`,
 base Llama-3.2-1B). First try loading them with the current transformers/peft;
-retrain via `green_weight/training/kaggle_qat_trainer.py` only if they fail to
+retrain via `backend/src/green_weight/training/kaggle_qat_trainer.py` only if they fail to
 load or Session 2 shows them underperforming plain quantization.
 
 **Session 4 — Routing experiment (~4–6 h).**

@@ -6,9 +6,14 @@
 This research project implements an "Energy Gearbox" for AI - dynamically adjusting LLM precision based on prompt complexity to save up to 40% energy with <1% accuracy loss.
 
 ## Project Structure
+
+**Full mapping and the 6-subagent routing table live in the repo-root
+`CLAUDE.md` (`D:/Green AI/CLAUDE.md`) — read that first.** Summary of where
+things live after the Aug 2026 reorg:
+
 ```
-D:\Major Project\major-project
-├── green_weight/              # Main package
+major-project/
+├── backend/src/green_weight/  # Main Python package (import path unchanged: `green_weight.xxx`)
 │   ├── config.py              # Configuration (BitWidth, Gears, Fuzzy params)
 │   ├── core/
 │   │   ├── prompt_complexity.py   # Complexity sensor/scorer
@@ -16,15 +21,33 @@ D:\Major Project\major-project
 │   ├── controllers/
 │   │   └── fuzzy_gearbox.py       # Fuzzy logic controller
 │   ├── training/
-│   │   ├── qat_trainer.py         # QAT training classes
-│   │   ├── kaggle_qat_trainer.py  # Kaggle notebook script
-│   │   └── README.md              # Training instructions
+│   │   ├── qat_trainer.py         # QAT training classes (library)
+│   │   └── kaggle_qat_trainer.py  # QAT training entrypoint (see training/scripts/ note below)
 │   ├── evaluation/
 │   │   └── benchmark.py           # Energy/accuracy benchmarking
+│   ├── api.py                     # FastAPI backend
 │   ├── main.py                    # CLI entry point
 │   └── __init__.py
+├── backend/tests/              # pytest suite (test-agent's domain)
+├── frontend/                   # React/Vite dashboard (was greenai-dashboard/)
+│   ├── src/
+│   └── tests/
+├── training/
+│   ├── scripts/                # All GPU/session entrypoints: kaggle_*.py,
+│   │                           # verify_results.py, make_figures.py,
+│   │                           # prepare_eval_dataset.py, finetune_judger.py,
+│   │                           # + the 4 training notebooks
+│   ├── configs/                # Intended home for externalized QAT hyperparams (not wired up yet)
+│   └── logs/                   # Raw GPU-session transcripts
+├── contracts/api-spec.yaml     # Backend/frontend API contract
+├── verification/checklist.md   # Living sign-off checklist (verifier's domain)
+├── paper/
+│   ├── results.md               # Append-only experiment log (paper-writer's only numeric source)
+│   ├── draft.md
+│   └── figures/
 ├── dataset/
-│   └── dataset_prep.py        # Dataset curation (Objective 1)
+│   └── dataset_prep.py         # Dataset curation (Objective 1) — left in place, not moved
+├── adapters/                    # Trained LoRA adapters — left in place, not moved
 ├── .gitignore
 ├── README.md
 └── CLAUDE.md                  # This file
@@ -64,6 +87,8 @@ D:\Major Project\major-project
 
 ### Demo
 ```bash
+cd backend/src   # green_weight is imported as a top-level package from here
+
 # Analyze prompts
 python -m green_weight.main analyze
 
@@ -76,7 +101,7 @@ python -m green_weight.main benchmark
 
 ### Training on Kaggle
 1. Upload `combined_cleaned.csv` to Kaggle dataset
-2. Open `green_weight/training/kaggle_qat_trainer.py`
+2. Open `backend/src/green_weight/training/kaggle_qat_trainer.py`
 3. Run cells sequentially
 4. Download `adapters/` folder
 
@@ -100,12 +125,12 @@ or use a Kaggle secret named `HF_TOKEN` on Kaggle (see KAGGLE_MANUAL.md).
 3. **Fuzzy Logic**: Triangular membership functions, centroid defuzzification
 4. **Energy Model**: The linear bit-width scaling (4-bit=0.25x, 8-bit=0.5x, 16-bit=1x)
    is a DEMO-ONLY assumption used by `evaluation/benchmark.py`. All publishable numbers
-   must come from measured NVML energy (see `scripts/kaggle_energy_benchmark.py`).
+   must come from measured NVML energy (see `training/scripts/kaggle_energy_benchmark.py`).
 
 ## Results
 No verified results yet. Energy savings, accuracy loss, and latency numbers are
 produced by the Kaggle sessions in KAGGLE_MANUAL.md and validated by
-`scripts/verify_results.py`; see CREDIBILITY_REPORT.md for status.
+`training/scripts/verify_results.py`; see CREDIBILITY_REPORT.md for status.
 
 ## Dependencies
 ```

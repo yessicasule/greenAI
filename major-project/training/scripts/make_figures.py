@@ -6,14 +6,14 @@ Reads the CSVs downloaded from Kaggle Sessions 1, 2 and 4 and produces
 the paper's figures (300 dpi PNG + PDF). Generates whichever figures its
 inputs exist for and skips the rest with a warning.
 
-Expected inputs (put them in green_weight/results/):
+Expected inputs (put them in backend/src/green_weight/results/):
   energy_logs/energy_per_inference.csv     (Session 1)
   energy_logs/energy_summary.csv           (Session 1)
   accuracy_logs/accuracy_summary.csv       (Session 2)
   routing_logs/routing_conditions_summary.csv  (Session 4)
 
-Usage:
-    python scripts/make_figures.py [--results-dir green_weight/results]
+Usage (run from major-project/):
+    python training/scripts/make_figures.py [--results-dir backend/src/green_weight/results]
 """
 
 import argparse
@@ -253,7 +253,7 @@ def fig_accuracy_per_tier(results_dir, outdir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results-dir", default="green_weight/results")
+    parser.add_argument("--results-dir", default="backend/src/green_weight/results")
     args = parser.parse_args()
     results_dir = Path(args.results_dir)
     outdir = results_dir / "figures"

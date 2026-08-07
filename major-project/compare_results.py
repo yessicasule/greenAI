@@ -4,10 +4,10 @@ Compare Results
 
 Compares accuracy and energy results between two pipeline runs (baseline vs ablation).
 
-Usage:
+Usage (run from major-project/):
     python compare_results.py \
-        --baseline results/accuracy_logs/accuracy_results_baseline.json \
-        --ablation results/accuracy_logs/accuracy_results_ablation1.json
+        --baseline backend/src/green_weight/results/accuracy_logs/accuracy_results_baseline.json \
+        --ablation backend/src/green_weight/results/accuracy_logs/accuracy_results_ablation1.json
 """
 
 import argparse

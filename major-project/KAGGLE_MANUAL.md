@@ -30,7 +30,7 @@ downloaded files into this repo and run the validator (Step 7).
    energy counter our measurements depend on.
 5. **Upload two Kaggle datasets** (kaggle.com → Datasets → New Dataset):
    - `eval-prompts` — containing `eval_prompts.jsonl`
-     (build it first: `python scripts/prepare_eval_dataset.py --num-prompts 500`,
+     (build it first: `python training/scripts/prepare_eval_dataset.py --num-prompts 500`,
      needs `pip install datasets` locally; or run that script in a Kaggle cell
      and download the output).
    - `greenweight-adapters` — containing the three folders from this repo's
@@ -48,7 +48,7 @@ fp16, see "If Session 1 disappoints" below before spending more GPU hours.
 1. New notebook → T4 → attach `HF_TOKEN` secret → add the `eval-prompts`
    dataset (Add Input → Datasets → yours).
 2. Paste the secret cell (Step 0.3), then paste the entire contents of
-   [`scripts/kaggle_energy_benchmark.py`](scripts/kaggle_energy_benchmark.py)
+   [`training/scripts/kaggle_energy_benchmark.py`](training/scripts/kaggle_energy_benchmark.py)
    into the next cell. Run all.
 3. Watch for `NVML energy counter available: True` in the output. If it says
    `False` on a T4, restart the session (bad node).
@@ -56,7 +56,7 @@ fp16, see "If Session 1 disappoints" below before spending more GPU hours.
    - `energy_per_inference.csv`
    - `energy_summary.csv`
    - `hardware_info.json`
-5. Put them in `green_weight/results/energy_logs/` in this repo.
+5. Put them in `backend/src/green_weight/results/energy_logs/` in this repo.
 
 **If Session 1 disappoints** (4-bit ≥ fp16 energy): don't panic and don't
 hide it. Options, per RESEARCH_PLAN.md §2: switch the low tiers to GPTQ/AWQ
@@ -72,7 +72,7 @@ Purpose: benchmark accuracy of each tier, with and without the QAT adapters
 
 1. New notebook → T4 → `HF_TOKEN` secret → add the `greenweight-adapters`
    dataset as input.
-2. Paste [`scripts/kaggle_accuracy_eval.py`](scripts/kaggle_accuracy_eval.py)
+2. Paste [`training/scripts/kaggle_accuracy_eval.py`](training/scripts/kaggle_accuracy_eval.py)
    and run. It evaluates 6 conditions (3 tiers × base/adapter) on
    tinyMMLU/tinyGSM8k/tinyHellaswag (falls back to arc_easy/gsm8k/hellaswag
    with a 200-example limit if tiny tasks are unavailable).
@@ -80,7 +80,7 @@ Purpose: benchmark accuracy of each tier, with and without the QAT adapters
    were trained), the script logs a warning and runs base-only — in that
    case do Session 3 and re-run this session afterwards.
 4. Download `accuracy_per_tier.json` and `accuracy_summary.csv` →
-   `green_weight/results/accuracy_logs/`.
+   `backend/src/green_weight/results/accuracy_logs/`.
 
 ---
 
@@ -95,7 +95,7 @@ adapter conditions scored ≥ base. Otherwise:
    upload as a Kaggle dataset, e.g. `greenweight-training-data`.
 2. New notebook → **T4 x2** → `HF_TOKEN` secret → add the training-data
    dataset as input.
-3. Open [`green_weight/training/kaggle_qat_trainer.py`](green_weight/training/kaggle_qat_trainer.py).
+3. Open [`backend/src/green_weight/training/kaggle_qat_trainer.py`](backend/src/green_weight/training/kaggle_qat_trainer.py).
    It is written as notebook cells (`CELL 1`, `CELL 2`, …): paste each CELL
    into its own notebook cell, in order.
 4. In CELL 1, set `DATA_PATH` to your uploaded CSV, e.g.
@@ -121,11 +121,11 @@ measured energy.
 
 1. New notebook → T4 → `HF_TOKEN` secret → add BOTH `eval-prompts` and
    `greenweight-adapters` as inputs.
-2. Paste [`scripts/kaggle_routing_experiment.py`](scripts/kaggle_routing_experiment.py)
+2. Paste [`training/scripts/kaggle_routing_experiment.py`](training/scripts/kaggle_routing_experiment.py)
    and run. Phase A measures every prompt on every tier (progress prints
    every 50 prompts); Phase B derives all routing conditions from those
    measurements on CPU.
-3. Download all three outputs →  `green_weight/results/routing_logs/`:
+3. Download all three outputs →  `backend/src/green_weight/results/routing_logs/`:
    - `routing_per_prompt.csv` (raw artifact — released with the paper)
    - `routing_conditions_summary.csv`
    - `routing_run_info.json`
@@ -142,11 +142,11 @@ measured energy.
 ```powershell
 cd "d:\Green AI\major-project"
 pip install matplotlib
-python scripts/verify_results.py      # credibility gate — read every WARN/FAIL
-python scripts/make_figures.py        # writes green_weight/results/figures/
+python training/scripts/verify_results.py      # credibility gate — read every WARN/FAIL
+python training/scripts/make_figures.py        # writes backend/src/green_weight/results/figures/
 ```
 
-`verify_results.py` writes `green_weight/results/results_validation.md` with
+`verify_results.py` writes `backend/src/green_weight/results/results_validation.md` with
 a PASS/WARN/FAIL table. **A number may be quoted in the paper only if its
 checks pass** — see CREDIBILITY_REPORT.md for the policy.
 
@@ -154,8 +154,8 @@ checks pass** — see CREDIBILITY_REPORT.md for the policy.
 
 ## Step 7 — After every session
 
-1. Copy downloads into `green_weight/results/…` as listed above.
-2. `python scripts/verify_results.py` — fix FAILs before the next session.
+1. Copy downloads into `backend/src/green_weight/results/…` as listed above.
+2. `python training/scripts/verify_results.py` — fix FAILs before the next session.
 3. Commit the CSVs (they are small) so results are versioned with the code.
 
 ## Troubleshooting

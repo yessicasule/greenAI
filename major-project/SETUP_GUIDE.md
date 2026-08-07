@@ -36,7 +36,9 @@ Current AI inference is like a car with only one gear — full power, regardless
 - **FrugalGPT Cascade**: Escalates to higher precision if output quality is low
 - **Energy Tracker**: Measures real energy per inference via CodeCarbon
 
-**Expected result:** ~65% energy savings with <2% accuracy loss vs always-16-bit baseline.
+**Expected result:** No verified result yet — see `CREDIBILITY_REPORT.md` §1 for
+the current claim status. Do not cite a savings/accuracy-loss number here
+until that report marks it VERIFIED.
 
 ### Pipeline Flow
 
@@ -183,7 +185,7 @@ Then request access to the model at: https://huggingface.co/meta-llama/Llama-2-7
 ## 4. Verify Installation
 
 ```powershell
-cd green_weight
+cd backend/src/green_weight
 
 # Test core imports (works on CPU, no GPU needed)
 python -c "
@@ -224,7 +226,7 @@ else:
 
 ## 5. Prepare Evaluation Dataset
 
-The pipeline reads prompts from `green_weight/data/eval_prompts.jsonl`. Each line is a JSON object:
+The pipeline reads prompts from `backend/src/green_weight/data/eval_prompts.jsonl`. Each line is a JSON object:
 
 ```json
 {"prompt": "What is AI?", "reference_answer": "Artificial Intelligence", "difficulty_label": "easy"}
@@ -233,19 +235,19 @@ The pipeline reads prompts from `green_weight/data/eval_prompts.jsonl`. Each lin
 **Option A — Use the included sample (50 prompts, already generated):**
 
 ```powershell
-# File already exists at green_weight/data/eval_prompts.jsonl
+# File already exists at backend/src/green_weight/data/eval_prompts.jsonl
 ```
 
 **Option B — Generate synthetic prompts:**
 
 ```powershell
-python scripts/prepare_eval_dataset.py --num-prompts 500 --output green_weight/data/eval_prompts.jsonl
+python training/scripts/prepare_eval_dataset.py --num-prompts 500 --output backend/src/green_weight/data/eval_prompts.jsonl
 ```
 
 **Option C — Load from HuggingFace (requires internet + HF access):**
 
 ```powershell
-python scripts/prepare_eval_dataset.py --num-prompts 500 --dataset Open-Orca/OpenOrca --output green_weight/data/eval_prompts.jsonl
+python training/scripts/prepare_eval_dataset.py --num-prompts 500 --dataset Open-Orca/OpenOrca --output backend/src/green_weight/data/eval_prompts.jsonl
 ```
 
 ---
@@ -255,7 +257,7 @@ python scripts/prepare_eval_dataset.py --num-prompts 500 --dataset Open-Orca/Ope
 All commands are run from `d:\Green AI\major-project\green_weight\`.
 
 ```powershell
-cd green_weight
+cd backend/src/green_weight
 ```
 
 ### Option A: Routing-Only Test (CPU, No Models, No GPU Required)
@@ -865,7 +867,7 @@ print(os.listdir("/kaggle/input/"))  # Should show: green-weight-data
 
 ## 9. Ablation Studies
 
-Edit `green_weight/config.yaml` and re-run the pipeline to compare conditions.
+Edit `backend/src/green_weight/config.yaml` and re-run the pipeline to compare conditions.
 
 ### Ablation 1: Router Type
 
@@ -906,23 +908,24 @@ model:
 ### Workflow
 
 ```powershell
-# Save baseline config
-copy green_weight\config.yaml config_baseline.yaml
+# Save baseline config (run from major-project/)
+copy backend\src\green_weight\config.yaml config_baseline.yaml
 
-# Run baseline
-cd green_weight
-python run_pipeline.py --config ..\config_baseline.yaml
+# Run baseline — green_weight is now 3 levels below major-project/, so it's
+# ..\..\..\ back to major-project/, not ..\ (that changed with the Aug 2026 reorg)
+cd backend/src/green_weight
+python run_pipeline.py --config ..\..\..\config_baseline.yaml
 
 # Edit config for ablation
-copy ..\config_baseline.yaml ..\config_ablation1.yaml
+copy ..\..\..\config_baseline.yaml ..\..\..\config_ablation1.yaml
 # Edit config_ablation1.yaml ...
-python run_pipeline.py --config ..\config_ablation1.yaml
+python run_pipeline.py --config ..\..\..\config_ablation1.yaml
 
-# Compare
-cd ..
+# Compare (back to major-project/)
+cd ..\..\..
 python compare_results.py `
-    --baseline results/accuracy_logs/accuracy_results_baseline.json `
-    --ablation results/accuracy_logs/accuracy_results_ablation1.json `
+    --baseline backend/src/green_weight/results/accuracy_logs/accuracy_results_baseline.json `
+    --ablation backend/src/green_weight/results/accuracy_logs/accuracy_results_ablation1.json `
     --label-a "Baseline (mf router)" `
     --label-b "Ablation 1 (bert router)"
 ```
@@ -934,8 +937,8 @@ python compare_results.py `
 The default FrugalGPT judger is pre-trained on generic data. Fine-tune it on your eval dataset for better domain-specific quality assessment:
 
 ```powershell
-python scripts/finetune_judger.py `
-    --dataset green_weight/data/eval_prompts.jsonl `
+python training/scripts/finetune_judger.py `
+    --dataset backend/src/green_weight/data/eval_prompts.jsonl `
     --output models/judger_finetuned `
     --num-epochs 3
 ```
@@ -953,9 +956,10 @@ cascade:
 ## 11. Compare Results
 
 ```powershell
+# Run from major-project/
 python compare_results.py `
-    --baseline results/accuracy_logs/accuracy_results.json `
-    --ablation results/accuracy_logs/accuracy_results_ablation1.json `
+    --baseline backend/src/green_weight/results/accuracy_logs/accuracy_results.json `
+    --ablation backend/src/green_weight/results/accuracy_logs/accuracy_results_ablation1.json `
     --label-a "Baseline" `
     --label-b "Ablation 1"
 ```
@@ -966,43 +970,57 @@ Output shows side-by-side accuracy and energy metrics with delta columns.
 
 ## 12. Paper Writing Guide
 
-### Table 1: Accuracy Summary
+**Superseded by `paper/draft.md` + `paper/results.md`** (added alongside the
+6-subagent setup, Aug 2026) — those are now the gated writing location: the
+`paper-writer` subagent may only cite numbers that appear in
+`paper/results.md` with a `verify_results.py` PASS, and must invoke the
+`verifier` subagent before marking any section final. This section is kept
+only to show the *shape* every table/figure below should take — every value
+shown here is a placeholder format example, not a result, and must never be
+copied into the paper as-is.
 
-Extract from `results/accuracy_logs/accuracy_results.json`:
+### Table 1: Accuracy Summary (format only — replace with real numbers)
+
+Extract from `backend/src/green_weight/results/accuracy_logs/accuracy_results.json`
+once `CREDIBILITY_REPORT.md` §1 marks the accuracy claim VERIFIED:
 
 | Condition | MMLU | HellaSwag | Overall |
 |-----------|------|-----------|---------|
-| Always 4-bit | 0.42 | 0.58 | 0.50 |
-| Always 8-bit | 0.58 | 0.68 | 0.63 |
-| Always 16-bit | 0.72 | 0.78 | 0.75 |
-| **Routed (ours)** | **0.70** | **0.76** | **0.73** |
+| Always 4-bit | _pending_ | _pending_ | _pending_ |
+| Always 8-bit | _pending_ | _pending_ | _pending_ |
+| Always 16-bit | _pending_ | _pending_ | _pending_ |
+| **Routed (ours)** | _pending_ | _pending_ | _pending_ |
 
-### Table 2: Energy Summary
+### Table 2: Energy Summary (format only — replace with real numbers)
 
-Extract from `results/energy_logs/energy_summary.csv`:
+Extract from `backend/src/green_weight/results/energy_logs/energy_summary.csv`
+once §1 marks the energy claim VERIFIED:
 
 | Tier | Mean Energy (mJ) | Joules/Token | vs 16-bit |
 |------|------------------|--------------|-----------|
-| 4-bit | 8.5 | 0.17 | -92% |
-| 8-bit | 28.5 | 0.57 | -73% |
-| 16-bit | 105.2 | 2.10 | baseline |
-| Routed | ~36.8 | ~0.74 | -65% |
+| 4-bit | _pending_ | _pending_ | _pending_ |
+| 8-bit | _pending_ | _pending_ | _pending_ |
+| 16-bit | _pending_ | _pending_ | baseline |
+| Routed | _pending_ | _pending_ | _pending_ |
 
 ### Figure 1: Energy-Accuracy Tradeoff Curve
 
 ```
-results/figures/tradeoff_curve.png
+backend/src/green_weight/results/figures/tradeoff_curve.png
 ```
 
-Caption: *"Energy-accuracy Pareto frontier. The routed system achieves 65% energy savings while maintaining 97% of baseline accuracy."*
+Caption template: *"Energy-accuracy Pareto frontier. The routed system
+achieves [X]% energy savings while maintaining [Y]% of baseline accuracy."*
+— fill in `[X]`/`[Y]` only from a `paper/results.md` row with a PASS verdict.
 
 ### Figure 2: Routing Distribution
 
 ```
-results/figures/precision_distribution.png
+backend/src/green_weight/results/figures/precision_distribution.png
 ```
 
-Caption: *"Prompt routing distribution for the fuzzy-routed system. ~30% of prompts routed to 4-bit, ~45% to 8-bit, ~25% to 16-bit."*
+Caption template: *"Prompt routing distribution for the fuzzy-routed
+system. [X]% of prompts routed to 4-bit, [Y]% to 8-bit, [Z]% to 16-bit."*
 
 ### Table 3: RouteLLM Metrics
 
@@ -1010,8 +1028,8 @@ From `accuracy_results.json["routellm_metrics"]`:
 
 | Metric | Value | Description |
 |--------|-------|-------------|
-| CPT | 0.5 | Call-performance threshold |
-| APGR | 0.92 | Average performance gap recovered |
+| CPT | _pending_ | Call-performance threshold |
+| APGR | _pending_ | Average performance gap recovered |
 
 ---
 
