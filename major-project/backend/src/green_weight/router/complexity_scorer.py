@@ -33,6 +33,16 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
+# Single source of truth for feature normalization bounds — also imported by
+# fuzzy_controller.py so that config.yaml breakpoints get normalized with
+# the exact same (min, max) as the features they're compared against.
+# Calibrated 2026-08-05 against the 30-prompt eval sample
+# (data/eval_prompts.jsonl); re-validate once the full 500-prompt set
+# (prepare_eval_dataset.py) exists.
+FLESCH_KINCAID_RANGE = (0, 18)
+ENTROPY_RANGE = (3.0, 4.5)
+SYNTAX_DEPTH_RANGE = (1, 8)
+
 # Module-level singleton for spaCy model
 _spacy_model = None
 
@@ -221,8 +231,7 @@ def score(prompt: str) -> Dict[str, float]:
     else:
         try:
             grade_level = textstat.flesch_kincaid_grade(prompt)
-            # Normalize 0–18 scale to 0–1
-            features["flesch_kincaid"] = normalize_to_01(grade_level, 0, 18)
+            features["flesch_kincaid"] = normalize_to_01(grade_level, *FLESCH_KINCAID_RANGE)
         except Exception as e:
             logger.warning(f"Flesch-Kincaid calculation failed: {e}")
             features["flesch_kincaid"] = 0.5
@@ -232,14 +241,25 @@ def score(prompt: str) -> Dict[str, float]:
     approx_tokens = len(prompt) / 4.0
     features["token_length"] = normalize_to_01(approx_tokens, 0, 512)
     
-    # 3. Shannon entropy (bits, typically 2–8 range for natural language)
+    # 3. Shannon entropy (bits). Bounds calibrated 2026-08-05 against the
+    # 30-prompt eval sample (data/eval_prompts.jsonl): observed range was
+    # 3.09-4.20 bits, not the previously assumed 2-8 — the old bound was so
+    # wide that every real prompt normalized into a narrow ~0.18-0.37 band,
+    # making entropy nearly non-discriminating. 4.5 leaves headroom above
+    # the observed max (English text tops out around 4.5-5 bits per
+    # classic Shannon entropy estimates). Re-validate once the full
+    # 500-prompt set (prepare_eval_dataset.py) exists.
     entropy_bits = shannon_entropy(prompt)
-    features["entropy"] = normalize_to_01(entropy_bits, 2.0, 8.0)
-    
-    # 4. Syntax parse depth (max depth of dependency tree, typically 3–20)
+    features["entropy"] = normalize_to_01(entropy_bits, *ENTROPY_RANGE)
+
+    # 4. Syntax parse depth (max depth of dependency tree). Bounds
+    # calibrated 2026-08-05 against the same eval sample: observed range
+    # was 2-6, not the previously assumed 1-20 (which made every real
+    # prompt normalize below ~0.26, non-discriminating). 8 leaves headroom
+    # above the observed max. Re-validate once the full 500-prompt set exists.
     try:
         depth = get_parse_depth(prompt)
-        features["syntax_depth"] = normalize_to_01(depth, 1, 20)
+        features["syntax_depth"] = normalize_to_01(depth, *SYNTAX_DEPTH_RANGE)
     except Exception as e:
         logger.warning(f"Parse depth calculation failed: {e}")
         features["syntax_depth"] = 0.5

@@ -20,10 +20,19 @@ When reviewing a Green-Weight paper section:
   `major-project/backend/src/green_weight/results/results_validation.md` with a PASS
   covering the specific session — 1/2/4 — a claim depends on) before accepting any
   energy/accuracy number.
-- Flag any number derived from `evaluation/benchmark.py`'s linear bit-width energy model
-  (4-bit=0.25x, 8-bit=0.5x, 16-bit=1x) — that is a demo-only assumption, never a result.
+- Flag any number derived from `_legacy/evaluation_benchmark.py`'s linear bit-width energy
+  model (4-bit=0.25x, 8-bit=0.5x, 16-bit=1x) — that is a demo-only assumption, never a
+  result, and `_legacy/` is archived, non-live code (see its README).
 - Flag any claim sourced from `energy_tracker.py`'s CO2-inversion path or word-split token
   estimates — both were identified as defects and must not feed real numbers.
+- Flag any claim of "RouteLLM integration" or a "RouteLLM win probability" that isn't
+  citing a real trained tier-preference router from `paper/results.md` —
+  `router/routellm_bridge.py` is a documented threshold pass-through as of 2026-08-05
+  (see its module docstring and `CREDIBILITY_REPORT.md` §1); `win_probability` in
+  `fuzzy_controller.py`/`api.py` is `complexity_score / 100`, not a classifier output.
+- Flag any number attributed to `core/`, `controllers/`, or `main.py` — these are
+  archived System-B code under `backend/src/green_weight/_legacy/`, not the canonical
+  implementation (`router/complexity_scorer.py` + `router/fuzzy_controller.py`).
 - When reviewing `major-project/paper/draft.md`, treat
   `major-project/paper/results.md` as the only legitimate numeric source
   `paper-writer` should have used — flag any number in the draft that

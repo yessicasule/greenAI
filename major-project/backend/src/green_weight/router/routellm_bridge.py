@@ -1,99 +1,54 @@
 """
-RouteLLM Bridge - Phase 3–4 Bridge
+RouteLLM Bridge — Phase 3–4 Bridge
 ==================================
 
-Purpose: Translate the fuzzy controller's output into RouteLLM's API contract
-so that RouteLLM's Controller class makes the binary strong/weak decision
-consistent with the fuzzy tier assignment.
+STATUS: provisional threshold pass-through, NOT a real RouteLLM integration.
 
-What it does:
-- Instantiates a RouteLLM Controller using the router type from config
-- Maps three tiers to RouteLLM's binary strong/weak model pair:
-  * "16bit" ↔ strong_model
-  * "4bit" ↔ weak_model
-  * "8bit" ↔ intermediate (bypasses RouteLLM's binary decision)
-- When fuzzy output is in MID zone (0.33–0.66), returns 8-bit directly
-- When outside MID zone, defers to RouteLLM with the win-probability as threshold
+Why: RouteLLM's pretrained checkpoints (e.g. `routellm/mf_gpt4_augmented`)
+are trained on human-preference battles between specific named models
+(GPT-4, Mixtral, ...) drawn from a closed `MODEL_IDS` set
+(see RouteLLM/routellm/routers/routers.py). They have no learned signal for
+"4-bit vs 8-bit vs 16-bit Llama-3.2-1B" — loading one and feeding it our
+tiers would not error out, it would just silently return a win-probability
+number with no real relationship to our system. That's worse than not
+having it, so this bridge does not attempt it.
+
+What this bridge actually does today: applies fixed thresholds to the fuzzy
+controller's `win_probability` (itself `complexity_score / 100` — see
+fuzzy_controller.py) to pick a tier. No RouteLLM model is loaded or called.
+
+What replaces this: a real tier-preference router, trained on Session 4's
+`routing_per_prompt.csv` (once it exists) — comparing our own tiers'
+outputs the way RouteLLM's training methodology compares model outputs.
+That is the actual RouteLLM-methodology contribution; see RESEARCH_PLAN.md
+RQ3. This class will be extended (or replaced) to load that router once
+trained.
 """
 
 import logging
-from typing import Tuple, Optional
-import torch
 
 logger = logging.getLogger(__name__)
-
-# Try to import RouteLLM
-try:
-    from routellm.controller import Controller
-    ROUTELLM_AVAILABLE = True
-except ImportError:
-    ROUTELLM_AVAILABLE = False
-    logger.warning("RouteLLM not installed. Install with: pip install routellm")
 
 from config import get_config
 
 
 class RouteLLMBridge:
     """
-    Adapter between fuzzy controller and RouteLLM's binary router.
+    Threshold-based tier refinement. See module docstring — this is a
+    provisional pass-through, not a RouteLLM classifier.
     """
-    
+
     def __init__(self):
-        """Initialize the RouteLLM bridge."""
         zones = get_config().get_routing_zone_boundaries()
         self.mid_zone_lower = zones["mid_zone_lower"]
         self.mid_zone_upper = zones["mid_zone_upper"]
 
-        if not ROUTELLM_AVAILABLE:
-            logger.warning(
-                "RouteLLM not available. Will fallback to fuzzy routing only. "
-                "To enable RouteLLM, install with: pip install routellm"
-            )
-            self.controller = None
-            return
-        
-        config = get_config()
-        
-        # Get configuration
-        router_type = config.get_router_type()
-        mf_checkpoint = config.get_mf_checkpoint()
-        
-        try:
-            # Initialize RouteLLM controller with the specified router type
-            # The controller expects a pre-trained router (mf, bert, or sw_ranking)
-            logger.info(f"Loading RouteLLM controller (type={router_type})...")
-            
-            # For 'mf' router (matrix factorization), load from huggingface
-            if router_type == "mf":
-                # The RouteLLM paper shows that the pre-trained mf router
-                # generalizes well to new model pairs without retraining
-                self.controller = Controller(
-                    model_name_or_path=mf_checkpoint,  # e.g., "routellm/mf_gpt4_augmented"
-                    device="cuda" if torch.cuda.is_available() else "cpu"
-                )
-            elif router_type == "bert":
-                self.controller = Controller(
-                    model_name_or_path="routellm/bert_gpt4_augmented",
-                    device="cuda" if torch.cuda.is_available() else "cpu"
-                )
-            elif router_type == "sw_ranking":
-                self.controller = Controller(
-                    model_name_or_path="routellm/sw_ranking_gpt4_augmented",
-                    device="cuda" if torch.cuda.is_available() else "cpu"
-                )
-            else:
-                raise ValueError(f"Unknown router type: {router_type}")
-            
-            logger.info(f"[OK] RouteLLM controller initialized (router_type={router_type})")
-            
-        except Exception as e:
-            logger.error(f"Failed to initialize RouteLLM controller: {e}")
-            logger.warning("Falling back to fuzzy routing only.")
-            self.controller = None
-        
     def decide(self, prompt: str, win_probability: float) -> str:
         """
-        Route based on win_probability zones.
+        Route based on win_probability zones. `prompt` is unused today —
+        kept in the signature because the real tier-preference router
+        (see module docstring) will need the actual text to score, and
+        callers already pass it.
         < 0.33  -> 4-bit (simple)
         0.33-0.66 -> 8-bit (medium), upper half (>=0.5) -> 16-bit (complex)
         > 0.66  -> 16-bit (complex)
@@ -111,20 +66,16 @@ class RouteLLMBridge:
                 return "16bit"
             logger.debug(f"Win probability {win_probability:.3f} MID-low -> 8bit")
             return "8bit"
-    
-    def get_controller(self):
-        """Get the underlying RouteLLM controller (for advanced use)."""
-        return self.controller
 
 
 def route(prompt: str, fuzzy_win_probability: float) -> str:
     """
-    Convenience function: make a routing decision using RouteLLM bridge.
-    
+    Convenience function: make a routing decision using the bridge.
+
     Args:
         prompt: Input text
         fuzzy_win_probability: Win probability from fuzzy controller (0–1)
-    
+
     Returns:
         Tier: "4bit", "8bit", or "16bit"
     """
@@ -135,13 +86,13 @@ def route(prompt: str, fuzzy_win_probability: float) -> str:
 if __name__ == "__main__":
     # Quick test
     logging.basicConfig(level=logging.DEBUG)
-    
+
     test_prompts = [
         ("What is 2 + 2?", 0.2),  # Simple -> should route to 4-bit
         ("Explain quantum computing.", 0.5),  # Medium -> 8-bit (MID zone)
         ("Write a complex algorithm in Python.", 0.85),  # Complex -> should route to 16-bit
     ]
-    
+
     bridge = RouteLLMBridge()
     for prompt, win_prob in test_prompts:
         tier = bridge.decide(prompt, win_prob)

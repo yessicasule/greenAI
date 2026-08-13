@@ -17,15 +17,41 @@ the tier it selects — so Phase B derives conditions 4-8 from Phase A's
 measurements without re-running the GPU. Router compute overhead is
 measured separately (it is CPU-only and reported, not ignored).
 
-How to run on Kaggle:
-  1. New notebook -> Accelerator: GPU T4 x1. Secret HF_TOKEN set.
-  2. Upload eval_prompts.jsonl (from training/scripts/prepare_eval_dataset.py)
-     as a Kaggle dataset; adjust EVAL_FILE below if the path differs.
-  3. Optional: upload adapters/ dataset and set ADAPTER_ROOT to use the
-     QAT adapters per tier (the "full system" configuration).
-  4. Paste this file into one cell and run. Budget: ~4-6 h for 500 prompts.
+Routing logic: as of 2026-08-05 this script imports the REAL
+backend/src/green_weight/router/ modules (complexity_scorer,
+fuzzy_controller, routellm_bridge) instead of embedding a second,
+independently-maintained copy — previously this file duplicated an older,
+divergent implementation (_legacy/core+controllers), which meant the GPU
+script wasn't actually measuring the same system the dashboard/docs
+described. See major-project/CLAUDE.md "Key Components" and
+backend/src/green_weight/_legacy/README.md for that history.
 
-Outputs (/kaggle/working):
+"fuzzy_router" condition uses `final_tier` — the tier AFTER
+router/routellm_bridge.py's threshold refinement, exactly matching what
+api.py's /route and /infer endpoints return. That bridge is currently a
+documented provisional pass-through, not a real RouteLLM integration (see
+its module docstring) — the per-prompt CSV logs both `fuzzy_tier`
+(pre-bridge) and `final_tier` (post-bridge) so that's auditable, not hidden.
+
+How to run (SSH GPU box — see KAGGLE_MANUAL.md / the runbook for full steps):
+  1. Ship the real package alongside this script:
+       rsync -av backend/src/green_weight/ your-box:~/green-weight/green_weight/
+       rsync -av training/scripts/ your-box:~/green-weight/scripts/
+     (this script expects ../green_weight/ to exist relative to itself,
+     i.e. scripts/ and green_weight/ as sibling directories)
+  2. On the box: pip install -r requirements.txt (covers scikit-fuzzy,
+     textstat, spacy, pynvml, bitsandbytes, accelerate, peft) and
+     python -m spacy download en_core_web_sm
+  3. Upload/copy eval_prompts.jsonl (from training/scripts/prepare_eval_dataset.py)
+     next to this script, or set EVAL_FILE_CANDIDATES below.
+  4. Optional: copy adapters/ next to this script (or set ADAPTER_ROOT) to
+     use the QAT adapters per tier (the "full system" configuration).
+  5. Run: python kaggle_routing_experiment.py. Budget: ~4-6 h for 500 prompts.
+     (Also runs unmodified in a Kaggle notebook cell if green_weight/ is
+     uploaded as a dataset input and ADAPTER_ROOT/EVAL_FILE_CANDIDATES are
+     pointed at /kaggle/input/... paths.)
+
+Outputs (in this script's directory, or /kaggle/working on Kaggle):
   routing_per_prompt.csv        - per (prompt x tier): energy, tokens, correct
   routing_conditions_summary.csv- per condition: accuracy, J/token, J/request
   routing_run_info.json         - hardware, config, router overhead
@@ -37,17 +63,42 @@ import json
 import os
 import random
 import re
+import sys
 import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 if Path("/kaggle").exists():
-    os.system("pip -q install pynvml bitsandbytes accelerate peft")
+    os.system("pip -q install pynvml bitsandbytes accelerate peft scikit-fuzzy textstat spacy")
 
 import pynvml
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+
+# Make the real green_weight package's modules importable using the SAME
+# bare-import convention api.py and run_pipeline.py rely on (they run with
+# cwd inside green_weight/; router/fuzzy_controller.py itself does
+# `from config import get_config`, a same-directory bare import — so
+# green_weight/ itself must be on sys.path, not just its parent).
+_SCRIPT_DIR = Path(__file__).resolve().parent
+_GREEN_WEIGHT_CANDIDATES = [
+    Path("/kaggle/input/green-weight-package/green_weight"),  # Kaggle dataset input
+    _SCRIPT_DIR.parent / "green_weight",                        # SSH box: rsync sibling layout
+    _SCRIPT_DIR.parent.parent / "backend" / "src" / "green_weight",  # local repo checkout
+]
+try:
+    _GREEN_WEIGHT_DIR = next(p for p in _GREEN_WEIGHT_CANDIDATES if p.exists())
+except StopIteration:
+    raise FileNotFoundError(
+        "Could not find the green_weight package. Tried: "
+        + ", ".join(str(p) for p in _GREEN_WEIGHT_CANDIDATES)
+    )
+sys.path.insert(0, str(_GREEN_WEIGHT_DIR))
+
+from router.complexity_scorer import score as score_complexity  # noqa: E402
+from router.fuzzy_controller import FuzzyController  # noqa: E402
+from router.routellm_bridge import RouteLLMBridge  # noqa: E402
 
 MODEL_ID = "meta-llama/Llama-3.2-1B"
 MAX_NEW_TOKENS = 128
@@ -66,69 +117,11 @@ ADAPTER_FOR_TIER = {"4bit": "adapter_simple", "8bit": "adapter_medium",
 OUT_DIR = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(".")
 
 
-# ====================================================================
-# Complexity sensor + fuzzy gearbox
-# (verbatim logic from backend/src/green_weight/core/prompt_complexity.py and
-#  backend/src/green_weight/controllers/fuzzy_gearbox.py, embedded for portability)
-# ====================================================================
-class ComplexityScorer:
-    REASONING_KEYWORDS = {
-        "explain", "why", "how", "analyze", "compare", "contrast",
-        "evaluate", "justify", "prove", "derive", "solve", "step",
-        "reasoning", "logic", "therefore", "because", "consequence",
-    }
-    CODE_PATTERNS = [r"```[\s\S]*?```", r"`[^`]+`", r"def\s+\w+", r"class\s+\w+",
-                     r"import\s+\w+", r"for\s+\w+\s+in", r"if\s+.*?:"]
-    MATH_PATTERNS = [r"[\+\-\*\/\=\^√∑∏∫]",
-                     r"\d+\s*[\+\-\*\/\^]\s*\d+",
-                     r"\b(equation|formula|calculate|compute|derivative|integral)\b"]
-
-    def __init__(self):
-        self._code = [re.compile(p, re.IGNORECASE) for p in self.CODE_PATTERNS]
-        self._math = [re.compile(p, re.IGNORECASE) for p in self.MATH_PATTERNS]
-
-    def calculate_complexity(self, prompt: str) -> float:
-        text = prompt.strip()
-        words = text.split()
-        sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
-        wc, sc = len(words), len(sentences)
-        awl = sum(len(w) for w in words) / max(wc, 1)
-        fk = 0.0 if sc == 0 else (0.39 * wc / sc) + (11.8 * awl * 0.5) - 15.59
-        code = sum(len(p.findall(text)) for p in self._code)
-        mathn = sum(len(p.findall(text)) for p in self._math)
-        tl = text.lower()
-        reasoning = sum(1 for k in self.REASONING_KEYWORDS if k in tl)
-        score = (min(fk * 2, 30) + min(wc / 10, 25) + min(code * 10, 25)
-                 + min(mathn * 5, 15) + min(reasoning * 5, 15)
-                 + min(text.count("?") * 5, 10))
-        return min(score, 100.0)
-
-
-class FuzzyGearbox:
-    """Triangular memberships at centers 20/50/80, centroid defuzzification."""
-    CENTERS = {"simple": 20.0, "medium": 50.0, "complex": 80.0}
-    OUTPUTS = {"simple": 4.0, "medium": 8.0, "complex": 16.0}
-    WIDTH = 100.0 / 6
-
-    @staticmethod
-    def _tri(x, c, w):
-        if x < c - w or x > c + w:
-            return 0.0
-        return (x - (c - w)) / w if x < c else ((c + w) - x) / w
-
-    def decide(self, complexity: float) -> str:
-        x = max(0.0, min(complexity, 100.0))
-        m = {k: self._tri(x, c, self.WIDTH) for k, c in self.CENTERS.items()}
-        total = sum(m.values())
-        if total == 0:
-            m = {"simple": 0.33, "medium": 0.34, "complex": 0.33}
-            total = 1.0
-        crisp = sum(m[k] * self.OUTPUTS[k] for k in m) / total
-        bits = min([4, 8, 16], key=lambda b: abs(b - crisp))
-        return f"{bits}bit"
-
-
 def threshold_router(complexity: float) -> str:
+    """Naive fixed-threshold baseline (condition 6) — same complexity signal
+    as the fuzzy router (win_probability*100 from FuzzyController), but
+    mapped with a plain two-cut threshold instead of fuzzy membership +
+    bridge refinement. Isolates what the fuzzy shaping actually buys (RQ3)."""
     if complexity <= TIER_THRESHOLDS["4bit_upper"]:
         return "4bit"
     if complexity <= TIER_THRESHOLDS["8bit_upper"]:
@@ -341,13 +334,20 @@ def summarize_condition(name, picks, meas, extra=None):
 
 
 def phase_b(prompts, meas):
-    scorer, gearbox = ComplexityScorer(), FuzzyGearbox()
+    fuzzy, bridge = FuzzyController(), RouteLLMBridge()
     rng = random.Random(SEED)
 
-    # router overhead (CPU): time the scorer over the whole set
+    # router overhead (CPU): time the full pipeline (scoring + fuzzy +
+    # bridge) over the whole set, exactly what api.py pays per request
     t0 = time.perf_counter()
-    complexity = [scorer.calculate_complexity(p["prompt"]) for p in prompts]
+    features = [score_complexity(p["prompt"]) for p in prompts]
+    fuzzy_decisions = [fuzzy.route(f) for f in features]   # (tier, win_prob)
+    fuzzy_tiers = [d[0] for d in fuzzy_decisions]
+    win_probs = [d[1] for d in fuzzy_decisions]
+    final_tiers = [bridge.decide(p["prompt"], wp)
+                   for p, wp in zip(prompts, win_probs)]
     router_overhead_s = time.perf_counter() - t0
+    complexity = [wp * 100 for wp in win_probs]
 
     n = len(prompts)
     ids = list(range(n))
@@ -358,15 +358,15 @@ def phase_b(prompts, meas):
         rows.append(summarize_condition(
             f"static_{tier}", [(i, [tier], tier) for i in ids], meas))
 
-    # 4 fuzzy
-    fuzzy_tiers = [gearbox.decide(c) for c in complexity]
+    # 4 fuzzy — uses final_tier (post-bridge), matching what api.py actually
+    # returns from /route and /infer
     rows.append(summarize_condition(
-        "fuzzy_router", [(i, [fuzzy_tiers[i]], fuzzy_tiers[i]) for i in ids], meas))
+        "fuzzy_router", [(i, [final_tiers[i]], final_tiers[i]) for i in ids], meas))
 
     # 5 random router with tier distribution matched to fuzzy (mean of resamples)
     resample_rows = []
     for _ in range(RANDOM_ROUTER_RESAMPLES):
-        shuffled = fuzzy_tiers[:]
+        shuffled = final_tiers[:]
         rng.shuffle(shuffled)
         resample_rows.append(summarize_condition(
             "random_matched", [(i, [shuffled[i]], shuffled[i]) for i in ids], meas))
@@ -376,7 +376,7 @@ def phase_b(prompts, meas):
     avg["n_resamples"] = RANDOM_ROUTER_RESAMPLES
     rows.append(avg)
 
-    # 6 threshold
+    # 6 threshold — naive fixed-threshold baseline on the same complexity signal
     th = [threshold_router(c) for c in complexity]
     rows.append(summarize_condition(
         "threshold_router", [(i, [th[i]], th[i]) for i in ids], meas))
@@ -399,7 +399,7 @@ def phase_b(prompts, meas):
         cascade_picks.append((i, executed, executed[-1]))
     rows.append(summarize_condition("oracle_cascade", cascade_picks, meas))
 
-    return rows, complexity, fuzzy_tiers, router_overhead_s
+    return rows, complexity, fuzzy_tiers, final_tiers, router_overhead_s
 
 
 def main():
@@ -411,20 +411,21 @@ def main():
 
     adapter_root = ADAPTER_ROOT if ADAPTER_ROOT and Path(ADAPTER_ROOT).exists() else None
     meas, adapters_used = phase_a(prompts, meter, tokenizer, adapter_root)
-    rows, complexity, fuzzy_tiers, overhead = phase_b(prompts, meas)
+    rows, complexity, fuzzy_tiers, final_tiers, overhead = phase_b(prompts, meas)
 
     # per-prompt dump (paper's raw data artifact)
     with open(OUT_DIR / "routing_per_prompt.csv", "w", newline="",
               encoding="utf-8") as f:
         fields = ["prompt_id", "tier", "difficulty", "energy_j", "tokens_out",
                   "j_per_token", "latency_s", "correct", "complexity",
-                  "fuzzy_tier", "response"]
+                  "fuzzy_tier", "final_tier", "response"]
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         for (pid, tier), m in sorted(meas.items()):
             row = dict(m)
             row["complexity"] = round(complexity[pid], 2)
             row["fuzzy_tier"] = fuzzy_tiers[pid]
+            row["final_tier"] = final_tiers[pid]
             row["energy_j"] = round(row["energy_j"], 3)
             row["j_per_token"] = round(row["j_per_token"], 4)
             row["latency_s"] = round(row["latency_s"], 3)
@@ -444,6 +445,12 @@ def main():
         "router_overhead_s_total": round(overhead, 4),
         "router_overhead_ms_per_prompt": round(1000 * overhead / len(prompts), 3),
         "correctness_metric": "reference-match proxy (see is_correct docstring)",
+        "routing_source": "real backend/src/green_weight/router/ modules "
+                          "(complexity_scorer + fuzzy_controller + "
+                          "routellm_bridge), not an embedded copy",
+        "routellm_bridge_status": "provisional threshold pass-through, "
+                                  "not a real RouteLLM classifier — see "
+                                  "router/routellm_bridge.py docstring",
     })
     (OUT_DIR / "routing_run_info.json").write_text(json.dumps(info, indent=2))
 

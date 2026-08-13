@@ -47,7 +47,7 @@ router:
   complexity_scorer:
     # Feature ranges for normalization
     max_token_length: 512
-    max_parse_depth: 20
+    max_parse_depth: 8  # calibrated 2026-08-05, see fuzzy_controller breakpoints below (unused directly, kept for documentation consistency)
     spacy_model: "en_core_web_sm"
   
   # Fuzzy controller membership function breakpoints
@@ -58,11 +58,19 @@ router:
     # Token length (normalized to 0–1 where 1 = 512 tokens)
     token_length_breakpoints: [0.2, 0.5, 0.8]  # LOW/MID/HIGH
     
-    # Shannon entropy (0–1 scale)
-    entropy_breakpoints: [2.0, 5.0, 7.0]  # LOW/MID/HIGH (bits)
-    
-    # Syntax parse depth (0–1 scale)
-    syntax_depth_breakpoints: [3, 8, 15]  # LOW/MID/HIGH
+    # Shannon entropy (0–1 scale). Calibrated 2026-08-05 against the
+    # 30-prompt eval sample: observed range 3.09-4.20 bits. The old
+    # [2.0, 5.0, 7.0] breakpoints were unreachable for real prompts (max
+    # observed 4.20) once normalized against complexity_scorer.py's
+    # matching (3.0, 4.5) bound — MID and HIGH would have collapsed
+    # together. Re-validate once the full 500-prompt set exists.
+    entropy_breakpoints: [3.3, 3.7, 4.1]  # LOW/MID/HIGH (bits)
+
+    # Syntax parse depth (0–1 scale). Calibrated 2026-08-05 against the
+    # same sample: observed range 2-6. The old [3, 8, 15] breakpoints were
+    # similarly unreachable once normalized against the matching (1, 8)
+    # bound. Re-validate once the full 500-prompt set exists.
+    syntax_depth_breakpoints: [3, 4, 6]  # LOW/MID/HIGH
     
     # Code/math detection is binary, not fuzzy
     

@@ -55,33 +55,50 @@ major-project/
 
 ## Key Components
 
-### 1. Complexity Sensor (`core/prompt_complexity.py`)
-- `ComplexityScorer` - Analyzes prompts using:
-  - Flesch-Kincaid reading difficulty
-  - Code pattern detection
-  - Math symbol counting
-  - Reasoning keyword detection
-- Returns 0-100 complexity score
+**Canonical system as of 2026-08-05** (see `_legacy/README.md` for the
+divergent implementation that used to compete with this one — archived, not
+imported by anything live):
 
-### 2. Fuzzy Gearbox (`controllers/fuzzy_gearbox.py`)
-- `FuzzyGearbox` - Smooth bit-width selection using triangular membership functions
-- `GearDecision` - Contains selected gear + confidence scores
-- Avoids binary decisions: "70% simple, 30% medium → 6-bit equivalent"
+### 1. Complexity Sensor (`router/complexity_scorer.py`)
+- 5 features grounded in established metrics: Flesch-Kincaid (textstat),
+  token length, Shannon entropy, spaCy syntax-tree depth, has_code_or_math
+- `score(prompt)` returns a dict of the 5 normalized (0-1) features
 
-### 3. Dynamic Inference (`core/dynamic_inference.py`)
-- `DynamicInferenceEngine` - Main orchestrator
-- Pipeline: Score → Fuzzy Decide → Generate
-- Supports forced gears for comparison
+### 2. Fuzzy Controller (`router/fuzzy_controller.py`)
+- `FuzzyController` — a real Mamdani fuzzy-inference system built on the
+  `scikit-fuzzy` library: independent membership functions per feature,
+  a rule base (`ctrl.Rule`), library-computed defuzzification
+- Breakpoints are read from `config.yaml` (supports ablation studies);
+  normalization constants are calibrated against the real eval-prompt
+  distribution, not arbitrary (see the comment in the file for the method)
+- Output: complexity score → tier (4bit/8bit/16bit) + `win_probability`
+  (despite the name, this is `complexity_score / 100`, not a RouteLLM
+  classifier output — see below)
+
+### 3. RouteLLM Bridge (`router/routellm_bridge.py`)
+- Currently a **documented, provisional threshold pass-through** — RouteLLM's
+  pretrained checkpoints are trained on human-preference battles between
+  specific named models (GPT-4, Mixtral, ...) and can't be meaningfully
+  applied to our quantization tiers of one model
+- A real tier-preference router, trained on Session 4's
+  `routing_per_prompt.csv`, is planned as a post-Session-4 addition
+  (see `RESEARCH_PLAN.md` RQ3) — that will be the actual RouteLLM-methodology
+  contribution, not this placeholder
 
 ### 4. QAT Training (`training/`)
 - `FakeQuantizer` - Simulates low-bit quantization during training
 - `BitResilientTrainer` - Cycles through bit-widths during training
 - `kaggle_qat_trainer.py` - Complete Kaggle notebook for training adapters
 
-### 5. Benchmarking (`evaluation/benchmark.py`)
-- `EnergyBenchmark` - Compares fuzzy vs static approaches
-- `AccuracyBenchmark` - Evaluates per-gear accuracy
-- Energy estimation based on bit-width scaling
+### 5. Real measurement (`benchmark/`, `training/scripts/kaggle_*.py`)
+- `benchmark/energy_tracker.py` + `benchmark/accuracy_eval.py` — used by the
+  live `api.py`/`run_pipeline.py` path
+- `training/scripts/kaggle_energy_benchmark.py`,
+  `kaggle_accuracy_eval.py`, `kaggle_routing_experiment.py` — the actual GPU
+  measurement scripts that produce the paper's numbers. As of this
+  consolidation, `kaggle_routing_experiment.py` imports the real
+  `router/` modules directly (shipped to the GPU box) instead of embedding a
+  second, drifted copy of the routing logic.
 
 ## Running the Project
 

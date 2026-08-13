@@ -66,6 +66,9 @@ class RouteResponse(BaseModel):
     prompt: str
     features: dict
     fuzzy_tier: str
+    # Despite the name, this is complexity_score/100 from the fuzzy
+    # controller, not a RouteLLM classifier output — see
+    # router/routellm_bridge.py's module docstring for why.
     win_probability: float
     final_tier: str
     energy_joules: float

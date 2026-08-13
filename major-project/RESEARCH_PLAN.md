@@ -63,7 +63,15 @@ Research questions:
    vs static fp16, and at what accuracy cost?
 3. **RQ3 (baselines):** Does the fuzzy controller beat trivial routers
    (random with matched tier distribution, single threshold) and approach the
-   oracle router?
+   oracle router? **Addendum (2026-08-05):** the `RouteLLMBridge` is
+   currently a documented threshold pass-through, not a real RouteLLM
+   integration (RouteLLM's pretrained checkpoints are trained on specific
+   named-model pairs and don't transfer to our quantization tiers — see
+   `CREDIBILITY_REPORT.md` §1). The actual RouteLLM-methodology
+   contribution is a **real tier-preference router trained on Session 4's
+   `routing_per_prompt.csv`** (comparing our own tiers' outputs the way
+   RouteLLM compares model outputs) — planned as a post-Session-4 addition
+   to this RQ, once that data exists to train it on.
 4. **RQ4 (ablation):** Do the bit-resilient QAT LoRA adapters improve low-bit
    quality over plain post-training quantization?
 

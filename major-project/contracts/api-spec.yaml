@@ -130,7 +130,14 @@ components:
         prompt: { type: string }
         features: { type: object }
         fuzzy_tier: { type: string, example: "8bit" }
-        win_probability: { type: number }
+        win_probability:
+          type: number
+          description: >
+            Despite the name, this is complexity_score/100 from the fuzzy
+            controller, not a RouteLLM classifier output. RouteLLM's
+            pretrained checkpoints can't be applied to our quantization
+            tiers (see router/routellm_bridge.py) — a real tier-preference
+            router is planned post-Session-4.
         final_tier: { type: string, example: "8bit" }
         energy_joules: { type: number }
         duration_s: { type: number }

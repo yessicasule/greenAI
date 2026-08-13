@@ -75,18 +75,35 @@ class FuzzyController:
         # Define output consequent
         self.complexity = ctrl.Consequent(np.arange(0, 101, 1), "complexity")
         
-        # Load breakpoints from config
+        # Load breakpoints from config (stored in raw/absolute units, e.g.
+        # FK grade level, entropy bits, parse-tree depth).
         fk_breakpoints = config.get_fuzzy_membership_breakpoints("flesch_kincaid")
         tl_breakpoints = config.get_fuzzy_membership_breakpoints("token_length")
         ent_breakpoints = config.get_fuzzy_membership_breakpoints("entropy")
         sd_breakpoints = config.get_fuzzy_membership_breakpoints("syntax_depth")
-        
-        # Normalize breakpoints to [0, 1] if needed
-        # (Config stores absolute values; we normalize here)
-        fk_breakpoints = [min(1.0, bp / 18.0) if bp > 1 else bp for bp in fk_breakpoints]
+
+        # Normalize breakpoints into the SAME [0, 1] space as the actual
+        # feature values. This must use complexity_scorer.normalize_to_01
+        # with the identical (min, max) bounds it uses for the features
+        # themselves — previously this reimplemented a diverging formula
+        # (plain division, no min-offset) with different bounds (2-8 for
+        # entropy, 1-20 for syntax_depth) than complexity_scorer.py used,
+        # which silently misaligned config.yaml's breakpoints against the
+        # real feature space (fixed 2026-08-05, see complexity_scorer.py's
+        # FLESCH_KINCAID_RANGE/ENTROPY_RANGE/SYNTAX_DEPTH_RANGE).
+        fk_breakpoints = [
+            complexity_scorer.normalize_to_01(bp, *complexity_scorer.FLESCH_KINCAID_RANGE)
+            for bp in fk_breakpoints
+        ]
         tl_breakpoints = [min(1.0, bp) for bp in tl_breakpoints]  # Already 0–1
-        ent_breakpoints = [min(1.0, bp / 8.0) if bp > 1 else bp for bp in ent_breakpoints]
-        sd_breakpoints = [min(1.0, bp / 20.0) if bp > 1 else bp for bp in sd_breakpoints]
+        ent_breakpoints = [
+            complexity_scorer.normalize_to_01(bp, *complexity_scorer.ENTROPY_RANGE)
+            for bp in ent_breakpoints
+        ]
+        sd_breakpoints = [
+            complexity_scorer.normalize_to_01(bp, *complexity_scorer.SYNTAX_DEPTH_RANGE)
+            for bp in sd_breakpoints
+        ]
         
         _trimf_low_mid_high(self.flesch_kincaid, fk_breakpoints)
         _trimf_low_mid_high(self.token_length, tl_breakpoints)
@@ -173,7 +190,11 @@ class FuzzyController:
         Returns:
             Tuple of (tier_label, win_probability)
             - tier_label: "4bit", "8bit", or "16bit"
-            - win_probability: float in [0, 1] for RouteLLM threshold
+            - win_probability: float in [0, 1]. Despite the name (kept for
+              API/frontend compatibility), this is `complexity_score / 100`
+              from this fuzzy system — NOT a RouteLLM classifier output.
+              See router/routellm_bridge.py's module docstring for why a
+              real RouteLLM checkpoint can't be used here.
         """
         # Set input values
         self.simulator.input["flesch_kincaid"] = features.get("flesch_kincaid", 0.5)
