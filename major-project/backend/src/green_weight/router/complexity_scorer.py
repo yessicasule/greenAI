@@ -36,12 +36,32 @@ logger = logging.getLogger(__name__)
 # Single source of truth for feature normalization bounds — also imported by
 # fuzzy_controller.py so that config.yaml breakpoints get normalized with
 # the exact same (min, max) as the features they're compared against.
-# Calibrated 2026-08-05 against the 30-prompt eval sample
-# (data/eval_prompts.jsonl); re-validate once the full 500-prompt set
-# (prepare_eval_dataset.py) exists.
+# Re-calibrated 2026-08-13 against the real 500-prompt eval set
+# (data/eval_prompts.jsonl, built by prepare_eval_dataset.py). Superscedes
+# the earlier 2026-08-05 calibration, which was against a 30-prompt
+# sample and clipped real data at both tails: observed entropy on the
+# full set is 3.37-4.66 bits (old range topped out at 4.5, clipping the
+# upper tail); observed syntax_depth is 2-12 (old range topped out at 8,
+# clipping ~5% of prompts — exactly the hardest ones — to a flat 1.0).
+# NOTE: per-difficulty analysis on this same 500-prompt set shows entropy
+# barely discriminates prompt difficulty (easy mean=4.11, medium=3.96,
+# hard=4.11 bits — easy and hard are nearly identical); syntax_depth does
+# discriminate (easy=4.42, medium=4.46, hard=5.57). Widening this range
+# fixes clipping but does not fix entropy's weak signal — that's a
+# candidate for the Phase 5c feature-ablation study, not a calibration fix.
 FLESCH_KINCAID_RANGE = (0, 18)
-ENTROPY_RANGE = (3.0, 4.5)
-SYNTAX_DEPTH_RANGE = (1, 8)
+ENTROPY_RANGE = (3.3, 5.0)
+SYNTAX_DEPTH_RANGE = (2, 14)
+
+# Re-calibrated 2026-08-22, same 500-prompt eval set. The prior hardcoded
+# cap of 512 tokens was never based on real data: observed approx_tokens
+# (len(prompt)/4) on the full set is 5.25-153.75, p95=62. Under the old
+# cap, the MID breakpoint (0.2 -> 102 tokens) was reachable by only ~1% of
+# prompts and the HIGH breakpoint (0.8 -> 410 tokens) was unreachable by
+# any real prompt — token_length was structurally near-dead as a routing
+# signal. Ceiling rounds the observed max (153.75) up to 154 so the single
+# longest real prompt doesn't sit exactly at the 1.0 clip boundary.
+TOKEN_LENGTH_RANGE = (0, 154)
 
 # Module-level singleton for spaCy model
 _spacy_model = None
@@ -236,27 +256,26 @@ def score(prompt: str) -> Dict[str, float]:
             logger.warning(f"Flesch-Kincaid calculation failed: {e}")
             features["flesch_kincaid"] = 0.5
     
-    # 2. Token length (prompt token count, normalized against 512-token max)
+    # 2. Token length (prompt token count, normalized against real observed
+    # max — see TOKEN_LENGTH_RANGE comment above).
     # Simple approximation: 1 token ≈ 4 characters for English
     approx_tokens = len(prompt) / 4.0
-    features["token_length"] = normalize_to_01(approx_tokens, 0, 512)
+    features["token_length"] = normalize_to_01(approx_tokens, *TOKEN_LENGTH_RANGE)
     
-    # 3. Shannon entropy (bits). Bounds calibrated 2026-08-05 against the
-    # 30-prompt eval sample (data/eval_prompts.jsonl): observed range was
-    # 3.09-4.20 bits, not the previously assumed 2-8 — the old bound was so
-    # wide that every real prompt normalized into a narrow ~0.18-0.37 band,
-    # making entropy nearly non-discriminating. 4.5 leaves headroom above
-    # the observed max (English text tops out around 4.5-5 bits per
-    # classic Shannon entropy estimates). Re-validate once the full
-    # 500-prompt set (prepare_eval_dataset.py) exists.
+    # 3. Shannon entropy (bits). Re-calibrated 2026-08-13 against the real
+    # 500-prompt eval set: observed range 3.37-4.66 bits. See ENTROPY_RANGE
+    # comment above — this feature barely discriminates prompt difficulty
+    # in this dataset (easy/hard means are nearly identical); widening the
+    # range fixes upper-tail clipping but the weak-signal issue itself
+    # needs the Phase 5c feature-ablation study, not a range tweak.
     entropy_bits = shannon_entropy(prompt)
     features["entropy"] = normalize_to_01(entropy_bits, *ENTROPY_RANGE)
 
-    # 4. Syntax parse depth (max depth of dependency tree). Bounds
-    # calibrated 2026-08-05 against the same eval sample: observed range
-    # was 2-6, not the previously assumed 1-20 (which made every real
-    # prompt normalize below ~0.26, non-discriminating). 8 leaves headroom
-    # above the observed max. Re-validate once the full 500-prompt set exists.
+    # 4. Syntax parse depth (max depth of dependency tree). Re-calibrated
+    # 2026-08-13 against the real 500-prompt eval set: observed range 2-12
+    # (old range topped out at 8, clipping ~5% of prompts — the hardest
+    # ones — to a flat 1.0). Unlike entropy, this feature does show real
+    # separation by difficulty (hard prompts noticeably deeper).
     try:
         depth = get_parse_depth(prompt)
         features["syntax_depth"] = normalize_to_01(depth, *SYNTAX_DEPTH_RANGE)

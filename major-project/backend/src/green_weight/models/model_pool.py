@@ -162,10 +162,17 @@ def load_pool(lazy_16bit: bool = False) -> None:
         )
 
     from pathlib import Path
-    project_root = Path(__file__).parent.parent
-    adapter_4bit = project_root / "adapters" / "adapter_4bit"
-    adapter_8bit = project_root / "adapters" / "adapter_8bit"
-    adapter_16bit = project_root / "adapters" / "adapter_16bit"
+    # major-project/ is 5 levels up from this file
+    # (models/model_pool.py -> green_weight/ -> src/ -> backend/ -> major-project/);
+    # adapters/ lives at major-project/adapters/, not inside backend/src/green_weight/
+    # (confirmed 2026-08-22 — the old `parent.parent` + adapter_4bit/8bit/16bit naming
+    # pointed at a path that never existed, so load_pool() was silently never loading
+    # any QAT adapter here). Directory names match the tier->adapter mapping used by
+    # training/scripts/kaggle_routing_experiment.py and kaggle_accuracy_eval.py.
+    project_root = Path(__file__).resolve().parents[4]
+    adapter_4bit = project_root / "adapters" / "adapter_simple"
+    adapter_8bit = project_root / "adapters" / "adapter_medium"
+    adapter_16bit = project_root / "adapters" / "adapter_complex"
 
     adapter_4bit  = str(adapter_4bit)  if adapter_4bit.exists()  else None
     adapter_8bit  = str(adapter_8bit)  if adapter_8bit.exists()  else None

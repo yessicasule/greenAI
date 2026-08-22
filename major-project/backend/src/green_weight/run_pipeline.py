@@ -40,24 +40,6 @@ from benchmark.accuracy_eval import AccuracyEvaluator
 from benchmark.tradeoff_plotter import TradeoffPlotter
 
 logger = logging.getLogger(__name__)
-# ... (the rest of your file remains exactly the same)
-import logging
-import argparse
-import json
-from pathlib import Path
-from datetime import datetime
-from typing import List, Dict, Any
-
-from config import get_config
-from models import model_pool
-from router.complexity_scorer import score as score_complexity
-from router.fuzzy_controller import FuzzyController
-from router.routellm_bridge import RouteLLMBridge
-from benchmark.energy_tracker import EnergyTracker
-from benchmark.accuracy_eval import AccuracyEvaluator
-from benchmark.tradeoff_plotter import TradeoffPlotter
-
-logger = logging.getLogger(__name__)
 
 
 def setup_logging(log_dir: Path) -> None:

@@ -31,6 +31,15 @@ logger = logging.getLogger(__name__)
 
 
 def _trimf_low_mid_high(antecedent, bps, default_lo=0.33, default_hi=0.66):
+    """Build symmetric LOW/MEDIUM/HIGH triangular membership functions from
+    two edge breakpoints (lo, hi); MEDIUM's peak is their midpoint.
+
+    Only reads bps[0]/bps[1]. A 3rd breakpoint value, if present (kept in
+    config.yaml purely as a documented LOW/HIGH edge pair per the comments
+    there), is intentionally ignored — see the 2026-08-22 note in
+    config.yaml's fuzzy_controller section for why a true 3-breakpoint
+    asymmetric partition was considered and deferred.
+    """
     lo = bps[0] if bps else default_lo
     hi = bps[1] if len(bps) > 1 else default_hi
     mid = (lo + hi) / 2.0

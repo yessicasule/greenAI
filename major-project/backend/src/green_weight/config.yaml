@@ -46,31 +46,61 @@ router:
   # Complexity scorer features
   complexity_scorer:
     # Feature ranges for normalization
-    max_token_length: 512
+    # Re-calibrated 2026-08-22 against the real 500-prompt eval set: observed
+    # max is 153.75 approx-tokens (old 512 cap made HIGH unreachable by any
+    # real prompt). Documentation only — this field isn't read at runtime;
+    # the live value is router/complexity_scorer.py's TOKEN_LENGTH_RANGE.
+    max_token_length: 154
     max_parse_depth: 8  # calibrated 2026-08-05, see fuzzy_controller breakpoints below (unused directly, kept for documentation consistency)
     spacy_model: "en_core_web_sm"
   
-  # Fuzzy controller membership function breakpoints
+  # Fuzzy controller membership function breakpoints.
+  # Each list is [lo, hi] — the LOW/MEDIUM edge and the MEDIUM/HIGH edge.
+  # fuzzy_controller.py's _trimf_low_mid_high() builds a symmetric
+  # LOW/MEDIUM/HIGH triangular partition from just these two: MEDIUM's
+  # peak is auto-computed as their midpoint, there is no separate 3rd
+  # breakpoint. (Found 2026-08-22: these lists used to carry a 3rd
+  # "HIGH transition" value that _trimf_low_mid_high never read — it was
+  # silently inert since the function was written. Considered switching to
+  # a true 3-breakpoint asymmetric partition instead, but that's a bigger
+  # behavior change — e.g. flesch_kincaid's old 3rd value (18) sits exactly
+  # on FLESCH_KINCAID_RANGE's ceiling and would need re-tuning to avoid a
+  # new zero-width degenerate membership triangle, same class of bug just
+  # fixed for entropy below — so deferred; dropped the dead value instead
+  # to match actual behavior.)
   fuzzy_controller:
     # Flesch-Kincaid readability grade (0–18 scale, normalized to 0–1)
-    flesch_kincaid_breakpoints: [6, 12, 18]  # LOW/MID/HIGH transitions
-    
-    # Token length (normalized to 0–1 where 1 = 512 tokens)
-    token_length_breakpoints: [0.2, 0.5, 0.8]  # LOW/MID/HIGH
-    
-    # Shannon entropy (0–1 scale). Calibrated 2026-08-05 against the
-    # 30-prompt eval sample: observed range 3.09-4.20 bits. The old
-    # [2.0, 5.0, 7.0] breakpoints were unreachable for real prompts (max
-    # observed 4.20) once normalized against complexity_scorer.py's
-    # matching (3.0, 4.5) bound — MID and HIGH would have collapsed
-    # together. Re-validate once the full 500-prompt set exists.
-    entropy_breakpoints: [3.3, 3.7, 4.1]  # LOW/MID/HIGH (bits)
+    flesch_kincaid_breakpoints: [6, 12]  # LOW/MEDIUM, MEDIUM/HIGH edges
 
-    # Syntax parse depth (0–1 scale). Calibrated 2026-08-05 against the
-    # same sample: observed range 2-6. The old [3, 8, 15] breakpoints were
-    # similarly unreachable once normalized against the matching (1, 8)
-    # bound. Re-validate once the full 500-prompt set exists.
-    syntax_depth_breakpoints: [3, 4, 6]  # LOW/MID/HIGH
+    # Token length (normalized to 0–1 where 1 = 154 tokens, see
+    # max_token_length comment above)
+    token_length_breakpoints: [0.2, 0.5]  # LOW/MEDIUM, MEDIUM/HIGH edges
+
+    # Shannon entropy (0–1 scale). Re-calibrated 2026-08-22 against the
+    # full 500-prompt eval set (observed range 3.37-4.66 bits, matching
+    # complexity_scorer.py's ENTROPY_RANGE=(3.3, 5.0)). The prior
+    # [3.3, 3.7, 4.1] breakpoints were a real bug, not just stale: bps[0]
+    # (3.3) exactly equals ENTROPY_RANGE's floor, so
+    # normalize_to_01(3.3, 3.3, 5.0) = 0, collapsing the "low" membership
+    # triangle to zero width (fuzz.trimf([0,0,0])) — effectively dead.
+    # Per-difficulty analysis also shows entropy barely discriminates
+    # prompt difficulty in this dataset (easy mean=4.11, medium=3.96,
+    # hard=4.11 bits) — that weak-signal finding is a candidate for the
+    # Phase 5c feature-ablation study, not something this breakpoint fix
+    # resolves; this change only fixes the degenerate-membership bug.
+    entropy_breakpoints: [3.8, 4.1]  # LOW/MEDIUM, MEDIUM/HIGH edges (bits)
+
+    # Syntax parse depth (0–1 scale). Re-calibrated 2026-08-22 against the
+    # full 500-prompt eval set (observed range 2-12, matching
+    # complexity_scorer.py's SYNTAX_DEPTH_RANGE=(2, 14)). The prior
+    # [3, 4, 6] breakpoints, left unchanged after that range widened from
+    # (1, 8), normalized to lo=0.083/hi=0.167 — compressed into the bottom
+    # ~17% of the [0,1] space, so nearly all real prompts (easy mean=4.42,
+    # medium mean=4.46, hard mean=5.57) would land in the "high" bucket
+    # regardless of actual difficulty. Unlike entropy, this feature does
+    # show real separation by difficulty, so getting the breakpoints right
+    # matters for the routing signal, not just correctness.
+    syntax_depth_breakpoints: [4, 5]  # LOW/MEDIUM, MEDIUM/HIGH edges
     
     # Code/math detection is binary, not fuzzy
     

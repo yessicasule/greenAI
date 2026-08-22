@@ -48,10 +48,43 @@ _model_pool_loaded = False
 
 @app.on_event("startup")
 def startup():
-    global _fuzzy, _bridge
+    global _fuzzy, _bridge, _model_pool_loaded
     _fuzzy = FuzzyController()
     _bridge = RouteLLMBridge()
     logger.info("[OK] Routing layer initialised")
+
+    # Real (non-mock) inference via /infer requires the model pool to be
+    # loaded — previously nothing anywhere ever set _model_pool_loaded to
+    # True, so /infer's `elif _model_pool_loaded:` branch was permanently
+    # dead code and every non-routing-only request silently fell through
+    # to the mock response (fixed 2026-08-22; see CREDIBILITY_REPORT.md).
+    # Gated behind an explicit opt-in env var rather than loading
+    # unconditionally: `uvicorn --reload` restarts this function on every
+    # file save, and eagerly loading a multi-GB model pool on each restart
+    # would wreck local frontend/backend dev ergonomics for anyone not
+    # actually testing real GPU inference right now.
+    import os
+    if os.environ.get("GREEN_WEIGHT_LOAD_MODELS") == "1":
+        try:
+            from models import model_pool
+            from models.local_llm_adapter import LocalLLMforAll
+            config = get_config()
+            model_pool.load_pool(lazy_16bit=config.is_lazy_16bit())
+            if LocalLLMforAll().list_services():
+                _model_pool_loaded = True
+                logger.info("[OK] Model pool loaded — real inference available via /infer")
+            else:
+                logger.warning(
+                    "GREEN_WEIGHT_LOAD_MODELS=1 but no models registered "
+                    "(no CUDA GPU or load failed) — /infer will use mock responses"
+                )
+        except Exception as e:
+            logger.warning(f"Model pool load failed at API startup — /infer will use mock responses: {e}")
+    else:
+        logger.info(
+            "GREEN_WEIGHT_LOAD_MODELS not set to '1' — skipping model pool load, "
+            "/infer will use mock responses (routing-only endpoints are unaffected)"
+        )
 
 
 # ── Request / Response schemas ────────────────────────────────────────────────
@@ -169,7 +202,12 @@ def infer(req: InferRequest):
         cost_map = {"4bit": 0.0001, "8bit": 0.0004, "16bit": 0.0009}
         cost_usd = cost_map.get(final_tier, 0.0004)
 
-        # Append to pipeline trace
+        # Append to pipeline trace. is_mock is logged so downstream
+        # consumers (e.g. the Analytics dashboard's energy-savings KPI)
+        # can tell measured energy apart from the fixed mock placeholders
+        # — previously absent, so pipeline_trace.jsonl mixed real and
+        # mock energy_joules values with no way to distinguish them
+        # after the fact (found 2026-08-22 while auditing the frontend).
         _append_trace({
             "prompt": req.prompt,
             "features": features,
@@ -179,6 +217,7 @@ def infer(req: InferRequest):
             "energy_joules": round(energy_joules, 4),
             "latency_ms": round(latency_ms, 1),
             "response": (response or "")[:300],
+            "is_mock": is_mock,
         })
 
         return RouteResponse(
