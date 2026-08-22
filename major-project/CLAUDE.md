@@ -1,9 +1,21 @@
 # Project Instructions
 
+**Start here every session: read `NEW.md` (this folder) first.** It's the
+live, checkbox-tracked roadmap (Phase 0-9) and single source of truth for
+current status — which GPU sessions have run, what's verified, what's
+next. Everything below is static project structure/design, not day-to-day
+status.
+
 ## Project Overview
 **Green-Weight**: Dynamic Bit-Width Scaling for Energy-Proportional LLM Inference using Fuzzy Logic Controllers.
 
-This research project implements an "Energy Gearbox" for AI - dynamically adjusting LLM precision based on prompt complexity to save up to 40% energy with <1% accuracy loss.
+This research project implements an "Energy Gearbox" for AI - dynamically
+adjusting LLM precision based on prompt complexity. **"~40% energy savings,
+<1% accuracy loss" is an unverified legacy number from an early linear
+bit-width model, not a measured result — see NEW.md's "what NOT to do"
+section. Do not state it as fact anywhere, including in conversation.** The
+project's actual commitment (RESEARCH_PLAN.md) is to publish whatever the
+real measured numbers turn out to be.
 
 ## Project Structure
 
@@ -14,19 +26,33 @@ things live after the Aug 2026 reorg:
 ```
 major-project/
 ├── backend/src/green_weight/  # Main Python package (import path unchanged: `green_weight.xxx`)
-│   ├── config.py              # Configuration (BitWidth, Gears, Fuzzy params)
-│   ├── core/
-│   │   ├── prompt_complexity.py   # Complexity sensor/scorer
-│   │   └── dynamic_inference.py   # Inference engine with gear selection
-│   ├── controllers/
-│   │   └── fuzzy_gearbox.py       # Fuzzy logic controller
+│   ├── config.py               # Config loader (config.yaml)
+│   ├── router/
+│   │   ├── complexity_scorer.py   # Complexity sensor (5 features)
+│   │   ├── fuzzy_controller.py    # Fuzzy logic controller (scikit-fuzzy)
+│   │   └── routellm_bridge.py     # Documented threshold pass-through (not a real RouteLLM call)
+│   ├── models/
+│   │   ├── model_pool.py          # Loads/registers the 3 quantized tiers + QAT adapters
+│   │   └── local_llm_adapter.py   # Unified get_completion() interface over the 3 tiers
+│   ├── benchmark/
+│   │   ├── energy_tracker.py      # Energy measurement (live demo/API path)
+│   │   └── accuracy_eval.py       # lm-eval-based accuracy measurement (live demo/API path)
+│   ├── cascade/
+│   │   └── frugal_cascade.py      # FrugalGPT-style cascade — escalation logic unbuilt/stubbed,
+│   │                               # optional scope per NEW.md Phase 0, not required for the core claim
+│   ├── evaluation/
+│   │   └── __init__.py            # Stub only — explains where real logic now lives (see above);
+│   │                               # the old AccuracyBenchmark/EnergyBenchmark classes that used
+│   │                               # to live here were System-B-only and moved to _legacy/
+│   ├── _legacy/                   # Archived System B (core/, controllers/, dynamic_inference.py,
+│   │                               # evaluation_benchmark.py) — not imported by anything live
 │   ├── training/
 │   │   ├── qat_trainer.py         # QAT training classes (library)
-│   │   └── kaggle_qat_trainer.py  # QAT training entrypoint (see training/scripts/ note below)
-│   ├── evaluation/
-│   │   └── benchmark.py           # Energy/accuracy benchmarking
+│   │   └── kaggle_qat_trainer.py  # STALE, do not use for retraining — see
+│   │                               # "QAT Training" note below; the real
+│   │                               # script is training/scripts/adapter-training.ipynb
 │   ├── api.py                     # FastAPI backend
-│   ├── main.py                    # CLI entry point
+│   ├── run_pipeline.py            # Main CLI orchestrator (routing + cascade + energy + accuracy + plots)
 │   └── __init__.py
 ├── backend/tests/              # pytest suite (test-agent's domain)
 ├── frontend/                   # React/Vite dashboard (was greenai-dashboard/)
@@ -88,7 +114,25 @@ imported by anything live):
 ### 4. QAT Training (`training/`)
 - `FakeQuantizer` - Simulates low-bit quantization during training
 - `BitResilientTrainer` - Cycles through bit-widths during training
-- `kaggle_qat_trainer.py` - Complete Kaggle notebook for training adapters
+- **The real training script is `training/scripts/adapter-training.ipynb`**
+  — confirmed 2026-08-22 by diffing its `LoraConfig` calls against the
+  actual adapters' `adapter_config.json`: exact match
+  (`adapter_simple` r=16/α=32, `adapter_medium` r=8/α=16,
+  `adapter_complex` r=4/α=8, `target_modules=[q_proj, v_proj]`).
+  `training/scripts/kaggle_qat_trainer.py` and
+  `training/scripts/major-project-v2.ipynb` are a **stale, unused pair**
+  with different (wrong) hyperparameters — r=32/16/8, 7 target modules,
+  and the wrong adapter names (`adapter_4bit/8bit/16bit` instead of
+  `adapter_simple/medium/complex`). They were never archived to
+  `_legacy/` the way the old `core/`/`controllers/` implementation was,
+  so they still read as live. Do not follow them for retraining; do not
+  externalize their hyperparameters into `training/configs/` either — see
+  that directory's README.
+  `training/scripts/majorproject-final.ipynb` and
+  `majorproject-final (1).ipynb` are earlier, broader exploratory
+  notebooks (install `routellm`/`codecarbon` directly, predate the
+  `router/` refactor) — not wired into anything documented as canonical,
+  likely safe to ignore but not yet formally archived either.
 
 ### 5. Real measurement (`benchmark/`, `training/scripts/kaggle_*.py`)
 - `benchmark/energy_tracker.py` + `benchmark/accuracy_eval.py` — used by the
@@ -102,23 +146,36 @@ imported by anything live):
 
 ## Running the Project
 
-### Demo
+There is no `main.py`/CLI-demo entrypoint (an earlier version of this doc
+described one; it never existed in the live `router/`-based system). Every
+module here uses bare same-directory imports (`from config import
+get_config`, not `from green_weight.config import ...`) — see
+`green_weight/__init__.py`'s docstring — so **cwd must be inside
+`backend/src/green_weight/` itself**, not `backend/src/`; `python -m
+green_weight.run_pipeline` from `backend/src` does not work (verified
+2026-08-22 — it 404s on the bare imports).
+
 ```bash
-cd backend/src   # green_weight is imported as a top-level package from here
+cd backend/src/green_weight
 
-# Analyze prompts
-python -m green_weight.main analyze
+# Routing-only sanity check — no GPU, no model loading, just the fuzzy
+# controller's tier decisions over the eval prompt set
+python run_pipeline.py --routing-only --dry-run
 
-# Run inference demo
-python -m green_weight.main demo
+# Full pipeline (needs a CUDA GPU + HF_TOKEN): loads all 3 quantized tiers
+# + QAT adapters, routes + runs cascade inference + energy tracking +
+# accuracy eval + trade-off plots
+python run_pipeline.py
 
-# Run benchmark
-python -m green_weight.main benchmark
+# FastAPI backend
+uvicorn api:app --reload
 ```
 
 ### Training on Kaggle
 1. Upload `combined_cleaned.csv` to Kaggle dataset
-2. Open `backend/src/green_weight/training/kaggle_qat_trainer.py`
+2. Open `training/scripts/adapter-training.ipynb` (**not**
+   `kaggle_qat_trainer.py` — that script is stale/unused, see "QAT
+   Training" above)
 3. Run cells sequentially
 4. Download `adapters/` folder
 
@@ -126,10 +183,10 @@ python -m green_weight.main benchmark
 
 | Objective | Status | Description |
 |-----------|--------|-------------|
-| 1. Dataset | ✅ | Curated Alpaca + OpenOrca + CodeAlpaca |
-| 2. QAT Training | 🔄 | Kaggle script ready, need to train adapters |
-| 3. Controller | ✅ | Fuzzy logic + complexity sensor implemented |
-| 4. Benchmark | 🔄 | Framework ready, need full evaluation |
+| 1. Dataset | ✅ | Curated Alpaca + OpenOrca + CodeAlpaca; 500-prompt stratified eval set built |
+| 2. QAT Training | ✅ | 3 adapters exist and are fully verified loadable — real load test against actual base-model weights completed 2026-08-22 on CPU (`adapters/adapter_{simple,medium,complex}`, see NEW.md Phase 3). Real training script identified as `adapter-training.ipynb`, not the stale `kaggle_qat_trainer.py`. Their *effect* on accuracy vs. plain PTQ is still pending Session 2. |
+| 3. Controller | ✅ | Fuzzy logic + complexity sensor implemented, recalibrated against the full 500-prompt set (2026-08-22) |
+| 4. Benchmark | 🔄 | Framework fixed and wired to real `lm_eval` (2026-08-22; was previously fabricating numbers, see CREDIBILITY_REPORT.md) — no GPU measurement run yet |
 
 ## HuggingFace Token
 Never store tokens in this repo. Set the `HF_TOKEN` environment variable locally,
@@ -141,8 +198,10 @@ or use a Kaggle secret named `HF_TOKEN` on Kaggle (see KAGGLE_MANUAL.md).
 2. **Quantization**: QLoRA with fake quantization for QAT
 3. **Fuzzy Logic**: Triangular membership functions, centroid defuzzification
 4. **Energy Model**: The linear bit-width scaling (4-bit=0.25x, 8-bit=0.5x, 16-bit=1x)
-   is a DEMO-ONLY assumption used by `evaluation/benchmark.py`. All publishable numbers
-   must come from measured NVML energy (see `training/scripts/kaggle_energy_benchmark.py`).
+   is a DEMO-ONLY assumption. It lived in the old System-B `evaluation/benchmark.py`,
+   now archived at `_legacy/evaluation_benchmark.py` — `evaluation/__init__.py` is a
+   stub explaining the move, not a live module. All publishable numbers must come
+   from measured NVML energy (see `training/scripts/kaggle_energy_benchmark.py`).
 
 ## Results
 No verified results yet. Energy savings, accuracy loss, and latency numbers are
@@ -160,7 +219,10 @@ datasets, pandas
 ```
 
 ## Next Steps
-1. Run Kaggle training to get 3 LoRA adapters
-2. Integrate adapters into inference engine
-3. Run full benchmark evaluation
-4. Generate trade-off curves for paper
+See `NEW.md` for the live, ordered roadmap. Short version as of 2026-08-22:
+the 3 LoRA adapters already exist and are trained; they're now correctly
+wired into `models/model_pool.py` (a path bug that silently skipped loading
+them was found and fixed today). What's left is almost entirely GPU-gated:
+Session 1 (energy ground truth, the go/no-go gate), Session 2 (per-tier
+accuracy), Session 4 (main routing experiment), all on the college GPU
+cluster — see NEW.md Phase 1 onward.

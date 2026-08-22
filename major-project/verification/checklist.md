@@ -31,8 +31,10 @@ every time it runs, don't just overwrite the checkboxes silently.
 
 ## Known pre-existing risks to keep checking for (see CREDIBILITY_REPORT.md §2)
 
-- [ ] No number traces back to `evaluation/benchmark.py`'s linear
-      bit-width energy model.
+- [ ] No number traces back to the old System-B linear bit-width energy
+      model (moved 2026-08-22 doc pass to `_legacy/evaluation_benchmark.py`
+      — `evaluation/__init__.py` is a stub pointing at `benchmark/`, not a
+      live module; see `CLAUDE.md`).
 - [ ] No number traces back to `api.py`'s `/infer` mock-response energy
       placeholders (`{4bit: 8.5, 8bit: 28.5, 16bit: 105.2}` J — fixed
       demo values, not measurements; found while writing `contracts/api-spec.yaml`).
@@ -46,3 +48,4 @@ every time it runs, don't just overwrite the checkboxes silently.
 | Date | What ran | Result |
 |---|---|---|
 | 2026-08-05 | Repo reorg + 6-subagent setup landed; checklist created | No sessions run yet — all gates above still unchecked |
+| 2026-08-22 | Off-campus implementation-hardening pass (no GPU session run — none of the Session gates above change). Found/fixed: `accuracy_eval.py` fabricating scores instead of calling `lm_eval`; `model_pool.py`'s adapters silently never loading (wrong path); `api.py`'s `/infer` real-inference path permanently dead; `kaggle_routing_experiment.py`'s condition 6 baseline tautological with the fuzzy router (caught before Session 4 GPU time spent); 2 `GpuEnergyMeter` crash risks; fuzzy-controller calibration bugs (`TOKEN_LENGTH_RANGE`, `entropy_breakpoints` degenerate case). Built `backend/tests/` from scratch (146 passing). **Real (non-simulated) Phase 3 adapter load test completed on CPU** — all 3 adapters attach to the actual `meta-llama/Llama-3.2-1B` weights and generate correctly. | Full detail in `CREDIBILITY_REPORT.md` and `NEW.md`. Session gates above remain unchecked — this was implementation correctness work, not a measurement session. |

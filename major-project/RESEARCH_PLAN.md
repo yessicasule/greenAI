@@ -117,7 +117,7 @@ Mitigations, in order of preference:
 | 3 | Static 4-bit | Lower bound on energy & quality |
 | 4 | **Fuzzy router** (ours) | The contribution |
 | 5 | Random router, tier distribution matched to #4 | Proves routing *intelligence* matters, not just tier mix |
-| 6 | Simple threshold on complexity score | Proves *fuzzy* beats naive control (or admit it doesn't) |
+| 6 | Simple threshold on complexity score | Proves *fuzzy* beats naive control (or admit it doesn't) — **clarified 2026-08-22**: "complexity score" here means a plain mean of the 5 raw complexity features, NOT the fuzzy controller's own defuzzified output. An earlier implementation used the latter, which made the comparison tautological (the naive baseline's tier was mathematically guaranteed to equal the fuzzy router's own raw tier) — fixed in `kaggle_routing_experiment.py` before any Session 4 GPU time was spent; see CREDIBILITY_REPORT.md. |
 | 7 | Oracle router (cheapest tier that still answers correctly) | Upper bound / headroom |
 | 8 | FrugalGPT-style cascade (existing `frugal_cascade`) | Optional strong baseline |
 
@@ -139,7 +139,10 @@ condition 4 and condition 1 accuracy.
 > instructions live in **KAGGLE_MANUAL.md**; the verification policy and
 > claim status live in **CREDIBILITY_REPORT.md**. Scripts:
 > `training/scripts/kaggle_energy_benchmark.py` (S1), `training/scripts/kaggle_accuracy_eval.py`
-> (S2), `backend/src/green_weight/training/kaggle_qat_trainer.py` (S3),
+> (S2), `training/scripts/adapter-training.ipynb` (S3 — **not**
+> `kaggle_qat_trainer.py`, confirmed 2026-08-22 to be a stale/unused
+> script with different, wrong hyperparameters than the real adapters;
+> see NEW.md Phase 3),
 > `training/scripts/kaggle_routing_experiment.py` (S4), `training/scripts/make_figures.py` +
 > `training/scripts/verify_results.py` (S5).
 
@@ -155,11 +158,13 @@ Upload `backend/src/green_weight/data/eval_prompts.jsonl` (script dedupes it).
 without your QAT adapters) on tinyMMLU + GSM8K subset + HellaSwag subset.
 Save per-task JSON results. This yields RQ4 and the per-tier quality column.
 
-**Session 3 — Adapter retraining only if needed (~6 h).**
+**Session 3 — Adapter retraining only if needed (~6 h). Load test already
+passed 2026-08-22 (CPU, off-campus) — see NEW.md Phase 3.**
 The three LoRA adapters already exist (`adapters/adapter_{simple,medium,complex}`,
-base Llama-3.2-1B). First try loading them with the current transformers/peft;
-retrain via `backend/src/green_weight/training/kaggle_qat_trainer.py` only if they fail to
-load or Session 2 shows them underperforming plain quantization.
+base Llama-3.2-1B) and are confirmed loadable + functional against the real
+base model. Retrain via `training/scripts/adapter-training.ipynb` (**not**
+`kaggle_qat_trainer.py` — confirmed stale, wrong hyperparameters) only if
+Session 2 shows them underperforming plain quantization.
 
 **Session 4 — Routing experiment (~4–6 h).**
 Build the deduped, stratified 500-prompt eval set (easy 200 / medium 150 /

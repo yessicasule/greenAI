@@ -86,8 +86,18 @@ Purpose: benchmark accuracy of each tier, with and without the QAT adapters
 
 ## Session 3 — QAT adapter training (~6 h GPU, ONLY IF NEEDED)
 
-Skip this if the existing `adapters/` loaded fine in Session 2 and the
-adapter conditions scored ≥ base. Otherwise:
+**Correction 2026-08-22:** these instructions used to point at
+`kaggle_qat_trainer.py`. That script is confirmed **stale and unused** —
+its `LoraConfig` (rank/alpha per tier, target modules, adapter naming)
+doesn't match the real trained adapters at all. The real script is
+`training/scripts/adapter-training.ipynb`, confirmed by an exact match
+against the real adapters' `adapter_config.json`. See `NEW.md` Phase 3 /
+`CLAUDE.md`'s "QAT Training" section for the full finding.
+
+Real load test already passed 2026-08-22 (CPU, off-campus) — the existing
+`adapters/` are confirmed loadable and functional against the real base
+model. Skip this session entirely unless Session 2's adapter conditions
+score below base (plain quantization). Otherwise:
 
 1. **Training data**: the trainer expects `combined_cleaned.csv` with a
    complexity split (built from Alpaca + OpenOrca + CodeAlpaca by
@@ -95,15 +105,17 @@ adapter conditions scored ≥ base. Otherwise:
    upload as a Kaggle dataset, e.g. `greenweight-training-data`.
 2. New notebook → **T4 x2** → `HF_TOKEN` secret → add the training-data
    dataset as input.
-3. Open [`backend/src/green_weight/training/kaggle_qat_trainer.py`](backend/src/green_weight/training/kaggle_qat_trainer.py).
-   It is written as notebook cells (`CELL 1`, `CELL 2`, …): paste each CELL
-   into its own notebook cell, in order.
-4. In CELL 1, set `DATA_PATH` to your uploaded CSV, e.g.
+3. Open [`training/scripts/adapter-training.ipynb`](training/scripts/adapter-training.ipynb)
+   directly — it's already a notebook (unlike `kaggle_qat_trainer.py`, no
+   cell-by-cell copy-paste needed).
+4. Set `CSV_PATH` to your uploaded CSV, e.g.
    `/kaggle/input/greenweight-training-data/combined_cleaned.csv`.
    Leave `MODEL_NAME = "meta-llama/Llama-3.2-1B"` and
-   `OUTPUT_PATH = "/kaggle/working/adapters"` as they are.
-5. Run all cells. It trains three LoRA adapters (simple/medium/complex) with
-   fake-quantization QAT, cycling bit-widths during training.
+   `OUTPUT_DIR = "/kaggle/working/adapters"` as they are.
+5. Run all cells. It trains three LoRA adapters
+   (`adapter_simple` r=16/α=32, `adapter_medium` r=8/α=16,
+   `adapter_complex` r=4/α=8, `target_modules=[q_proj, v_proj]`) with
+   fake-quantization QAT.
 6. Kaggle sessions cap at ~12 h — this fits, but click "Save Version →
    Save & Run All (Commit)" so it survives your browser closing.
 7. Download the `adapters/` folder from Output. Replace this repo's
