@@ -43,9 +43,9 @@
   border-radius: var(--radius-pill);
 }
 .complexity-trivial .sample-complexity,
-.complexity-simple  .sample-complexity { background: rgba(34,197,94,0.15);  color: var(--green-400); }
-.complexity-medium  .sample-complexity { background: rgba(129,140,248,0.15); color: var(--indigo-400); }
-.complexity-complex .sample-complexity { background: rgba(251,191,36,0.15);  color: var(--amber-400); }
+.complexity-simple  .sample-complexity { background: rgba(79,121,66,0.15);   color: var(--green-400); }
+.complexity-medium  .sample-complexity { background: rgba(176,106,69,0.15); color: var(--indigo-400); }
+.complexity-complex .sample-complexity { background: rgba(179,135,58,0.15); color: var(--amber-400); }
 
 /* Input card */
 .input-card {
@@ -57,7 +57,7 @@
 }
 .input-card:focus-within {
   border-color: var(--border-default);
-  box-shadow: 0 0 0 1px rgba(34,197,94,0.15);
+  box-shadow: 0 0 0 1px rgba(79,121,66,0.18);
 }
 
 .input-card-header {
@@ -95,16 +95,19 @@
 
 .input-card-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 10px 16px;
   padding: 10px 18px 14px;
   border-top: 1px solid var(--border-subtle);
 }
-.input-hint { font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
+.input-hint { flex: 1 1 auto; min-width: 160px; font-size: 11px; color: var(--text-muted); font-family: var(--font-mono); }
 
 .run-btn {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 8px;
   padding: 9px 20px;
   border-radius: var(--radius-md);
@@ -116,11 +119,11 @@
   cursor: pointer;
   border: none;
   transition: all var(--transition-base);
-  box-shadow: 0 0 16px rgba(34,197,94,0.3);
+  box-shadow: 0 2px 10px rgba(79,121,66,0.28);
 }
 .run-btn:hover:not(.disabled) {
-  background: var(--green-300);
-  box-shadow: 0 0 24px rgba(34,197,94,0.5);
+  background: var(--green-500);
+  box-shadow: 0 4px 14px rgba(79,121,66,0.36);
   transform: translateY(-1px);
 }
 .run-btn.disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
@@ -139,8 +142,8 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: rgba(248,113,113,0.08);
-  border: 1px solid rgba(248,113,113,0.2);
+  background: rgba(171,74,63,0.08);
+  border: 1px solid rgba(171,74,63,0.22);
   border-radius: var(--radius-md);
   color: var(--red-400);
   font-size: 13px;
@@ -180,8 +183,8 @@
   gap: 5px;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
-  background: rgba(34,197,94,0.1);
-  border: 1px solid rgba(34,197,94,0.2);
+  background: rgba(79,121,66,0.1);
+  border: 1px solid rgba(79,121,66,0.22);
   color: var(--green-400);
   font-size: 11px;
   font-weight: 600;
@@ -368,15 +371,13 @@
 }
 .tier-option.active { box-shadow: 0 0 12px rgba(from currentColor r g b / 0.2); }
 
-/* Scan line */
-.scan-line-container { position: absolute; inset-x: 0; top: 0; height: 100%; overflow: hidden; pointer-events: none; }
+/* Progress indicator — a calm pulsing bar, not a sweeping HUD scanner */
+.scan-line-container { position: absolute; inset-x: 0; top: 0; height: 3px; overflow: hidden; pointer-events: none; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
 .scan-line {
   position: absolute;
-  left: 0; right: 0;
-  height: 1px;
+  inset: 0;
   background: linear-gradient(90deg, transparent, var(--green-400), transparent);
-  opacity: 0.4;
-  animation: scan 2s linear infinite;
+  animation: breathe 1.8s ease-in-out infinite;
 }
 
 /* Config peek */
@@ -414,13 +415,13 @@
   margin-bottom: 4px;
 }
 .inference-mode-banner.gpu {
-  background: rgba(34,197,94,0.08);
-  border: 1px solid rgba(34,197,94,0.2);
+  background: rgba(79,121,66,0.08);
+  border: 1px solid rgba(79,121,66,0.2);
   color: var(--green-400);
 }
 .inference-mode-banner.mock {
-  background: rgba(251,191,36,0.08);
-  border: 1px solid rgba(251,191,36,0.2);
+  background: rgba(179,135,58,0.08);
+  border: 1px solid rgba(179,135,58,0.2);
   color: var(--amber-400);
 }
 
@@ -430,8 +431,8 @@
   gap: 5px;
   padding: 5px 12px;
   border-radius: var(--radius-pill);
-  background: rgba(251,191,36,0.1);
-  border: 1px solid rgba(251,191,36,0.2);
+  background: rgba(179,135,58,0.1);
+  border: 1px solid rgba(179,135,58,0.2);
   color: var(--amber-400);
   font-size: 11px;
   font-weight: 600;

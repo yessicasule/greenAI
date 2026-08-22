@@ -1,34 +1,47 @@
 :root {
-  --bg-base: #080c0e;
-  --bg-surface: #0d1417;
-  --bg-raised: #121a1e;
-  --bg-hover: #1a2428;
-  --bg-active: #1f2d32;
+  /* Warm paper/cream backgrounds, not stark white — evokes recycled
+     paper / sustainability reports rather than a clinical UI. */
+  --bg-base: #faf7f0;
+  --bg-surface: #ffffff;
+  --bg-raised: #f4f0e4;
+  --bg-hover: #ece5d3;
+  --bg-active: #e2d9c1;
 
-  --border-subtle: rgba(255,255,255,0.06);
-  --border-default: rgba(255,255,255,0.1);
-  --border-strong: rgba(255,255,255,0.18);
+  --border-subtle: rgba(37,45,34,0.08);
+  --border-default: rgba(37,45,34,0.14);
+  --border-strong: rgba(37,45,34,0.26);
 
-  --text-primary: #e8ede8;
-  --text-secondary: #8a9e94;
-  --text-muted: #4a5e56;
-  --text-inverse: #080c0e;
+  --text-primary: #24291f;
+  --text-secondary: #5c6653;
+  --text-muted: #8d9581;
+  --text-inverse: #faf7f0;
 
-  --green-50:  #f0fdf4;
-  --green-100: #bbf7d0; 
-  --green-300: #4ade80;
-  --green-400: #22c55e;
-  --green-500: #16a34a;
-  --green-600: #15803d;
-  --green-glow: rgba(34, 197, 94, 0.15);
-  --green-glow-strong: rgba(34, 197, 94, 0.3);
+  /* Moss/fern green — the primary brand accent. Replaces the old neon
+     #22c55e; this scale is desaturated and darker throughout so it reads
+     as a natural pigment, not an electric/neon color. */
+  --green-50:  #eef3e7;
+  --green-100: #d3e0c2;
+  --green-300: #82a366;
+  --green-400: #4f7942;
+  --green-500: #3d5f33;
+  --green-600: #2e4a27;
+  --green-glow: rgba(79,121,66,0.14);
+  --green-glow-strong: rgba(79,121,66,0.24);
 
-  --indigo-400: #818cf8;
-  --amber-400: #fbbf24;
-  --red-400: #f87171;
-  --cyan-400: #22d3ee;
+  /* Secondary tier/status accents — kept as earth tones (terracotta,
+     ochre, rust, muted teal) instead of the old indigo/amber/red/cyan;
+     variable names kept as-is so every existing var(--x) reference below
+     still resolves, only the actual hues changed. */
+  --indigo-400: #b06a45;
+  --amber-400: #b3873a;
+  --red-400: #ab4a3f;
+  --cyan-400: #3f7d78;
 
-  --font-display: 'Syne', sans-serif;
+  /* Fraunces (warm, slightly organic serif) for headlines — the single
+     biggest lever away from the old geometric/futuristic Syne. Body and
+     mono kept: neither reads as "sci-fi" on its own, that came from the
+     old dark+neon+glow combination, not the typefaces themselves. */
+  --font-display: 'Fraunces', serif;
   --font-body: 'Instrument Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
@@ -38,10 +51,12 @@
   --radius-xl: 22px;
   --radius-pill: 999px;
 
-  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
-  --shadow-glow: 0 0 24px var(--green-glow-strong);
+  /* Soft, warm, natural shadows — no neon blur. shadow-glow is now a
+     gentle tinted lift, not a literal glow. */
+  --shadow-sm: 0 1px 2px rgba(37,45,34,0.06);
+  --shadow-md: 0 4px 14px rgba(37,45,34,0.08);
+  --shadow-lg: 0 10px 28px rgba(37,45,34,0.10);
+  --shadow-glow: 0 2px 14px var(--green-glow-strong);
 
   --transition-fast: 120ms ease;
   --transition-base: 200ms ease;
@@ -66,7 +81,7 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
 
-::selection { background: var(--green-glow-strong); color: var(--green-300); }
+::selection { background: var(--green-glow-strong); color: var(--green-600); }
 
 button { font-family: var(--font-body); cursor: pointer; border: none; background: none; }
 input, textarea, select { font-family: var(--font-body); }
@@ -74,22 +89,12 @@ textarea { resize: none; }
 
 .mono { font-family: var(--font-mono); }
 .display { font-family: var(--font-display); }
+.nowrap { white-space: nowrap; }
 
 /* Tier colors */
 .tier-4bit  { color: var(--green-400); }
 .tier-8bit  { color: var(--indigo-400); }
 .tier-16bit { color: var(--amber-400); }
-
-/* Noise texture overlay */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.4;
-}
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(12px); }
@@ -115,9 +120,9 @@ body::before {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0; }
 }
-@keyframes scan {
-  from { transform: translateY(-100%); }
-  to   { transform: translateY(400%); }
+@keyframes breathe {
+  0%, 100% { opacity: 0.25; }
+  50%      { opacity: 0.9; }
 }
 
 .animate-fade-up  { animation: fadeUp 0.4s ease both; }

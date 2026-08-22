@@ -7,7 +7,7 @@ import {
 import { useAnalytics } from '../hooks/useBackend'
 import './Analytics.css'
 
-const TIER_COLORS = { '4bit': '#22c55e', '8bit': '#818cf8', '16bit': '#fbbf24' }
+const TIER_COLORS = { '4bit': '#4f7942', '8bit': '#b06a45', '16bit': '#b3873a' }
 
 const FALLBACK_SCATTER = [
   { name: 'Always 4-bit',  accuracy: 0.50, energy: 8.5 },
@@ -85,8 +85,20 @@ export function Analytics() {
     energy: parseFloat(t.energy_joules || 0),
     tier: t.final_tier || t.tier,
   }))
-  const totalJ = traces.reduce((s, t) => s + parseFloat(t.energy_joules || 0), 0)
-  const savings = traces.length > 0 ? Math.round((1 - totalJ / (traces.length * 105.2)) * 100) : 65
+  // Only real, measured energy counts toward the savings KPI — mock
+  // placeholder energy (is_mock: true, api.py's fixed {4bit:8.5, 8bit:28.5,
+  // 16bit:105.2} demo values) and unmeasured routing-only calls
+  // (energy_joules: 0) must not be presented as a real result. Previously
+  // this divided by traces.length unconditionally, so an all-routing-only
+  // session (every energy_joules === 0) showed a fabricated "100% saved"
+  // KPI — found 2026-08-22 auditing the frontend, matches the exact
+  // known risk already flagged in verification/checklist.md about these
+  // mock placeholder values leaking into anything presented as real.
+  const realTraces = traces.filter(t => !t.is_mock && parseFloat(t.energy_joules || 0) > 0)
+  const totalJ = realTraces.reduce((s, t) => s + parseFloat(t.energy_joules || 0), 0)
+  const savings = realTraces.length > 0
+    ? Math.round((1 - totalJ / (realTraces.length * 105.2)) * 100)
+    : null
 
   const accData = accuracy?.accuracy_by_condition
   const scatterData = accData
@@ -121,7 +133,7 @@ export function Analytics() {
 
       {/* KPIs */}
       <div className="kpi-grid">
-        <KpiCard icon={TrendingDown} label="Energy Saved vs 16-bit"   value={`${savings}%`}                                sub={`${totalJ.toFixed(1)}J total`}          accent="var(--green-400)"  delay={0}    />
+        <KpiCard icon={TrendingDown} label="Energy Saved vs 16-bit"   value={savings !== null ? `~${savings}%` : '—'}     sub={savings !== null ? `${totalJ.toFixed(1)}J measured · vs assumed 105.2J baseline` : 'no real measurements yet'} accent="var(--green-400)"  delay={0}    />
         <KpiCard icon={Database}     label="Queries Processed"         value={traces.length || '—'}                         sub="GET /api/results"                        accent="var(--indigo-400)" delay={0.05} />
         <KpiCard icon={Target}       label="Routed MMLU Accuracy"      value={routedAcc ? (routedAcc.mmlu * 100).toFixed(1) + '%' : '—'} sub="GET /api/accuracy"          accent="var(--amber-400)"  delay={0.1}  />
         <KpiCard icon={Cpu}          label="APGR"                      value={apgr ?? '—'}                                  sub="avg perf gap recovered"                  accent="var(--cyan-400)"   delay={0.15} />
@@ -129,10 +141,17 @@ export function Analytics() {
 
       {/* Charts row 1 */}
       <div className="charts-row-2">
-        <ChartCard title="Energy – Accuracy Trade-off" sub={accData ? "live · GET /api/accuracy" : "fallback expected values"} delay={0.2}>
+        {/* Note: the energy axis is always the same fixed demo constants
+            (36.8/8.5/28.5/105J) regardless of accData — accuracy_results.json
+            only carries per-condition accuracy, not energy, and no live
+            per-condition energy endpoint exists yet (that needs Session 4's
+            routing_conditions_summary.csv). Labeled accordingly instead of
+            claiming "live" for a chart that's still half-fabricated —
+            found 2026-08-22 auditing the frontend. */}
+        <ChartCard title="Energy – Accuracy Trade-off" sub={accData ? "accuracy: live · energy: modeled (Session 4 pending)" : "fallback expected values"} delay={0.2}>
           <ResponsiveContainer width="100%" height={220}>
             <ScatterChart margin={{ top: 10, right: 10, bottom: 20, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(37,45,34,0.08)" />
               <XAxis dataKey="accuracy" type="number" domain={[0.4, 0.8]}
                 tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}
                 label={{ value: 'Accuracy', position: 'insideBottom', offset: -10, fontSize: 10, fill: 'var(--text-muted)' }} />
@@ -146,7 +165,7 @@ export function Analytics() {
                   const r = isRouted ? 11 : 7
                   return (
                     <g>
-                      {isRouted && <circle cx={props.cx} cy={props.cy} r={r + 6} fill="rgba(34,197,94,0.1)" />}
+                      {isRouted && <circle cx={props.cx} cy={props.cy} r={r + 6} fill="rgba(79,121,66,0.12)" />}
                       <circle cx={props.cx} cy={props.cy} r={r}
                         fill={isRouted ? 'var(--green-400)' : 'var(--bg-hover)'}
                         stroke={isRouted ? 'var(--green-400)' : 'var(--border-default)'}
@@ -163,7 +182,7 @@ export function Analytics() {
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={barData.length ? barData : [{ name: '4bit', count: 30 }, { name: '8bit', count: 45 }, { name: '16bit', count: 25 }]}
               margin={{ top: 10, right: 10, bottom: 0, left: -10 }} barSize={40}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(37,45,34,0.08)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} />
               <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} />
               <Tooltip content={<CustomTooltip />} />
@@ -181,7 +200,7 @@ export function Analytics() {
       <ChartCard title="Energy per Inference" sub="last 24 queries · live · GET /api/results · pipeline_trace.jsonl" delay={0.3}>
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={lineData.length ? lineData : [{ i: 1, energy: 0 }]} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(37,45,34,0.08)" />
             <XAxis dataKey="i" tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} />
             <YAxis tick={{ fontSize: 10, fill: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }} unit="J" />
             <Tooltip content={<CustomTooltip />} />

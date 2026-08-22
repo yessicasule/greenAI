@@ -9,7 +9,7 @@ const SAMPLES = [
   { text: 'How many days are in a week?',                        label: 'Simple' },
   { text: 'Explain supply and demand economics.',                 label: 'Medium' },
   { text: 'Describe the water cycle in detail.',                  label: 'Medium' },
-  { text: 'Discuss GÃ¶del\'s incompleteness theorems.',            label: 'Complex' },
+  { text: 'Discuss Gödel\'s incompleteness theorems.',            label: 'Complex' },
   { text: 'Write a Python quicksort implementation with tests.',  label: 'Complex' },
 ]
 
@@ -24,9 +24,9 @@ const STAGES = [
 const STAGE_ORDER = ['scoring', 'fuzzy', 'routellm', 'cascade', 'energy']
 
 const TIER_META = {
-  '4bit':  { label: '4-bit',  color: 'var(--green-400)',  bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)',   gear: 'Gear 1 · Simple' },
-  '8bit':  { label: '8-bit',  color: 'var(--indigo-400)', bg: 'rgba(129,140,248,0.1)', border: 'rgba(129,140,248,0.25)', gear: 'Gear 2 · Medium' },
-  '16bit': { label: '16-bit', color: 'var(--amber-400)',  bg: 'rgba(251,191,36,0.1)',  border: 'rgba(251,191,36,0.25)',  gear: 'Gear 3 · Complex' },
+  '4bit':  { label: '4-bit',  color: 'var(--green-400)',  bg: 'rgba(79,121,66,0.1)',   border: 'rgba(79,121,66,0.25)',   gear: 'Gear 1 · Simple' },
+  '8bit':  { label: '8-bit',  color: 'var(--indigo-400)', bg: 'rgba(176,106,69,0.1)', border: 'rgba(176,106,69,0.25)', gear: 'Gear 2 · Medium' },
+  '16bit': { label: '16-bit', color: 'var(--amber-400)',  bg: 'rgba(179,135,58,0.1)',  border: 'rgba(179,135,58,0.25)',  gear: 'Gear 3 · Complex' },
 }
 
 function FeatureGauge({ label, value }) {
@@ -151,7 +151,7 @@ export function Playground({ online, gpuReady }) {
               onClick={() => { setPrompt(s.text); textRef.current?.focus() }}
             >
               <span className="sample-complexity">{s.label}</span>
-              {s.text.length > 38 ? s.text.slice(0, 38) + 'â€¦' : s.text}
+              {s.text.length > 38 ? s.text.slice(0, 38) + '…' : s.text}
             </button>
           ))}
         </div>
@@ -168,18 +168,18 @@ export function Playground({ online, gpuReady }) {
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             onKeyDown={handleKey}
-            placeholder="Enter a prompt to route through the Green-Weight pipelineâ€¦"
+            placeholder="Enter a prompt to route through the Green-Weight pipeline…"
             rows={5}
           />
           <div className="input-card-footer">
-            <span className="input-hint">{online ? 'âŒ˜â†µ to run' : 'âš  backend offline â€” start api.py first'}</span>
+            <span className="input-hint">{online ? '⌘↵ to run' : '⚠ backend offline — start api.py first'}</span>
             <button
               className={`run-btn ${isRunning || !online || !prompt.trim() ? 'disabled' : ''}`}
               onClick={run}
               disabled={isRunning || !online || !prompt.trim()}
             >
               {isRunning ? (
-                <><div className="run-spinner" />Runningâ€¦</>
+                <><div className="run-spinner" />Running…</>
               ) : (
                 <><Send size={14} strokeWidth={2} />Run Pipeline</>
               )}
@@ -193,7 +193,7 @@ export function Playground({ online, gpuReady }) {
             <motion.div className="error-banner" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
               <AlertCircle size={14} />
               <span>{error}</span>
-              <button onClick={() => setError(null)}>âœ•</button>
+              <button onClick={() => setError(null)}>✕</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -226,7 +226,7 @@ export function Playground({ online, gpuReady }) {
                 </div>
               </div>
 
-              {/* â”€â”€ RESPONSE SECTION â”€â”€ */}
+              {/* ── RESPONSE SECTION ── */}
               <div className="response-section">
                 <div className="response-section-header">
                   <MessageSquare size={13} color={tm.color} strokeWidth={2} />
@@ -238,7 +238,7 @@ export function Playground({ online, gpuReady }) {
                 <div className="response-body" style={{ borderColor: tm.border }}>
                   {result.response
                     ? result.response
-                    : <span className="response-empty">No response returned â€” routing-only mode</span>
+                    : <span className="response-empty">No response returned — routing-only mode</span>
                   }
                 </div>
               </div>
@@ -274,9 +274,9 @@ export function Playground({ online, gpuReady }) {
                   <div className="history-item-tier" style={{ background: TIER_META[h.final_tier]?.bg, color: TIER_META[h.final_tier]?.color }}>
                     {h.final_tier}
                   </div>
-                  <span className="history-item-prompt">{h.prompt.length > 55 ? h.prompt.slice(0, 55) + 'â€¦' : h.prompt}</span>
+                  <span className="history-item-prompt">{h.prompt.length > 55 ? h.prompt.slice(0, 55) + '…' : h.prompt}</span>
                   <span className="history-item-response mono">
-                    {h.response ? h.response.slice(0, 30) + 'â€¦' : 'â€”'}
+                    {h.response ? h.response.slice(0, 30) + '…' : '—'}
                   </span>
                   <span className="history-item-energy mono">{h.energy_joules}J</span>
                 </div>
@@ -364,7 +364,7 @@ cascade:
   judger:
     threshold: 0.5
 model:
-  base: llama-2-7b-hf`}</pre>
+  base: meta-llama/Llama-3.2-1B`}</pre>
         </div>
       </div>
     </div>

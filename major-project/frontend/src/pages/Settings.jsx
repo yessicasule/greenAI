@@ -84,7 +84,7 @@ cascade:
     - local/16bit
 
 model:
-  base_model_id: meta-llama/Llama-2-7b-hf
+  base_model_id: meta-llama/Llama-3.2-1B
   lazy_16bit: ${vals.energy > 60 ? 'false' : 'true'}
   max_new_tokens: 256
 
@@ -156,7 +156,7 @@ benchmark:
             </div>
             <div>
               <div className="savings-banner-title">Predicted Energy Savings</div>
-              <div className="savings-banner-val mono">~{savings}% vs always-16-bit</div>
+              <div className="savings-banner-val mono">~{savings}% vs <span className="nowrap">always-16-bit</span></div>
             </div>
           </div>
         </div>

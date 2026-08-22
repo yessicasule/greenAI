@@ -144,8 +144,8 @@
   border-radius: 50%;
   flex-shrink: 0;
 }
-.status-dot.ok  { background: var(--green-400); box-shadow: 0 0 6px var(--green-400); }
-.status-dot.err { background: var(--red-400);   box-shadow: 0 0 6px var(--red-400); }
+.status-dot.ok  { background: var(--green-400); }
+.status-dot.err { background: var(--red-400); }
 
 .status-label { font-family: var(--font-mono); font-size: 10px; }
 
@@ -171,6 +171,6 @@
   letter-spacing: 0.3px;
 }
 
-.tier-pill.green  { background: rgba(34,197,94,0.12);  color: var(--green-400);  border: 1px solid rgba(34,197,94,0.25); }
-.tier-pill.indigo { background: rgba(129,140,248,0.12); color: var(--indigo-400); border: 1px solid rgba(129,140,248,0.25); }
-.tier-pill.amber  { background: rgba(251,191,36,0.12);  color: var(--amber-400);  border: 1px solid rgba(251,191,36,0.25); }
+.tier-pill.green  { background: rgba(79,121,66,0.12);   color: var(--green-400);  border: 1px solid rgba(79,121,66,0.25); }
+.tier-pill.indigo { background: rgba(176,106,69,0.12);  color: var(--indigo-400); border: 1px solid rgba(176,106,69,0.25); }
+.tier-pill.amber  { background: rgba(179,135,58,0.12);  color: var(--amber-400);  border: 1px solid rgba(179,135,58,0.25); }

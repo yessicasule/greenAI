@@ -140,20 +140,20 @@
   align-items: center;
   gap: 14px;
   padding: 16px;
-  background: rgba(34,197,94,0.06);
-  border: 1px solid rgba(34,197,94,0.2);
+  background: rgba(79,121,66,0.07);
+  border: 1px solid rgba(79,121,66,0.22);
   border-radius: var(--radius-md);
 }
 .savings-banner-icon {
   width: 36px; height: 36px;
   border-radius: var(--radius-md);
-  background: rgba(34,197,94,0.12);
+  background: rgba(79,121,66,0.14);
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
 .savings-banner-title { font-size: 12px; font-weight: 600; color: var(--green-400); }
-.savings-banner-val { font-size: 20px; font-weight: 700; color: var(--green-300); margin-top: 2px; }
+.savings-banner-val { font-size: 20px; font-weight: 700; color: var(--green-600); margin-top: 2px; }
 
 /* YAML */
 .yaml-preview {
