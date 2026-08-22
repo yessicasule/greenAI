@@ -1,4 +1,26 @@
 """
+STALE — DO NOT USE FOR RETRAINING. Confirmed 2026-08-22.
+=========================================================
+
+This script's LoraConfig does NOT match the real, currently-used adapters
+(adapters/adapter_{simple,medium,complex}): this script uses r=32/16/8
+with 7 target_modules and adapter_{4bit,8bit,16bit} naming, while the real
+adapters (verified against their adapter_config.json, and against a real
+load test 2026-08-22) use r=16/8/4, target_modules=[q_proj, v_proj], and
+adapter_{simple,medium,complex} naming.
+
+The actual script used to train the real adapters is
+training/scripts/adapter-training.ipynb — confirmed by an exact match of
+its inline train_adapter(..., r=16, alpha=32) / r=8,alpha=16 / r=4,alpha=8
+calls against adapter_config.json. See NEW.md Phase 3 and CLAUDE.md's
+"QAT Training" section for the full finding.
+
+This file (and its notebook counterpart major-project-v2.ipynb) were never
+archived to _legacy/ the way the old core/+controllers/ implementation
+was, despite being just as superseded — kept here for now, not deleted,
+in case any of its code is still a useful reference, but do not run it.
+
+------------------------------------------------------------------------
 Kaggle QAT Training Notebook - Objective 2: Multi-Gear Engine
 ===============================================================
 

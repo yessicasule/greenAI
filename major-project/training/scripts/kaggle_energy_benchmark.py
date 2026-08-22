@@ -52,6 +52,26 @@ EVAL_FILE_CANDIDATES = [
 ]
 OUT_DIR = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(".")
 
+
+def _find_kaggle_path(basename):
+    """Locate a Kaggle input file by basename regardless of mount layout.
+    Kaggle has mounted dataset inputs under two different layouts observed
+    in this project: the classic /kaggle/input/<slug>/... and, on some
+    accounts/notebooks, /kaggle/input/datasets/<username>/<slug>/... —
+    confirmed 2026-08-13 when the classic-path guess silently fell through
+    to the built-in prompt list. Glob for it instead of hardcoding one."""
+    import glob
+    for pattern in (
+        f"/kaggle/input/{basename}",
+        f"/kaggle/input/*/{basename}",
+        f"/kaggle/input/datasets/*/{basename}",
+        f"/kaggle/input/datasets/*/*/{basename}",
+    ):
+        matches = sorted(glob.glob(pattern))
+        if matches:
+            return matches[0]
+    return None
+
 FALLBACK_PROMPTS = [
     "What is the capital of France?",
     "What is 2 + 2?",
@@ -69,8 +89,10 @@ FALLBACK_PROMPTS = [
 
 
 def load_prompts():
-    for path in EVAL_FILE_CANDIDATES:
-        if Path(path).exists():
+    found = _find_kaggle_path("eval_prompts.jsonl")
+    candidates = ([found] if found else []) + EVAL_FILE_CANDIDATES
+    for path in candidates:
+        if path and Path(path).exists():
             seen, prompts = set(), []
             with open(path) as f:
                 for line in f:
@@ -137,9 +159,15 @@ class GpuEnergyMeter:
         return sum(samples) / len(samples)
 
     def info(self):
+        # nvmlDeviceGetName / nvmlSystemGetDriverVersion return bytes on
+        # some pynvml versions (see check_nvml_energy_support.py, which
+        # explicitly handles this) — decode defensively so json.dumps()
+        # below can't crash on a bytes value before any measurement runs.
+        gpu = pynvml.nvmlDeviceGetName(self.handle)
+        driver = pynvml.nvmlSystemGetDriverVersion()
         return {
-            "gpu": pynvml.nvmlDeviceGetName(self.handle),
-            "driver": pynvml.nvmlSystemGetDriverVersion(),
+            "gpu": gpu.decode() if isinstance(gpu, bytes) else gpu,
+            "driver": driver.decode() if isinstance(driver, bytes) else driver,
             "energy_counter": self.has_counter,
         }
 

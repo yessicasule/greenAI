@@ -39,6 +39,30 @@ PREFERRED_TASKS = ["tinyMMLU", "tinyGSM8k", "tinyHellaswag"]
 FALLBACK_TASKS = ["arc_easy", "gsm8k", "hellaswag"]
 FALLBACK_LIMIT = 200          # examples per fallback task
 ADAPTER_ROOT = "/kaggle/input/greenweight-adapters"   # or None to skip adapters
+
+
+def _find_kaggle_path(basename):
+    """Locate a Kaggle input file/dir by basename regardless of mount
+    layout. Kaggle has mounted dataset inputs under two different layouts
+    observed in this project: classic /kaggle/input/<slug>/... and, on
+    some accounts/notebooks, /kaggle/input/datasets/<username>/<slug>/...
+    — confirmed 2026-08-13. Glob instead of hardcoding one."""
+    import glob
+    for pattern in (
+        f"/kaggle/input/{basename}",
+        f"/kaggle/input/*/{basename}",
+        f"/kaggle/input/datasets/*/{basename}",
+        f"/kaggle/input/datasets/*/*/{basename}",
+    ):
+        matches = sorted(glob.glob(pattern))
+        if matches:
+            return matches[0]
+    return None
+
+
+_found_adapters = _find_kaggle_path("greenweight-adapters")
+if _found_adapters:
+    ADAPTER_ROOT = _found_adapters
 # tier -> adapter trained for the matching complexity band
 ADAPTER_FOR_TIER = {
     "4bit": "adapter_simple",

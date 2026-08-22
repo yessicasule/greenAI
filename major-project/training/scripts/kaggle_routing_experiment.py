@@ -82,10 +82,34 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 # `from config import get_config`, a same-directory bare import — so
 # green_weight/ itself must be on sys.path, not just its parent).
 _SCRIPT_DIR = Path(__file__).resolve().parent
+
+
+def _find_kaggle_glob(*patterns):
+    """Same rationale as _find_kaggle_path below (defined after this point
+    in the file, duplicated here since this runs before that point) —
+    Kaggle mounts dataset inputs under either /kaggle/input/<slug>/... or
+    /kaggle/input/datasets/<username>/<slug>/..., confirmed to vary by
+    account (2026-08-13)."""
+    import glob
+    for pattern in patterns:
+        matches = sorted(glob.glob(pattern))
+        if matches:
+            return Path(matches[0])
+    return None
+
+
 _GREEN_WEIGHT_CANDIDATES = [
-    Path("/kaggle/input/green-weight-package/green_weight"),  # Kaggle dataset input
-    _SCRIPT_DIR.parent / "green_weight",                        # SSH box: rsync sibling layout
-    _SCRIPT_DIR.parent.parent / "backend" / "src" / "green_weight",  # local repo checkout
+    p for p in [
+        _find_kaggle_glob(
+            "/kaggle/input/green-weight-package/green_weight",
+            "/kaggle/input/*/green-weight-package/green_weight",
+            "/kaggle/input/datasets/*/green-weight-package/green_weight",
+            "/kaggle/input/datasets/*/*/green-weight-package/green_weight",
+        ),
+        Path("/kaggle/input/green-weight-package/green_weight"),  # Kaggle dataset input (classic layout)
+        _SCRIPT_DIR.parent / "green_weight",                        # SSH box: rsync sibling layout
+        _SCRIPT_DIR.parent.parent / "backend" / "src" / "green_weight",  # local repo checkout
+    ] if p is not None
 ]
 try:
     _GREEN_WEIGHT_DIR = next(p for p in _GREEN_WEIGHT_CANDIDATES if p.exists())
@@ -117,14 +141,63 @@ ADAPTER_FOR_TIER = {"4bit": "adapter_simple", "8bit": "adapter_medium",
 OUT_DIR = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(".")
 
 
-def threshold_router(complexity: float) -> str:
-    """Naive fixed-threshold baseline (condition 6) — same complexity signal
-    as the fuzzy router (win_probability*100 from FuzzyController), but
-    mapped with a plain two-cut threshold instead of fuzzy membership +
-    bridge refinement. Isolates what the fuzzy shaping actually buys (RQ3)."""
-    if complexity <= TIER_THRESHOLDS["4bit_upper"]:
+def _find_kaggle_path(basename):
+    """Locate a Kaggle input file/dir by basename regardless of mount
+    layout. Kaggle has mounted dataset inputs under two different layouts
+    observed in this project: classic /kaggle/input/<slug>/... and, on
+    some accounts/notebooks, /kaggle/input/datasets/<username>/<slug>/...
+    — confirmed 2026-08-13 (Session 1 silently fell back to the built-in
+    prompt list under the classic-path guess). Glob instead of hardcoding."""
+    import glob
+    for pattern in (
+        f"/kaggle/input/{basename}",
+        f"/kaggle/input/*/{basename}",
+        f"/kaggle/input/datasets/*/{basename}",
+        f"/kaggle/input/datasets/*/*/{basename}",
+    ):
+        matches = sorted(glob.glob(pattern))
+        if matches:
+            return matches[0]
+    return None
+
+
+_found_eval = _find_kaggle_path("eval_prompts.jsonl")
+if _found_eval:
+    EVAL_FILE_CANDIDATES = [_found_eval] + EVAL_FILE_CANDIDATES
+
+_found_adapters = _find_kaggle_path("greenweight-adapters")
+if _found_adapters:
+    ADAPTER_ROOT = _found_adapters
+
+
+def naive_complexity_score(features: dict) -> float:
+    """Non-fuzzy complexity signal for condition 6 (threshold_router): the
+    plain mean of the 5 raw normalized features (0-100 scale), computed
+    directly from complexity_scorer output WITHOUT going through
+    FuzzyController at all — no membership functions, no rule base, no
+    defuzzification.
+
+    Fixed 2026-08-22: this condition used to reuse
+    `win_probability*100` (FuzzyController's own fully-defuzzified output)
+    as its input, with the identical 33/66 cut points FuzzyController
+    already applies internally — making threshold_router's tier
+    mathematically guaranteed to equal the fuzzy controller's own raw tier
+    for every prompt. That made the "fuzzy vs naive threshold" comparison
+    tautological, contradicting this function's own prior docstring
+    ("instead of fuzzy membership") and defeating RQ3's actual question.
+    See CREDIBILITY_REPORT.md / NEW.md Phase 5 for the full writeup.
+    """
+    return 100.0 * sum(features.values()) / len(features)
+
+
+def threshold_router(naive_complexity: float) -> str:
+    """Naive fixed-threshold baseline (condition 6) — a real non-fuzzy
+    signal (naive_complexity_score, see above), mapped with a plain
+    two-cut threshold instead of fuzzy membership + bridge refinement.
+    Isolates what the fuzzy shaping actually buys (RQ3)."""
+    if naive_complexity <= TIER_THRESHOLDS["4bit_upper"]:
         return "4bit"
-    if complexity <= TIER_THRESHOLDS["8bit_upper"]:
+    if naive_complexity <= TIER_THRESHOLDS["8bit_upper"]:
         return "8bit"
     return "16bit"
 
@@ -207,8 +280,14 @@ class GpuEnergyMeter:
         return self._integrated
 
     def info(self):
-        return {"gpu": pynvml.nvmlDeviceGetName(self.handle),
-                "driver": pynvml.nvmlSystemGetDriverVersion(),
+        # Same bytes-vs-str inconsistency as kaggle_energy_benchmark.py's
+        # GpuEnergyMeter.info() (fixed 2026-08-22) — decode defensively so
+        # the json.dumps() in main() can't crash on a bytes value after
+        # Phase A/B have already spent hours of GPU time.
+        gpu = pynvml.nvmlDeviceGetName(self.handle)
+        driver = pynvml.nvmlSystemGetDriverVersion()
+        return {"gpu": gpu.decode() if isinstance(gpu, bytes) else gpu,
+                "driver": driver.decode() if isinstance(driver, bytes) else driver,
                 "energy_counter": self.has_counter}
 
 
@@ -348,6 +427,7 @@ def phase_b(prompts, meas):
                    for p, wp in zip(prompts, win_probs)]
     router_overhead_s = time.perf_counter() - t0
     complexity = [wp * 100 for wp in win_probs]
+    naive_complexity = [naive_complexity_score(f) for f in features]
 
     n = len(prompts)
     ids = list(range(n))
@@ -376,8 +456,11 @@ def phase_b(prompts, meas):
     avg["n_resamples"] = RANDOM_ROUTER_RESAMPLES
     rows.append(avg)
 
-    # 6 threshold — naive fixed-threshold baseline on the same complexity signal
-    th = [threshold_router(c) for c in complexity]
+    # 6 threshold — naive fixed-threshold baseline on a non-fuzzy signal
+    # (mean of raw features, NOT the fuzzy controller's defuzzified output
+    # — see naive_complexity_score()'s docstring for why that distinction
+    # matters here)
+    th = [threshold_router(c) for c in naive_complexity]
     rows.append(summarize_condition(
         "threshold_router", [(i, [th[i]], th[i]) for i in ids], meas))
 
@@ -399,7 +482,7 @@ def phase_b(prompts, meas):
         cascade_picks.append((i, executed, executed[-1]))
     rows.append(summarize_condition("oracle_cascade", cascade_picks, meas))
 
-    return rows, complexity, fuzzy_tiers, final_tiers, router_overhead_s
+    return rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, router_overhead_s
 
 
 def main():
@@ -411,19 +494,20 @@ def main():
 
     adapter_root = ADAPTER_ROOT if ADAPTER_ROOT and Path(ADAPTER_ROOT).exists() else None
     meas, adapters_used = phase_a(prompts, meter, tokenizer, adapter_root)
-    rows, complexity, fuzzy_tiers, final_tiers, overhead = phase_b(prompts, meas)
+    rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, overhead = phase_b(prompts, meas)
 
     # per-prompt dump (paper's raw data artifact)
     with open(OUT_DIR / "routing_per_prompt.csv", "w", newline="",
               encoding="utf-8") as f:
         fields = ["prompt_id", "tier", "difficulty", "energy_j", "tokens_out",
                   "j_per_token", "latency_s", "correct", "complexity",
-                  "fuzzy_tier", "final_tier", "response"]
+                  "naive_complexity", "fuzzy_tier", "final_tier", "response"]
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         for (pid, tier), m in sorted(meas.items()):
             row = dict(m)
             row["complexity"] = round(complexity[pid], 2)
+            row["naive_complexity"] = round(naive_complexity[pid], 2)
             row["fuzzy_tier"] = fuzzy_tiers[pid]
             row["final_tier"] = final_tiers[pid]
             row["energy_j"] = round(row["energy_j"], 3)
