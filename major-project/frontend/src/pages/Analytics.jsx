@@ -117,7 +117,7 @@ export function Analytics() {
         <div>
           <h1 className="analytics-title display">Evaluation Metrics</h1>
           <p className="analytics-subtitle mono">
-            Live data from pipeline_trace.jsonl · accuracy_results.json · GET /api/*
+            Live data from routing traces and evaluation results
           </p>
         </div>
         <button className={`refresh-btn ${loading ? 'loading' : ''}`} onClick={refresh} disabled={loading}>
@@ -133,8 +133,8 @@ export function Analytics() {
       {/* KPIs */}
       <div className="kpi-grid">
         <KpiCard icon={TrendingDown} label="Energy Saved vs 16-bit"   value={savings !== null ? `~${savings}%` : '—'}     sub={savings !== null ? `${totalJ.toFixed(1)}J measured · vs assumed 105.2J baseline` : 'no real measurements yet'} accent="var(--green-400)"  delay={0}    />
-        <KpiCard icon={Database}     label="Queries Processed"         value={traces.length || '—'}                         sub="GET /api/results"                        accent="var(--indigo-400)" delay={0.05} />
-        <KpiCard icon={Target}       label="Routed MMLU Accuracy"      value={routedAcc ? (routedAcc.mmlu * 100).toFixed(1) + '%' : '—'} sub="GET /api/accuracy"          accent="var(--amber-400)"  delay={0.1}  />
+        <KpiCard icon={Database}     label="Queries Processed"         value={traces.length || '—'}                         sub="from routing session"                     accent="var(--indigo-400)" delay={0.05} />
+        <KpiCard icon={Target}       label="Routed MMLU Accuracy"      value={routedAcc ? (routedAcc.mmlu * 100).toFixed(1) + '%' : '—'} sub="evaluated accuracy"         accent="var(--amber-400)"  delay={0.1}  />
         <KpiCard icon={Cpu}          label="APGR"                      value={apgr ?? '—'}                                  sub="avg perf gap recovered"                  accent="var(--cyan-400)"   delay={0.15} />
       </div>
 
@@ -196,7 +196,7 @@ export function Analytics() {
       </div>
 
       {/* Energy line */}
-      <ChartCard title="Energy per Inference" sub="last 24 queries · live · GET /api/results · pipeline_trace.jsonl" delay={0.3}>
+      <ChartCard title="Energy per Inference" sub="last 24 queries routed" delay={0.3}>
         <ResponsiveContainer width="100%" height={180}>
           <LineChart data={lineData.length ? lineData : [{ i: 1, energy: 0 }]} margin={{ top: 10, right: 20, bottom: 0, left: -10 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(37,45,34,0.08)" />
@@ -214,7 +214,7 @@ export function Analytics() {
 
       {/* Accuracy table */}
       {accData && (
-        <ChartCard title="Accuracy by Condition" sub="GET /api/accuracy · accuracy_results.json" delay={0.35}>
+        <ChartCard title="Accuracy by Condition" sub="from evaluation benchmark" delay={0.35}>
           <table className="acc-table">
             <thead>
               <tr>

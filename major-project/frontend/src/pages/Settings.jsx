@@ -155,8 +155,7 @@ function BenchmarkAccuracy({ accuracy }) {
           No accuracy evaluation has been run yet, so there are no answer-quality
           numbers to show. These appear once
           {' '}<code className="mono">training/scripts/kaggle_accuracy_eval.py</code>{' '}
-          has written its results and the backend serves them at
-          {' '}<code className="mono">GET /accuracy</code>.
+          has completed and the results are available.
         </p>
         <ul className="metrics-planned">
           <li><strong>Accuracy per tier</strong> — how often each precision level answers correctly, per benchmark task.</li>
@@ -342,7 +341,7 @@ benchmark:
         <div className="panel-title display">
           <Activity size={15} strokeWidth={2} /> Routing quality
         </div>
-        <div className="panel-sub mono">measured · GET /results · pipeline_trace.jsonl</div>
+        <div className="panel-sub mono">From this session's routing trace</div>
         <RoutingQuality traces={traces} />
       </div>
 
@@ -350,7 +349,7 @@ benchmark:
         <div className="panel-title display">
           <Target size={15} strokeWidth={2} /> Precision &amp; accuracy benchmark
         </div>
-        <div className="panel-sub mono">GET /accuracy · accuracy_results.json</div>
+        <div className="panel-sub mono">From accuracy evaluation results</div>
         <BenchmarkAccuracy accuracy={accuracy} />
       </div>
     </div>
