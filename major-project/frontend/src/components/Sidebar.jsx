@@ -1,4 +1,5 @@
-import { Cpu, LayoutDashboard, FlaskConical, BarChart3, SlidersHorizontal, Leaf, Sun, Moon } from 'lucide-react'
+import { useState } from 'react'
+import { Cpu, LayoutDashboard, FlaskConical, BarChart3, SlidersHorizontal, Leaf, Sun, Moon, ChevronDown } from 'lucide-react'
 import { useTheme } from '../hooks/useTheme'
 import './Sidebar.css'
 
@@ -11,6 +12,7 @@ const NAV = [
 
 export function Sidebar({ view, setView, online, gpuReady }) {
   const { theme, toggle } = useTheme()
+  const [statusExpanded, setStatusExpanded] = useState(false)
 
   return (
     <aside className="sidebar">
@@ -47,31 +49,37 @@ export function Sidebar({ view, setView, online, gpuReady }) {
       </nav>
 
       <div className="sidebar-status">
-        <div className={`status-row ${online ? 'ok' : 'err'}`}>
-          <span className={`status-dot ${online ? 'ok' : 'err'}`} />
-          <span className="status-label">{online ? 'API connected' : 'API offline'}</span>
-        </div>
-        <div className={`status-row ${gpuReady ? 'ok' : 'warn'}`}>
-          <Cpu size={11} strokeWidth={1.6} />
-          <span className="status-label">{gpuReady ? 'GPU ready' : 'Routing-only mode'}</span>
-        </div>
-        <div className="status-endpoint mono">localhost:8000</div>
+        {!statusExpanded && (
+          <button
+            className="status-expand-toggle"
+            onClick={() => setStatusExpanded(true)}
+            aria-label="Expand settings"
+          >
+            <ChevronDown size={16} strokeWidth={1.8} />
+          </button>
+        )}
 
-        <button
-          className="theme-toggle"
-          onClick={toggle}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-        >
-          {theme === 'dark'
-            ? <><Sun size={13} strokeWidth={1.8} /> Light mode</>
-            : <><Moon size={13} strokeWidth={1.8} /> Dark mode</>}
-        </button>
+        {statusExpanded && (
+          <>
+            <button
+              className="theme-toggle"
+              onClick={toggle}
+              aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+            >
+              {theme === 'dark'
+                ? <><Sun size={13} strokeWidth={1.8} /> Light mode</>
+                : <><Moon size={13} strokeWidth={1.8} /> Dark mode</>}
+            </button>
 
-        <div className="tier-pills">
-          <span className="tier-pill green">Light</span>
-          <span className="tier-pill indigo">Standard</span>
-          <span className="tier-pill amber">Full</span>
-        </div>
+            <button
+              className="status-collapse-toggle"
+              onClick={() => setStatusExpanded(false)}
+              aria-label="Collapse settings"
+            >
+              <ChevronDown size={16} strokeWidth={1.8} style={{ transform: 'rotate(180deg)' }} />
+            </button>
+          </>
+        )}
       </div>
     </aside>
   )
