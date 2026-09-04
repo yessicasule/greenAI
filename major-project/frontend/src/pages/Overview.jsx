@@ -73,6 +73,8 @@ function HowItWorks() {
 /* One bar, three segments — "where your queries went". Reads as a mix,
    which a vertical bar chart of three numbers does not. */
 function RoutingMix({ counts, total }) {
+  const lighter = (counts['4bit'] || 0) + (counts['8bit'] || 0)
+  const share = total ? Math.round((lighter / total) * 100) : 0
   if (!total) {
     return (
       <div className="empty-state">
@@ -109,7 +111,9 @@ function RoutingMix({ counts, total }) {
         ))}
       </div>
       <p className="takeaway">
-        Most questions are easy. Every query in a lighter tier is energy that was never spent.
+        {share > 0
+          ? <>{share}% of questions were simple enough for a lighter tier — that share is energy that was never spent.</>
+          : <>Every question so far needed full precision, so nothing was saved on this batch. Simpler questions route to the lighter tiers.</>}
       </p>
     </>
   )
@@ -133,7 +137,7 @@ function EnergyComparison({ routedJ, baselineJ, kind }) {
             tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
             axisLine={false} tickLine={false}
           />
-          <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={26}>
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={26} isAnimationActive={false}>
             {data.map(d => <Cell key={d.name} fill={d.color} />)}
             <LabelList
               dataKey="value" position="right"

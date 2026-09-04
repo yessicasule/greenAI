@@ -1,4 +1,5 @@
-import { Cpu, LayoutDashboard, FlaskConical, BarChart3, SlidersHorizontal, Leaf } from 'lucide-react'
+import { Cpu, LayoutDashboard, FlaskConical, BarChart3, SlidersHorizontal, Leaf, Sun, Moon } from 'lucide-react'
+import { useTheme } from '../hooks/useTheme'
 import './Sidebar.css'
 
 const NAV = [
@@ -9,6 +10,8 @@ const NAV = [
 ]
 
 export function Sidebar({ view, setView, online, gpuReady }) {
+  const { theme, toggle } = useTheme()
+
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
@@ -53,6 +56,16 @@ export function Sidebar({ view, setView, online, gpuReady }) {
           <span className="status-label">{gpuReady ? 'GPU ready' : 'Routing-only mode'}</span>
         </div>
         <div className="status-endpoint mono">localhost:8000</div>
+
+        <button
+          className="theme-toggle"
+          onClick={toggle}
+          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          {theme === 'dark'
+            ? <><Sun size={13} strokeWidth={1.8} /> Light mode</>
+            : <><Moon size={13} strokeWidth={1.8} /> Dark mode</>}
+        </button>
 
         <div className="tier-pills">
           <span className="tier-pill green">Light</span>

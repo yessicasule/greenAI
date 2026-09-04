@@ -164,3 +164,19 @@
 .tier-pill.green  { background: rgba(79,121,66,0.12);   color: var(--green-400);  border: 1px solid rgba(79,121,66,0.25); }
 .tier-pill.indigo { background: rgba(176,106,69,0.12);  color: var(--indigo-400); border: 1px solid rgba(176,106,69,0.25); }
 .tier-pill.amber  { background: rgba(179,135,58,0.12);  color: var(--amber-400);  border: 1px solid rgba(179,135,58,0.25); }
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 7px 9px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.theme-toggle:hover { background: var(--bg-hover); color: var(--text-primary); }

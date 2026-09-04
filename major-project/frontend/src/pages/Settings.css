@@ -194,3 +194,99 @@
   white-space: pre;
   overflow-x: auto;
 }
+
+/* ---- measured metrics panels ---- */
+.settings-panel.wide { margin-top: 20px; }
+
+.settings-panel .panel-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+}
+/* Bordered cells rather than a 1px-gap grid: a partly-filled last row
+   left the grid's background showing as a phantom empty card. */
+.metric {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px 16px;
+}
+.metric-value {
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+.metric-unit { font-size: 13px; color: var(--text-muted); }
+.metric-label {
+  margin-top: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.metric-hint {
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.metrics-note {
+  margin-top: 12px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+.metrics-empty {
+  padding: 18px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  background: var(--bg-raised);
+  border-radius: var(--radius-sm);
+}
+.metrics-empty code {
+  font-size: 11.5px;
+  padding: 1px 5px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+}
+.metrics-planned {
+  margin: 12px 0 0 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.metrics-planned li { font-size: 12.5px; line-height: 1.5; }
+.metrics-planned strong { color: var(--text-primary); }
+
+.metrics-table-wrap { overflow-x: auto; }
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.metrics-table th {
+  text-align: left;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-default);
+}
+.metrics-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+.metrics-table td:first-child { color: var(--text-primary); font-weight: 600; }
+.metrics-table .num { text-align: right; }

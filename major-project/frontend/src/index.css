@@ -1,4 +1,6 @@
 :root {
+  color-scheme: light;
+
   /* Warm paper/cream backgrounds, not stark white — evokes recycled
      paper / sustainability reports rather than a clinical UI. */
   --bg-base: #faf7f0;
@@ -63,6 +65,53 @@
   --transition-slow: 400ms ease;
 }
 
+
+/* ---------------------------------------------------------------------
+   Dark theme. Only the palette tokens are redefined — every component
+   rule below and in the page stylesheets reads them, so nothing else
+   needs a dark variant. Warm charcoal rather than blue-black, to stay
+   in the same family as the cream light theme.
+   --------------------------------------------------------------------- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-base: #1b1e18;
+  --bg-surface: #23271f;
+  --bg-raised: #2a2e25;
+  --bg-hover: #333829;
+  --bg-active: #3c4130;
+
+  --border-subtle: rgba(233,238,224,0.09);
+  --border-default: rgba(233,238,224,0.16);
+  --border-strong: rgba(233,238,224,0.30);
+
+  --text-primary: #e9eee0;
+  --text-secondary: #b3bda6;
+  --text-muted: #7f8a72;
+  --text-inverse: #1b1e18;
+
+  /* Lifted for contrast on a dark ground; the light theme's #4f7942
+     fails against #23271f. */
+  --green-50:  #26301f;
+  --green-100: #33422a;
+  --green-300: #9dbd82;
+  --green-400: #86a86c;
+  --green-500: #9dbd82;
+  --green-600: #c2d8ae;
+  --green-tint: rgba(134,168,108,0.14);
+  --green-tint-strong: rgba(134,168,108,0.24);
+
+  --indigo-400: #d08e64;
+  --amber-400: #d2a755;
+  --red-400: #d1705f;
+  --cyan-400: #5fa39c;
+
+  --shadow-sm: 0 1px 1px rgba(0,0,0,0.30);
+  --shadow-md: 0 1px 3px rgba(0,0,0,0.36);
+  --shadow-lg: 0 2px 8px rgba(0,0,0,0.42);
+  --shadow-glow: var(--shadow-sm);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { font-size: 16px; -webkit-font-smoothing: antialiased; }
@@ -70,6 +119,7 @@ html { font-size: 16px; -webkit-font-smoothing: antialiased; }
 body {
   font-family: var(--font-body);
   background: var(--bg-base);
+  transition: background var(--transition-base), color var(--transition-base);
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
