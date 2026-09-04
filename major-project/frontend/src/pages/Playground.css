@@ -302,7 +302,7 @@
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-.pipeline-running { font-size: 10px; color: var(--green-400); animation: blink 1.2s ease-in-out infinite; }
+.pipeline-running { font-size: 10px; color: var(--green-400); }
 .pipeline-done    { font-size: 10px; color: var(--green-400); }
 
 /* Win prob */
@@ -349,7 +349,6 @@
 .pipeline-stage-pulse {
   width: 8px; height: 8px;
   border-radius: 50%;
-  animation: pulse-ring 1.5s ease-out infinite;
 }
 .pipeline-stage-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-subtle); }
 
@@ -369,15 +368,14 @@
   border: 1px solid var(--border-subtle);
   transition: all var(--transition-base);
 }
-.tier-option.active { box-shadow: 0 0 12px rgba(from currentColor r g b / 0.2); }
+.tier-option.active { border-color: currentColor; background: var(--bg-surface); }
 
-/* Progress indicator — a calm pulsing bar, not a sweeping HUD scanner */
+/* Progress indicator — a plain determinate-looking bar, no animation */
 .scan-line-container { position: absolute; inset-x: 0; top: 0; height: 3px; overflow: hidden; pointer-events: none; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
 .scan-line {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--green-400), transparent);
-  animation: breathe 1.8s ease-in-out infinite;
+  background: var(--green-300);
 }
 
 /* Config peek */

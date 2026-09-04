@@ -20,8 +20,9 @@ function DataBadge({ kind }) {
   const map = {
     measured: { label: 'Measured', cls: 'measured' },
     modeled:  { label: 'Modeled',  cls: 'modeled'  },
-    mock:     { label: 'Demo data', cls: 'mock'    },
-    none:     { label: 'No data',  cls: 'none'     },
+    mock:         { label: 'Demo data',    cls: 'mock' },
+    illustrative: { label: 'Illustrative', cls: 'mock' },
+    none:         { label: 'No data',      cls: 'none' },
   }
   const b = map[kind] || map.none
   return <span className={`data-badge ${b.cls} mono`}>{b.label}</span>
@@ -32,9 +33,9 @@ function StatTile({ icon: Icon, value, headline, caption, accent, kind, delay = 
   return (
     <motion.div
       className="stat-tile"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.35 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       style={{ '--accent': accent }}
     >
       <div className="stat-tile-top">
@@ -154,14 +155,14 @@ function EnergyComparison({ routedJ, baselineJ, kind }) {
 function Panel({ title, sub, children, delay = 0 }) {
   return (
     <motion.section
-      className="panel"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4 }}
+      className="ov-panel"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
     >
-      <div className="panel-head">
-        <h2 className="panel-title display">{title}</h2>
-        {sub && <span className="panel-sub mono">{sub}</span>}
+      <div className="ov-panel-head">
+        <h2 className="ov-panel-title display">{title}</h2>
+        {sub && <span className="ov-panel-sub mono">{sub}</span>}
       </div>
       {children}
     </motion.section>
@@ -181,7 +182,7 @@ export function Overview({ online }) {
   // placeholders (is_mock) and routing-only calls (energy 0) are excluded.
   const real = traces.filter(t => !t.is_mock && parseFloat(t.energy_joules || 0) > 0)
   const measured = real.length > 0
-  const kind = measured ? 'measured' : traces.length ? 'mock' : 'none'
+  const kind = measured ? 'measured' : traces.length ? 'mock' : 'illustrative'
 
   const routedJ = measured
     ? real.reduce((s, t) => s + parseFloat(t.energy_joules), 0) / real.length

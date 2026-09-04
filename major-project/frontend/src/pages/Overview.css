@@ -88,26 +88,26 @@
 }
 
 /* ---- panels ---- */
-.panel {
+.ov-panel {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 22px 24px 24px;
   box-shadow: var(--shadow-sm);
 }
-.panel-head {
+.ov-panel-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   margin-bottom: 18px;
 }
-.panel-title {
+.ov-panel-title {
   font-family: var(--font-display);
   font-size: 18px;
   color: var(--text-primary);
   margin: 0;
 }
-.panel-sub { font-size: 11px; color: var(--text-muted); }
+.ov-panel-sub { font-size: 11px; color: var(--text-muted); }
 
 /* ---- how it works ---- */
 .how-strip {

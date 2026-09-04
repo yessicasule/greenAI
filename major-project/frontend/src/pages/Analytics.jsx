@@ -20,9 +20,9 @@ function KpiCard({ icon: Icon, label, value, sub, accent, delay = 0 }) {
   return (
     <motion.div
       className="kpi-card"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.35 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
       style={{ '--accent': accent }}
     >
       <div className="kpi-icon">
@@ -33,7 +33,6 @@ function KpiCard({ icon: Icon, label, value, sub, accent, delay = 0 }) {
         <div className="kpi-label">{label}</div>
         {sub && <div className="kpi-sub mono">{sub}</div>}
       </div>
-      <div className="kpi-glow" />
     </motion.div>
   )
 }
@@ -42,9 +41,9 @@ function ChartCard({ title, sub, children, delay = 0 }) {
   return (
     <motion.div
       className="chart-card"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2 }}
     >
       <div className="chart-card-header">
         <div>

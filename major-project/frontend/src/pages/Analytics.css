@@ -109,16 +109,6 @@
   opacity: 0.7;
 }
 
-.kpi-glow {
-  position: absolute;
-  bottom: -20px;
-  right: -20px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  pointer-events: none;
-}
 
 /* Charts */
 .charts-row-2 {

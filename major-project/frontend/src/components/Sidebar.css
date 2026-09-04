@@ -25,11 +25,10 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--green-400) 0%, var(--green-600) 100%);
+  background: var(--green-400);
   display: grid;
   place-items: center;
   color: var(--text-inverse);
-  box-shadow: 0 0 16px var(--green-glow);
   flex-shrink: 0;
 }
 
@@ -76,15 +75,8 @@
 
 .sidebar-nav-item.active {
   color: var(--text-primary);
-}
-
-.sidebar-nav-pill {
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-md);
-  background: var(--bg-active);
-  border: 1px solid var(--border-default);
-  z-index: 0;
+  background: var(--bg-raised);
+  box-shadow: inset 2px 0 0 var(--green-400);
 }
 
 .sidebar-nav-icon {
@@ -105,7 +97,6 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
-  font-family: var(--font-display);
 }
 
 .sidebar-nav-desc {
@@ -147,7 +138,7 @@
 .status-dot.ok  { background: var(--green-400); }
 .status-dot.err { background: var(--red-400); }
 
-.status-label { font-family: var(--font-mono); font-size: 10px; }
+.status-label { font-size: 11px; }
 
 .status-endpoint {
   font-family: var(--font-mono);
@@ -163,11 +154,10 @@
 }
 
 .tier-pill {
-  font-family: var(--font-mono);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 500;
   padding: 3px 8px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   letter-spacing: 0.3px;
 }
 

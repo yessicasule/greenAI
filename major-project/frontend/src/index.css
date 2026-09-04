@@ -25,8 +25,8 @@
   --green-400: #4f7942;
   --green-500: #3d5f33;
   --green-600: #2e4a27;
-  --green-glow: rgba(79,121,66,0.14);
-  --green-glow-strong: rgba(79,121,66,0.24);
+  --green-tint: rgba(79,121,66,0.10);
+  --green-tint-strong: rgba(79,121,66,0.18);
 
   /* Secondary tier/status accents — kept as earth tones (terracotta,
      ochre, rust, muted teal) instead of the old indigo/amber/red/cyan;
@@ -37,26 +37,26 @@
   --red-400: #ab4a3f;
   --cyan-400: #3f7d78;
 
-  /* Fraunces (warm, slightly organic serif) for headlines — the single
-     biggest lever away from the old geometric/futuristic Syne. Body and
-     mono kept: neither reads as "sci-fi" on its own, that came from the
-     old dark+neon+glow combination, not the typefaces themselves. */
-  --font-display: 'Fraunces', serif;
+  /* One sans for everything. The display face is the body face at a
+     heavier weight — a serif or a second family reads as styling, and
+     this dashboard should read as an instrument panel, not a brand. */
+  --font-display: 'Instrument Sans', system-ui, sans-serif;
   --font-body: 'Instrument Sans', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 22px;
+  /* Modest radii. Large pill-like corners read as consumer-app styling;
+     a reporting UI wants near-square cards. */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
   --radius-pill: 999px;
 
-  /* Soft, warm, natural shadows — no neon blur. shadow-glow is now a
-     gentle tinted lift, not a literal glow. */
-  --shadow-sm: 0 1px 2px rgba(37,45,34,0.06);
-  --shadow-md: 0 4px 14px rgba(37,45,34,0.08);
-  --shadow-lg: 0 10px 28px rgba(37,45,34,0.10);
-  --shadow-glow: 0 2px 14px var(--green-glow-strong);
+  /* Borders do the separating; shadows only hint at elevation. */
+  --shadow-sm: 0 1px 1px rgba(37,45,34,0.04);
+  --shadow-md: 0 1px 3px rgba(37,45,34,0.06);
+  --shadow-lg: 0 2px 8px rgba(37,45,34,0.07);
+  --shadow-glow: var(--shadow-sm);
 
   --transition-fast: 120ms ease;
   --transition-base: 200ms ease;
@@ -77,11 +77,11 @@ body {
 
 #root { display: flex; min-height: 100vh; }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 4px; }
 
-::selection { background: var(--green-glow-strong); color: var(--green-600); }
+::selection { background: var(--green-tint-strong); color: var(--green-600); }
 
 button { font-family: var(--font-body); cursor: pointer; border: none; background: none; }
 input, textarea, select { font-family: var(--font-body); }
@@ -104,28 +104,11 @@ textarea { resize: none; }
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-@keyframes pulse-ring {
-  0%   { box-shadow: 0 0 0 0 var(--green-glow-strong); }
-  70%  { box-shadow: 0 0 0 8px transparent; }
-  100% { box-shadow: 0 0 0 0 transparent; }
-}
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-@keyframes breathe {
-  0%, 100% { opacity: 0.25; }
-  50%      { opacity: 0.9; }
 }
 
 .animate-fade-up  { animation: fadeUp 0.4s ease both; }
 .animate-fade-in  { animation: fadeIn 0.3s ease both; }
 .animate-spin     { animation: spin 1s linear infinite; }
-.animate-pulse    { animation: pulse-ring 2s ease-out infinite; }
+.animate-pulse    { animation: none; }
