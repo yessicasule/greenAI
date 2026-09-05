@@ -45,8 +45,20 @@ git -C ~/greenAI rev-parse HEAD > "$OUT/git_commit.txt" 2>/dev/null || \
   echo "not a git checkout" > "$OUT/git_commit.txt"
 nvidia-smi > "$OUT/nvidia_smi.txt" 2>&1 || true
 
-python -u ../../../training/scripts/kaggle_routing_experiment.py \
-  --output-dir "$OUT"
+# SMOKE_LIMIT lets us exercise THIS wrapper -- not a similar one -- on a
+# handful of prompts before committing 4-6 unattended hours to it:
+#   sbatch --export=ALL,RUN_ID=smoke,SMOKE_LIMIT=6 ... session4_full_run.sh
+# Unset for real runs, which then evaluate the full 500-prompt set.
+LIMIT_ARG=""
+if [ -n "${SMOKE_LIMIT:-}" ]; then
+  LIMIT_ARG="--limit ${SMOKE_LIMIT}"
+  echo "SMOKE TEST: limiting to ${SMOKE_LIMIT} prompts -- not a real run"
+fi
 
-echo "=== run ${RUN_ID} finished, exit $? ==="
-ls -la "$OUT"
+# Report what survived however we exit. Under `set -e` a failure in python
+# would otherwise skip straight past the listing, which is exactly when we
+# most want to know which partial results reached disk.
+trap 'echo "=== run ${RUN_ID} exiting (status $?) ==="; ls -la "$OUT" || true' EXIT
+
+python -u ../../../training/scripts/kaggle_routing_experiment.py \
+  --output-dir "$OUT" $LIMIT_ARG

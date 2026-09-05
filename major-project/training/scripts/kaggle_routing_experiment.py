@@ -414,9 +414,28 @@ def load_prompts():
     raise FileNotFoundError("eval_prompts.jsonl not found — upload it as a dataset")
 
 
+PHASE_A_FIELDS = ["prompt_id", "tier", "difficulty", "energy_j", "tokens_out",
+                  "j_per_token", "latency_s", "correct", "response"]
+
+
 def phase_a(prompts, meter, tokenizer, adapter_root):
     measurements = {}   # (prompt_id, tier) -> dict
     adapters_used = {}
+
+    # Append every measurement to disk as it is taken, flushing each row.
+    # A full run is 3-5h of Phase A and cannot be watched from off campus,
+    # so anything that only lands at the end -- the summary CSVs, and even
+    # dump_phase_a() -- is lost if the job is killed at the wall clock or
+    # dies mid-tier. 1500 flushed rows over several hours costs nothing
+    # next to re-running the whole thing.
+    live_path = OUT_DIR / "phase_a_live.csv"
+    live_file = open(live_path, "w", newline="", encoding="utf-8")
+    live = csv.DictWriter(live_file, fieldnames=PHASE_A_FIELDS,
+                          extrasaction="ignore")
+    live.writeheader()
+    live_file.flush()
+    print(f"Streaming per-prompt measurements to {live_path}", flush=True)
+
     for tier in TIERS:
         print(f"\n===== Phase A: tier {tier} =====", flush=True)
         t_load = time.perf_counter()
@@ -455,7 +474,7 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
             text, n_tok = generate(p["prompt"])
             latency = time.perf_counter() - t0
             joules = meter.stop()
-            measurements[(i, tier)] = {
+            row = {
                 "prompt_id": i, "tier": tier,
                 "difficulty": p.get("difficulty_label", "?"),
                 "energy_j": joules, "tokens_out": n_tok,
@@ -464,6 +483,9 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
                 "correct": is_correct(text, p.get("reference_answer", "")),
                 "response": text,
             }
+            measurements[(i, tier)] = row
+            live.writerow(row)
+            live_file.flush()
             if (i + 1) % stride == 0:
                 el = time.perf_counter() - t_tier
                 eta = el / (i + 1) * (len(prompts) - i - 1)
@@ -473,6 +495,7 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
         del model
         gc.collect()
         torch.cuda.empty_cache()
+    live_file.close()
     return measurements, adapters_used
 
 
