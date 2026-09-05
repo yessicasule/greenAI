@@ -182,12 +182,30 @@ trusting the rest of the session.
 ## Phase 1 — Session 1: Energy ground truth (GPU, ~2-3h) — THE GO/NO-GO GATE
 
 Goal: find out, on real hardware, whether precision even affects energy for
-a 1B model on a T4. Everything downstream depends on this.
+a 1B model. Everything downstream depends on this.
 
-- [ ] Run `prepare_eval_dataset.py` to build the real, deduped, stratified
-      dataset (needs `pip install datasets` + internet) — replaces the
-      30-prompt sample used for earlier calibration.
-- [ ] Upload deduped `eval_prompts.jsonl` to the Kaggle dataset.
+**STATUS 2026-09-04: dry run PASSED, real run NOT YET SUBMITTED.**
+See `SESSION_LOG_2026-09-04.md` for the full account. Headline: on a
+10-prompt smoke test the three tiers came out at 1.441 / 3.369 / 6.713
+J/token with non-overlapping 95% CIs — **the go/no-go premise holds**, and
+the Kaggle 8-bit hang did NOT reproduce. Those numbers are a smoke test
+(n=30/tier), not a result; the 500-prompt run is the real one.
+
+Note: the platform is the SPIT cluster, **not** a T4 — and the GPU is an
+`NVIDIA RTX 6000 Ada Generation`, not the RTX A6000 `CLUSTER_MANUAL.md`
+originally claimed.
+
+- [x] **Done 2026-09-04, on-cluster.** Ran `prepare_eval_dataset.py` to build
+      the real, deduped, stratified dataset — replaces the 30-prompt sample
+      used for earlier calibration. **500 prompts, seed=42**, 200 easy /
+      150 medium / 150 hard, from TriviaQA + Alpaca + GSM8K + CodeAlpaca-20k,
+      no dedup failures and no repetition-padding. The laptop's copy was
+      stale; this regenerated one is authoritative. Gitignored, so it lives
+      on the cluster only — reproducible anywhere with the same seed.
+- [x] ~~Upload deduped `eval_prompts.jsonl` to the Kaggle dataset.~~
+      **Obsolete** — Kaggle is no longer the platform. On the cluster the
+      file is copied into the job's working directory instead (the script
+      resolves it relative to cwd).
 - [ ] Run `training/scripts/kaggle_energy_benchmark.py`:
   - NVML `nvmlDeviceGetTotalEnergyConsumption` (hardware counter, mJ)
   - 5 warmup generations, then N≥300 prompts per tier, greedy decoding,
@@ -217,11 +235,32 @@ a 1B model on a T4. Everything downstream depends on this.
 
 ## Phase 2 — Session 2: Per-tier accuracy + the mechanistic correlation study (GPU, ~4-6h)
 
-Goal: get real accuracy numbers per tier, **and** collect the evidence that
+**STATUS: UNBLOCKED 2026-09-05 (evening) — ready to submit, not yet run.**
+
+The `srun` diagnosis below was wrong. Jobs 1494-1507 that evening all ran
+`python` DIRECTLY inside `sbatch` with no `srun`, and the venv resolved every
+time. For a single-node single-task job `sbatch` has already allocated the
+node — `srun` was never needed. A second, independent cause of the same
+"installed but the job can't see it" symptom: the venv is Python 3.11 built
+with `uv venv` and has **no pip**, so bare `pip` fell through to the system
+Python 3.9. Install with `uv pip install`, never `pip`.
+
+`kaggle_accuracy_eval.py` also carried the same 8-bit `torch_dtype` bug and
+Kaggle-only adapter path found in the routing script — both fixed. Submit with
+`training/scripts/session2_accuracy.sh` and WATCH it: the script has never
+completed a run. Untested risk: lm-eval downloads its task datasets from
+HuggingFace, which needs outbound internet from the compute node.
+
+The original diagnosis is kept below for the record.
+
+**Summary:** Attempted 4 job submissions on college GPU cluster; all failed before reaching evaluation code due to SLURM srun environment isolation preventing venv activation + Python discovery. Root cause: **not a code issue** — the evaluation script itself is sound (memory fixes applied to `kaggle_accuracy_eval.py` are correct). Next session must choose one of 4 recovery paths: (1) interactive GPU access, (2) SLURM admin config fix, (3) container submission, or (4) Kaggle/AceCloud fallback. See SESSION_2_BLOCKER.md §"Recommendations for Session 2 Retry" for details.
+
+Goal (original): get real accuracy numbers per tier, **and** collect the evidence that
 answers "why should prompt complexity predict quantization sensitivity?" —
 this is the causal backbone the paper currently lacks.
 
-- [ ] `pip install lm-eval`.
+- [x] `uv pip install lm-eval` — done 2026-09-05, lm_eval 0.4.13 confirmed
+      importable on the venv interpreter. NOT `pip install`, see above.
 - [ ] Evaluate each tier (fp16 / 8-bit / 4-bit) × (with / without QAT
       adapters) on tinyMMLU + GSM8K subset + HellaSwag subset.
 - [ ] Save per-task, per-prompt JSON results (need per-prompt granularity,
@@ -242,6 +281,9 @@ exists and is at least directionally sensible (if it isn't — if complexity
 features don't correlate with quantization sensitivity at all — treat that
 as a serious finding requiring a rethink of the sensor before Session 4,
 not something to bury).
+
+**~~To unblock~~ (superseded 2026-09-05):** none of the four recovery paths
+were needed — drop `srun`, install with `uv pip`. Original text: Once Python is runnable on GPU, this session will take 4–6 hours per the original estimate. Do not attempt more wrapper-script or PATH variations — the issue is environmental isolation in srun, not code or configuration.
 
 ---
 

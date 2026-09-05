@@ -124,11 +124,16 @@ def evaluate(model, tokenizer, tasks, limit):
     import lm_eval
     from lm_eval.models.huggingface import HFLM
     lm = HFLM(pretrained=model, tokenizer=tokenizer, batch_size="auto")
-    results = lm_eval.simple_evaluate(
-        model=lm, tasks=tasks, limit=limit, random_seed=42,
-        numpy_random_seed=42, torch_random_seed=42,
-    )
-    return results["results"]
+    try:
+        results = lm_eval.simple_evaluate(
+            model=lm, tasks=tasks, limit=limit, random_seed=42,
+            numpy_random_seed=42, torch_random_seed=42,
+        )
+        return results["results"]
+    finally:
+        del lm
+        gc.collect()
+        torch.cuda.empty_cache()
 
 
 def main():
@@ -174,9 +179,12 @@ def main():
                             })
                 print(json.dumps(res, indent=2, default=str))
             finally:
+                if hasattr(model, 'to'):
+                    model.to('cpu')
                 del model
                 gc.collect()
                 torch.cuda.empty_cache()
+                torch.cuda.reset_peak_memory_stats()
 
     (OUT_DIR / "accuracy_per_tier.json").write_text(
         json.dumps(all_results, indent=2, default=str)
