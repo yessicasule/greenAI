@@ -65,14 +65,21 @@ def main():
     # the spread tells us whether the node is contended. Session 4 saw
     # 11-19s for identical 128-token prompts, so variance is the point.
     print("\n--- timed runs ---", flush=True)
+    print("  cpu_s is this process's own CPU time. Generation at batch 1 is "
+          "launch-bound, so:", flush=True)
+    print("    cpu_s flat while wall_s grows  -> we are WAITING "
+          "(descheduled by a co-tenant; environmental)", flush=True)
+    print("    cpu_s grows with wall_s        -> we are doing more work "
+          "per token (internal: our stack)", flush=True)
     rates = []
-    for r in range(5):
-        t0 = time.perf_counter()
+    for r in range(12):
+        c0, t0 = time.process_time(), time.perf_counter()
         n = gen(MAX_NEW)
         dt = time.perf_counter() - t0
+        dc = time.process_time() - c0
         rates.append(n / dt)
-        print(f"  run {r + 1}: {n} tok in {dt:.2f}s = {n / dt:.1f} tok/s",
-              flush=True)
+        print(f"  run {r + 1:2d}: {n} tok  wall {dt:6.2f}s  cpu {dc:6.2f}s  "
+              f"cpu/wall {dc / dt:.2f}  {n / dt:5.1f} tok/s", flush=True)
 
     lo, hi = min(rates), max(rates)
     print(f"\nmean {sum(rates) / len(rates):.1f} tok/s, "
