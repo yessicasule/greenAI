@@ -6,7 +6,7 @@
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=32G
 #SBATCH --gres=gpu:1
-#SBATCH --time=08:00:00
+#SBATCH --time=12:00:00
 #SBATCH --output=session4_run_%j.out
 #SBATCH --error=session4_run_%j.err
 
@@ -16,8 +16,14 @@
 #
 #   sbatch --export=ALL,RUN_ID=1 training/scripts/session4_full_run.sh
 #
-# 8h wall clock against a 4-6h budget: enough margin for a slow 8-bit tier
-# without letting a wedged job sit on the GPU for a full day.
+# 12h wall clock against a ~2.8h measured estimate (scaled from the
+# 10-prompt dry run, job 1497: 4bit 14s + 8bit 27s + 16bit 163s per 10
+# prompts). Worst case, if every prompt runs to the full 128 tokens AND
+# host contention sits at the bad end of what micro_bench measured
+# (4.4 tok/s), 16-bit alone is ~4h and the run is ~5h. SLURM bills actual
+# usage rather than the request, so the extra headroom is free and stops
+# a contended run from dying at the wall with Phase B never reached.
+# phase_a_live.csv makes even that case recoverable.
 
 set -euo pipefail
 
