@@ -418,6 +418,116 @@ PHASE_A_FIELDS = ["prompt_id", "tier", "difficulty", "energy_j", "tokens_out",
                   "j_per_token", "latency_s", "correct", "response"]
 
 
+def _generate(model, tokenizer, prompt):
+    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
+    with torch.no_grad():
+        out = model.generate(**inputs, max_new_tokens=MAX_NEW_TOKENS,
+                             do_sample=False,
+                             pad_token_id=tokenizer.eos_token_id)
+    torch.cuda.synchronize()
+    n_new = out.shape[1] - inputs["input_ids"].shape[1]
+    text = tokenizer.decode(out[0][inputs["input_ids"].shape[1]:],
+                            skip_special_tokens=True)
+    return text, n_new
+
+
+def _measure(model, tokenizer, meter, prompt_obj, prompt_id, tier):
+    """One metered generation. Shared by both Phase A orderings so the two
+    modes cannot drift apart in how a measurement is actually taken."""
+    meter.start()
+    t0 = time.perf_counter()
+    text, n_tok = _generate(model, tokenizer, prompt_obj["prompt"])
+    latency = time.perf_counter() - t0
+    joules = meter.stop()
+    return {
+        "prompt_id": prompt_id, "tier": tier,
+        "difficulty": prompt_obj.get("difficulty_label", "?"),
+        "energy_j": joules, "tokens_out": n_tok,
+        "j_per_token": joules / max(n_tok, 1),
+        "latency_s": latency,
+        "correct": is_correct(text, prompt_obj.get("reference_answer", "")),
+        "response": text,
+    }
+
+
+def _open_live_csv():
+    """Append-and-flush sink for Phase A. See phase_a()'s comment."""
+    path = OUT_DIR / "phase_a_live.csv"
+    f = open(path, "w", newline="", encoding="utf-8")
+    w = csv.DictWriter(f, fieldnames=PHASE_A_FIELDS, extrasaction="ignore")
+    w.writeheader()
+    f.flush()
+    print(f"Streaming per-prompt measurements to {path}", flush=True)
+    return f, w
+
+
+def phase_a_interleaved(prompts, meter, tokenizer, adapter_root):
+    """Measure every prompt on all tiers back-to-back, in shuffled order.
+
+    phase_a() runs all prompts on 4bit, then all on 8bit, then all on
+    16bit. Tier is therefore perfectly confounded with time: any drift over
+    a multi-hour run -- host contention on this shared node, thermal state,
+    a neighbour's job starting -- lands entirely on whichever tier runs
+    last. That is why 16-bit measured ~6x slower than 4-bit despite fp16
+    being the cheapest path, and why static_16bit swung 52% between two dry
+    runs 15 minutes apart (SESSION_4_BLOCKER.md).
+
+    Here each prompt is measured on all three tiers within a few seconds of
+    each other, so drift is common to all three and largely cancels in the
+    per-prompt ratios the paper's claims rest on. The order is shuffled per
+    prompt so no tier systematically benefits from being measured first
+    (the first generation after a switch can carry cache effects).
+
+    Costs ~5GB to hold all three tiers resident, against 49GB available.
+    """
+    measurements = {}
+    models, adapters_used = {}, {}
+
+    print("Phase A: INTERLEAVED ordering (tier decoupled from time)",
+          flush=True)
+    for tier in TIERS:
+        t_load = time.perf_counter()
+        models[tier], adapters_used[tier] = load_tier(tier, adapter_root)
+        print(f"  loaded {tier} in {time.perf_counter() - t_load:.1f}s; "
+              f"QAT adapter loaded: {adapters_used[tier]}", flush=True)
+    print(f"  GPU memory held: "
+          f"{torch.cuda.memory_allocated() / 1e9:.2f} GB", flush=True)
+
+    for tier in TIERS:
+        for w, p in enumerate(prompts[:N_WARMUP]):
+            _generate(models[tier], tokenizer, p["prompt"])
+        print(f"  warmed {tier} ({min(N_WARMUP, len(prompts))} generations)",
+              flush=True)
+
+    live_file, live = _open_live_csv()
+    rng = random.Random(SEED)
+    stride = 50 if len(prompts) > 100 else 1
+    t0_all = time.perf_counter()
+
+    for i, p in enumerate(prompts):
+        order = list(TIERS)
+        rng.shuffle(order)
+        for tier in order:
+            row = _measure(models[tier], tokenizer, meter, p, i, tier)
+            measurements[(i, tier)] = row
+            live.writerow(row)
+            live_file.flush()
+        if (i + 1) % stride == 0:
+            el = time.perf_counter() - t0_all
+            eta = el / (i + 1) * (len(prompts) - i - 1)
+            per = {t: measurements[(i, t)]["energy_j"] for t in TIERS}
+            print(f"  {i + 1}/{len(prompts)} prompts x {len(TIERS)} tiers "
+                  f"({el:.0f}s elapsed, ~{eta:.0f}s left) J: "
+                  + " ".join(f"{t}={per[t]:.0f}" for t in TIERS), flush=True)
+
+    live_file.close()
+    for tier in list(models):
+        del models[tier]
+    gc.collect()
+    torch.cuda.empty_cache()
+    return measurements, adapters_used
+
+
 def phase_a(prompts, meter, tokenizer, adapter_root):
     measurements = {}   # (prompt_id, tier) -> dict
     adapters_used = {}
@@ -700,6 +810,13 @@ def parse_args():
     p.add_argument("--warmup", type=int, default=N_WARMUP,
                    help=f"warmup generations per tier (default {N_WARMUP}; "
                         "0 disables)")
+    p.add_argument("--interleave", action="store_true",
+                   help="measure each prompt on all tiers back-to-back in "
+                        "shuffled order, instead of one whole tier at a "
+                        "time. Decouples tier from time so host-contention "
+                        "drift cannot land on whichever tier runs last "
+                        "(see SESSION_4_BLOCKER.md). Holds all tiers "
+                        "resident, ~5GB.")
     p.add_argument("--allow-no-adapters", action="store_true",
                    help="proceed even if the QAT adapters cannot be found "
                         "(runs plain PTQ — an ablation, not the full system)")
@@ -755,7 +872,8 @@ def main():
             "at major-project/adapters/, or pass --allow-no-adapters if a "
             "no-adapter ablation is what you actually want.")
 
-    meas, adapters_used = phase_a(prompts, meter, tokenizer, adapter_root)
+    runner = phase_a_interleaved if args.interleave else phase_a
+    meas, adapters_used = runner(prompts, meter, tokenizer, adapter_root)
     dump_phase_a(meas)
     rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, overhead = phase_b(prompts, meas)
 
@@ -789,6 +907,8 @@ def main():
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "model": MODEL_ID, "max_new_tokens": MAX_NEW_TOKENS, "seed": SEED,
         "n_prompts": len(prompts), "adapters_used": adapters_used,
+        "phase_a_ordering": "interleaved" if args.interleave else "by_tier",
+        "tiers_measured": list(TIERS),
         "router_overhead_s_total": round(overhead, 4),
         "router_overhead_ms_per_prompt": round(1000 * overhead / len(prompts), 3),
         "correctness_metric": "reference-match proxy (see is_correct docstring)",
