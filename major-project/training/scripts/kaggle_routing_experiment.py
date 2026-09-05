@@ -587,6 +587,60 @@ def phase_b(prompts, meas):
     return rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, router_overhead_s
 
 
+def preflight(prompts):
+    """Exercise everything Phase B needs before Phase A spends any GPU time.
+
+    Phase B constructs FuzzyController() only after all three tiers are
+    measured, so a missing dependency surfaces at the very end. That cost
+    a full Phase A on job 1494 (scikit-fuzzy absent from the venv: ~5.5
+    min of GPU, and it would have been ~5h on a full run). Cheap to check
+    up front; the failure mode it prevents is expensive.
+
+    Also asserts spaCy is really parsing: complexity_scorer falls back to
+    a constant parse depth of 5 with only a logger warning if the model is
+    missing, which would silently flatten one of the five routing features
+    and produce a completed, plausible, wrong run.
+    """
+    print("Preflight: checking Phase B dependencies...", flush=True)
+    fuzzy, bridge = FuzzyController(), RouteLLMBridge()
+    from router.complexity_scorer import get_parse_depth
+    d_short = get_parse_depth("Hi.")
+    d_long = get_parse_depth(
+        "Write a Python function that computes the nth Fibonacci number "
+        "using memoization, then explain its time complexity.")
+    if d_short == d_long:
+        raise SystemExit(
+            f"Preflight FAILED: parse depth is constant ({d_short}) — spaCy "
+            "or en_core_web_sm is missing, so syntax_depth would be a dead "
+            "feature. Install with: uv pip install spacy && "
+            "python -m spacy download en_core_web_sm")
+    feats = score_complexity(prompts[0]["prompt"])
+    tier, wp = fuzzy.route(feats)
+    bridge.decide(prompts[0]["prompt"], wp)
+    print(f"Preflight OK: parse depth {d_short}/{d_long}, "
+          f"sample routes to {tier} (win_prob {wp:.3f})", flush=True)
+
+
+def dump_phase_a(meas):
+    """Write raw Phase A measurements as soon as they exist.
+
+    Every CSV used to be written only after Phase B, so any Phase B
+    failure discarded GPU work that had already been paid for — observed
+    twice on dry runs. This file alone is enough to recompute every
+    derived condition offline, so a late crash costs minutes rather than
+    hours.
+    """
+    path = OUT_DIR / "phase_a_raw.csv"
+    fields = ["prompt_id", "tier", "difficulty", "energy_j", "tokens_out",
+              "j_per_token", "latency_s", "correct", "response"]
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
+        w.writeheader()
+        for _, m in sorted(meas.items()):
+            w.writerow(m)
+    print(f"Phase A raw measurements written to {path}", flush=True)
+
+
 def parse_args():
     import argparse
     p = argparse.ArgumentParser(description=__doc__)
@@ -633,8 +687,11 @@ def main():
         prompts = prompts[:args.limit]
         print(f"--limit {args.limit}: evaluating {len(prompts)} prompts")
 
+    preflight(prompts)
+
     adapter_root = ADAPTER_ROOT if ADAPTER_ROOT and Path(ADAPTER_ROOT).exists() else None
     meas, adapters_used = phase_a(prompts, meter, tokenizer, adapter_root)
+    dump_phase_a(meas)
     rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, overhead = phase_b(prompts, meas)
 
     # per-prompt dump (paper's raw data artifact)
