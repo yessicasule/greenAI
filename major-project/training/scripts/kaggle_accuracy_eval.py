@@ -29,6 +29,12 @@ from pathlib import Path
 if Path("/kaggle").exists():
     os.system("pip -q install lm-eval bitsandbytes accelerate peft")
 
+import warnings
+
+# transformers resets warning filters to "always" in places, defeating
+# Python's once-per-site dedup for the cast warning fixed in load_tier.
+warnings.filterwarnings("ignore", message=".*MatMul8bitLt.*")
+
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
@@ -60,7 +66,18 @@ def _find_kaggle_path(basename):
     return None
 
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+
 _found_adapters = _find_kaggle_path("greenweight-adapters")
+if not _found_adapters and not Path(ADAPTER_ROOT).exists():
+    # Off Kaggle the adapters live at major-project/adapters/. Without this
+    # the Kaggle-only default misses and main() falls back to base-model-only
+    # evals -- which silently drops the with/without-QAT comparison that is
+    # the entire point of Session 2.
+    for _cand in (_SCRIPT_DIR.parent.parent / "adapters", Path("adapters")):
+        if (_cand / "adapter_simple").exists():
+            _found_adapters = str(_cand.resolve())
+            break
 if _found_adapters:
     ADAPTER_ROOT = _found_adapters
 # tier -> adapter trained for the matching complexity band
@@ -73,7 +90,14 @@ OUT_DIR = Path("/kaggle/working") if Path("/kaggle/working").exists() else Path(
 
 
 def load_tier(tier):
-    kwargs = {"device_map": {"": 0}}
+    # torch_dtype on EVERY tier, not just 16bit. Without it the modules
+    # bitsandbytes leaves unquantized keep the model's declared bfloat16,
+    # so every Linear8bitLt matmul casts to fp16 and warns about it. In
+    # the routing experiment that produced 1,103,631 warnings and a 93 MB
+    # log, and the job was bottlenecked writing warning text rather than
+    # computing. lm-eval runs far more generations than that, so this
+    # would be worse here.
+    kwargs = {"device_map": {"": 0}, "torch_dtype": torch.float16}
     if tier == "4bit":
         kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -83,8 +107,6 @@ def load_tier(tier):
         )
     elif tier == "8bit":
         kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
-    elif tier == "16bit":
-        kwargs["torch_dtype"] = torch.float16
     return AutoModelForCausalLM.from_pretrained(MODEL_ID, **kwargs)
 
 
