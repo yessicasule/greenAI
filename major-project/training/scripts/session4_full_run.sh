@@ -22,7 +22,7 @@
 set -euo pipefail
 
 RUN_ID="${RUN_ID:-1}"
-OUT="$HOME/session4_run${RUN_ID}_output"
+OUT="$HOME/session4_run${RUN_ID}_j${SLURM_JOB_ID}_output"
 
 source ~/greenweight_env.sh
 cd ~/greenAI/major-project/backend/src/green_weight

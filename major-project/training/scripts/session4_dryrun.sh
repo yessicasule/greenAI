@@ -30,7 +30,7 @@ cd ~/greenAI/major-project/backend/src/green_weight
 python -u ../../../training/scripts/kaggle_routing_experiment.py \
   --limit 10 \
   --warmup 1 \
-  --output-dir "$HOME/session4_dryrun_output"
+  --output-dir "$HOME/session4_dryrun_${SLURM_JOB_ID}_output"
 
 echo "=== dry run finished, exit $? ==="
-ls -la "$HOME/session4_dryrun_output"
+ls -la "$HOME/session4_dryrun_${SLURM_JOB_ID}_output"
