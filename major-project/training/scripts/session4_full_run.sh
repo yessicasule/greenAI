@@ -40,6 +40,15 @@ export OPENBLAS_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export NUMEXPR_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
 export TOKENIZERS_PARALLELISM=false
 
+# INTERLEAVE=1 measures each prompt across all tiers back-to-back in
+# shuffled order rather than one whole tier at a time, so contention drift
+# cannot land entirely on whichever tier runs last.
+INTERLEAVE_ARG=""
+if [ -n "${INTERLEAVE:-}" ]; then
+  INTERLEAVE_ARG="--interleave"
+  echo "INTERLEAVED ordering enabled"
+fi
+
 source ~/greenweight_env.sh
 cd ~/greenAI/major-project/backend/src/green_weight
 
@@ -67,4 +76,4 @@ fi
 trap 'echo "=== run ${RUN_ID} exiting (status $?) ==="; ls -la "$OUT" || true' EXIT
 
 python -u ../../../training/scripts/kaggle_routing_experiment.py \
-  --output-dir "$OUT" $LIMIT_ARG
+  --output-dir "$OUT" $LIMIT_ARG $INTERLEAVE_ARG
