@@ -141,3 +141,31 @@ Eight defects found and fixed while getting here, all on `main`:
 - Router overhead measured at 146 ms/prompt against the plan's <100 ms gate.
   Partly one-off spaCy model load amortised over only 10 prompts; recheck at
   500.
+
+---
+
+## Decision 2026-09-05: split the eval deliverable from the paper's gate
+
+Agreed with the user, given an evaluation on Monday 2026-09-08 and blocked
+off-campus cluster access.
+
+**For the eval (now):** run #1 by-tier (job 1505) plus run #2 interleaved,
+chained with `--dependency=afterok` so nothing runs concurrently and the
+interleaved path is validated on a 10-prompt dry run before 500 prompts are
+committed to it. These are two different methods, so they are deliberately
+NOT the three-run reproducibility gate. What they give instead is real
+500-prompt results plus a direct measurement of how much the tier-ordering
+confound distorted `static_16bit` — which is a methods finding in its own
+right.
+
+**For the paper (after the eval):** three interleaved runs on different days
+for the Phase 5 gate, per `SESSION_4_PLAN.md` 4.2-4.4. Run #1 is retained as
+a documented by-tier comparison, not as one of the three.
+
+This deliberately departs from `SESSION_4_PLAN.md` note 4 ("do not mix runs
+from different code versions"). The note is right for the gate and is
+honoured there; it is knowingly set aside for the eval deliverable, where
+having two orderings is more informative than having one.
+
+`routing_run_info.json` records `phase_a_ordering` (`by_tier` /
+`interleaved`) for every run, so the two can never be conflated later.
