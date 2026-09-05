@@ -181,6 +181,18 @@ if _found_eval:
 _found_adapters = _find_kaggle_path("greenweight-adapters")
 if _found_adapters:
     ADAPTER_ROOT = _found_adapters
+elif not Path(ADAPTER_ROOT).exists():
+    # Off Kaggle (cluster / local checkout) the adapters live in the repo
+    # at major-project/adapters/. Without this the Kaggle-only default
+    # silently resolves to None and every tier runs as plain PTQ with no
+    # QAT adapter -- the run completes and reports adapters_used=false,
+    # which is easy to miss. Observed on job 1495.
+    for _cand in (_SCRIPT_DIR.parent.parent / "adapters",   # major-project/adapters
+                  _SCRIPT_DIR.parent / "adapters",
+                  Path("adapters")):
+        if (_cand / "adapter_simple").exists():
+            ADAPTER_ROOT = str(_cand.resolve())
+            break
 
 
 def naive_complexity_score(features: dict) -> float:
@@ -652,6 +664,9 @@ def parse_args():
     p.add_argument("--warmup", type=int, default=N_WARMUP,
                    help=f"warmup generations per tier (default {N_WARMUP}; "
                         "0 disables)")
+    p.add_argument("--allow-no-adapters", action="store_true",
+                   help="proceed even if the QAT adapters cannot be found "
+                        "(runs plain PTQ — an ablation, not the full system)")
     p.add_argument("--tiers", default=",".join(TIERS),
                    help="comma-separated subset of tiers to measure, e.g. "
                         "'4bit,16bit' to skip the slow 8bit tier. Note that "
@@ -690,6 +705,20 @@ def main():
     preflight(prompts)
 
     adapter_root = ADAPTER_ROOT if ADAPTER_ROOT and Path(ADAPTER_ROOT).exists() else None
+    if adapter_root:
+        print(f"QAT adapters: {adapter_root}", flush=True)
+    elif args.allow_no_adapters:
+        print("WARNING: running WITHOUT QAT adapters (plain PTQ) because "
+              "--allow-no-adapters was passed. This is an ablation, not the "
+              "full system.", flush=True)
+    else:
+        raise SystemExit(
+            "QAT adapters not found — every tier would run as plain PTQ and "
+            "the run would silently measure a different system than the one "
+            f"the paper describes (tried {ADAPTER_ROOT!r}). Point ADAPTER_ROOT "
+            "at major-project/adapters/, or pass --allow-no-adapters if a "
+            "no-adapter ablation is what you actually want.")
+
     meas, adapters_used = phase_a(prompts, meter, tokenizer, adapter_root)
     dump_phase_a(meas)
     rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, overhead = phase_b(prompts, meas)
