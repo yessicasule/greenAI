@@ -203,7 +203,7 @@ export function Playground({ online, gpuReady }) {
           {result && activeStage === 'done' && (
             <motion.div
               className="result-card"
-              initial={{ opacity: 0, y: 16 }}
+              initial={{ opacity: 0 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.35 }}
             >

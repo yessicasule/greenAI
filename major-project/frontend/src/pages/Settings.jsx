@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Leaf, RotateCcw } from 'lucide-react'
+import { Leaf, RotateCcw, Target, Activity } from 'lucide-react'
+import { useAnalytics } from '../hooks/useBackend'
 import './Settings.css'
+
+const TIER_ORDER = { '4bit': 0, '8bit': 1, '16bit': 2 }
 
 const DEFAULTS = { accuracy: 70, energy: 50, judger: 50 }
 
@@ -51,8 +54,157 @@ function TierBar({ label, pct, color }) {
   )
 }
 
+
+/* ------------------------------------------------------------------ *
+ * Measured metrics.  Everything here is derived from real trace rows
+ * or from the accuracy evaluation's own output — nothing is modelled,
+ * and a metric with no data shows an empty state rather than a number.
+ * ------------------------------------------------------------------ */
+
+function Metric({ label, value, unit, hint, accent }) {
+  return (
+    <div className="metric">
+      <div className="metric-value mono" style={accent ? { color: accent } : undefined}>
+        {value ?? '—'}<span className="metric-unit">{value != null ? unit : ''}</span>
+      </div>
+      <div className="metric-label">{label}</div>
+      <div className="metric-hint">{hint}</div>
+    </div>
+  )
+}
+
+function pct(n, d) { return d ? Math.round((n / d) * 100) : null }
+
+function RoutingQuality({ traces }) {
+  const n = traces.length
+  const scored = traces.filter(t => t.fuzzy_tier && (t.final_tier || t.tier))
+  const agree = scored.filter(t => t.fuzzy_tier === (t.final_tier || t.tier)).length
+  const escalated = scored.filter(
+    t => TIER_ORDER[t.final_tier || t.tier] > TIER_ORDER[t.fuzzy_tier]
+  ).length
+  const deescalated = scored.filter(
+    t => TIER_ORDER[t.final_tier || t.tier] < TIER_ORDER[t.fuzzy_tier]
+  ).length
+  const wp = traces.filter(t => typeof t.win_probability === 'number')
+  const meanWp = wp.length
+    ? (wp.reduce((s, t) => s + t.win_probability, 0) / wp.length)
+    : null
+  const lat = traces.filter(t => t.latency_ms > 0)
+  const meanLat = lat.length
+    ? Math.round(lat.reduce((s, t) => s + t.latency_ms, 0) / lat.length)
+    : null
+
+  if (!n) {
+    return (
+      <div className="metrics-empty">
+        No questions routed yet. Run a few prompts in the Playground and these
+        fill in from the real trace log.
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <div className="metrics-grid">
+        <Metric
+          label="Questions routed" value={n} unit=""
+          hint="Rows in pipeline_trace.jsonl for this session."
+        />
+        <Metric
+          label="Tier agreement" value={pct(agree, scored.length)} unit="%"
+          accent="var(--green-400)"
+          hint="How often the fuzzy controller's tier survived the RouteLLM bridge unchanged."
+        />
+        <Metric
+          label="Escalation rate" value={pct(escalated, scored.length)} unit="%"
+          accent="var(--amber-400)"
+          hint="Questions the bridge moved to a higher precision than the fuzzy score asked for."
+        />
+        <Metric
+          label="De-escalation rate" value={pct(deescalated, scored.length)} unit="%"
+          accent="var(--indigo-400)"
+          hint="Questions moved down to a cheaper tier."
+        />
+        <Metric
+          label="Mean win probability" value={meanWp != null ? meanWp.toFixed(3) : null} unit=""
+          hint="RouteLLM's confidence that the stronger model would win. Above the mid-zone it routes up."
+        />
+        <Metric
+          label="Mean routing latency" value={meanLat} unit=" ms"
+          hint="Time to read a question and choose a tier — the overhead routing adds."
+        />
+      </div>
+      <p className="metrics-note">
+        Measured from this session's own traces. They describe the router's
+        behaviour, not answer quality — that comes from the benchmark below.
+      </p>
+    </>
+  )
+}
+
+function BenchmarkAccuracy({ accuracy }) {
+  const byCondition = accuracy?.accuracy_by_condition
+  const perTier = accuracy && !byCondition
+    ? Object.entries(accuracy).filter(([, v]) => v && typeof v === 'object')
+    : []
+
+  if (!byCondition && !perTier.length) {
+    return (
+      <div className="metrics-empty">
+        <p>
+          No accuracy evaluation has been run yet, so there are no answer-quality
+          numbers to show. These appear once
+          {' '}<code className="mono">training/scripts/kaggle_accuracy_eval.py</code>{' '}
+          has completed and the results are available.
+        </p>
+        <ul className="metrics-planned">
+          <li><strong>Accuracy per tier</strong> — how often each precision level answers correctly, per benchmark task.</li>
+          <li><strong>Accuracy retention</strong> — routed accuracy as a share of full-precision accuracy. This is the number that decides whether the energy saving cost anything.</li>
+          <li><strong>Per-task breakdown</strong> — arc_easy, gsm8k and hellaswag separately; a router can hold up on one and collapse on another.</li>
+          <li><strong>QAT adapter delta</strong> — accuracy with the fine-tuned adapter minus the base model, at the same bit-width.</li>
+          <li><strong>Energy per correct answer</strong> — joules divided by correct answers, which is the only fair way to compare tiers that differ in both.</li>
+        </ul>
+      </div>
+    )
+  }
+
+  const rows = byCondition
+    ? Object.entries(byCondition).map(([name, v]) => ({
+        name,
+        cells: Object.entries(v).filter(([, x]) => typeof x === 'number'),
+      }))
+    : perTier.map(([name, tasks]) => ({
+        name,
+        cells: Object.entries(tasks).flatMap(([task, metrics]) =>
+          Object.entries(metrics || {})
+            .filter(([m, x]) => typeof x === 'number' && /acc/.test(m))
+            .map(([m, x]) => [`${task} ${m}`, x])
+        ),
+      }))
+
+  return (
+    <div className="metrics-table-wrap">
+      <table className="metrics-table">
+        <thead>
+          <tr><th>Condition</th><th>Metric</th><th className="num">Value</th></tr>
+        </thead>
+        <tbody>
+          {rows.flatMap(r => r.cells.map(([m, v], i) => (
+            <tr key={r.name + m}>
+              <td>{i === 0 ? r.name.replace(/_/g, ' ') : ''}</td>
+              <td className="mono">{m}</td>
+              <td className="num mono">{v < 1 ? (v * 100).toFixed(1) + '%' : v.toFixed(3)}</td>
+            </tr>
+          )))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export function Settings() {
   const [vals, setVals] = useState(DEFAULTS)
+  const { traces, accuracy } = useAnalytics()
   const set = (k) => (v) => setVals(prev => ({ ...prev, [k]: v }))
 
   const pct4  = Math.round(50 - vals.accuracy * 0.4)
@@ -184,6 +336,22 @@ benchmark:
         </div>
         <pre className="yaml-body mono">{configYaml}</pre>
       </motion.div>
+
+      <div className="settings-panel wide">
+        <div className="panel-title display">
+          <Activity size={15} strokeWidth={2} /> Routing quality
+        </div>
+        <div className="panel-sub mono">From this session's routing trace</div>
+        <RoutingQuality traces={traces} />
+      </div>
+
+      <div className="settings-panel wide">
+        <div className="panel-title display">
+          <Target size={15} strokeWidth={2} /> Precision &amp; accuracy benchmark
+        </div>
+        <div className="panel-sub mono">From accuracy evaluation results</div>
+        <BenchmarkAccuracy accuracy={accuracy} />
+      </div>
     </div>
   )
 }
