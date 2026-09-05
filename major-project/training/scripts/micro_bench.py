@@ -27,8 +27,32 @@ PROMPT = "Explain the theory of gravity in one paragraph."
 MAX_NEW = 128
 
 
+def _pin_threads():
+    """Confine torch's thread pools to the CPUs SLURM actually granted.
+
+    torch sizes its intra-op pool from the machine's core count, but SLURM
+    confines the job to --cpus-per-task via cgroup. On this node that is
+    224 threads fighting over 8 permitted CPUs, which shows up as 100% CPU
+    utilisation, ~156ms of CPU per generated token, and a 6x run-to-run
+    spread -- the Session 4 16-bit anomaly.
+    """
+    n = int(os.environ.get("SLURM_CPUS_PER_TASK") or
+            len(os.sched_getaffinity(0)))
+    torch.set_num_threads(n)
+    try:
+        # Must precede any parallel work, and raises if the pool already
+        # started; harmless either way, so do not let it kill the run.
+        torch.set_num_interop_threads(n)
+    except RuntimeError:
+        pass
+    print(f"threads: torch intra-op={torch.get_num_threads()}, "
+          f"affinity={len(os.sched_getaffinity(0))} CPUs, "
+          f"OMP_NUM_THREADS={os.environ.get('OMP_NUM_THREADS')}", flush=True)
+
+
 def main():
     print(f"torch {torch.__version__}, CUDA {torch.version.cuda}", flush=True)
+    _pin_threads()
     print(f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES')}",
           flush=True)
     print(f"device: {torch.cuda.get_device_name(0)}", flush=True)

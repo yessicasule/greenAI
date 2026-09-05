@@ -15,6 +15,16 @@
 
 set -euo pipefail
 
+# Confine every thread pool to the CPUs SLURM granted. torch, OpenMP and
+# MKL all size their pools from the machine core count (224 threads here)
+# while the cgroup permits only --cpus-per-task, so the default is heavy
+# oversubscription: 100% CPU, ~156ms CPU per generated token, 6x variance.
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
+export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
+export OPENBLAS_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
+export NUMEXPR_NUM_THREADS=${SLURM_CPUS_PER_TASK:-8}
+export TOKENIZERS_PARALLELISM=false
+
 source ~/greenweight_env.sh
 
 echo "=== GPU state before ==="
