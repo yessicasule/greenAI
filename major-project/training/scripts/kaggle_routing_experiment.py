@@ -613,7 +613,20 @@ def preflight(prompts):
     missing, which would silently flatten one of the five routing features
     and produce a completed, plausible, wrong run.
     """
-    print("Preflight: checking Phase B dependencies...", flush=True)
+    print("Preflight: checking dependencies...", flush=True)
+    # peft is imported lazily inside load_tier() and accelerate only via
+    # device_map, so neither shows up until a model is already loading --
+    # job 1496 died on `No module named peft` after the meter, prompts and
+    # preflight had all passed. Import them here where it costs nothing.
+    import importlib
+    for mod in ("peft", "accelerate", "bitsandbytes"):
+        try:
+            importlib.import_module(mod)
+        except ImportError as e:
+            raise SystemExit(
+                f"Preflight FAILED: {mod} not importable ({e}). Install into "
+                f"the venv with: uv pip install {mod}  (note: bare `pip` on "
+                "this cluster resolves to a different interpreter)")
     fuzzy, bridge = FuzzyController(), RouteLLMBridge()
     from router.complexity_scorer import get_parse_depth
     d_short = get_parse_depth("Hi.")
