@@ -66,8 +66,15 @@ import re
 import sys
 import threading
 import time
+import warnings
 from datetime import datetime, timezone
 from pathlib import Path
+
+# Belt-and-braces for the fp32->fp16 cast warning fixed at source in
+# load_tier(): transformers resets warning filters to "always" in places,
+# which defeats Python's normal once-per-site dedup and lets this fire on
+# every matmul. Nothing actionable is lost by silencing it here.
+warnings.filterwarnings("ignore", message=".*MatMul8bitLt.*")
 
 if Path("/kaggle").exists():
     os.system("pip -q install pynvml bitsandbytes accelerate peft scikit-fuzzy textstat spacy")
@@ -128,7 +135,8 @@ MODEL_ID = "meta-llama/Llama-3.2-1B"
 MAX_NEW_TOKENS = 128
 N_WARMUP = 5
 SEED = 42
-TIERS = ["4bit", "8bit", "16bit"]
+ALL_TIERS = ["4bit", "8bit", "16bit"]   # cheapest -> most expensive
+TIERS = list(ALL_TIERS)                 # narrowed by --tiers for dry runs only
 TIER_THRESHOLDS = {"4bit_upper": 33, "8bit_upper": 66}   # matches config.yaml
 RANDOM_ROUTER_RESAMPLES = 20
 EVAL_FILE_CANDIDATES = [
@@ -295,7 +303,15 @@ class GpuEnergyMeter:
 # Phase A: measure every prompt on every tier
 # ====================================================================
 def load_tier(tier, adapter_root):
-    kwargs = {"device_map": {"": 0}}
+    # torch_dtype=float16 on EVERY tier, not just 16bit. The modules
+    # bitsandbytes does not quantize (embeddings, layernorms, lm_head)
+    # otherwise default to fp32, so every Linear8bitLt forward casts its
+    # fp32 activations to fp16 and emits a `MatMul8bitLt: inputs will be
+    # cast from torch.float32 to float16` warning. At 128 new tokens x 16
+    # layers x 7 projections that is ~140k warnings per 10 prompts, which
+    # reads as a hang: the run is bottlenecked on formatting warning text
+    # and flushing it to the SLURM log, not on GPU work.
+    kwargs = {"device_map": {"": 0}, "torch_dtype": torch.float16}
     if tier == "4bit":
         kwargs["quantization_config"] = BitsAndBytesConfig(
             load_in_4bit=True, bnb_4bit_quant_type="nf4",
@@ -303,8 +319,6 @@ def load_tier(tier, adapter_root):
             bnb_4bit_compute_dtype=torch.float16)
     elif tier == "8bit":
         kwargs["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
-    else:
-        kwargs["torch_dtype"] = torch.float16
     model = AutoModelForCausalLM.from_pretrained(MODEL_ID, **kwargs)
     used_adapter = False
     if adapter_root:
@@ -337,10 +351,12 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
     measurements = {}   # (prompt_id, tier) -> dict
     adapters_used = {}
     for tier in TIERS:
-        print(f"\n===== Phase A: tier {tier} =====")
+        print(f"\n===== Phase A: tier {tier} =====", flush=True)
+        t_load = time.perf_counter()
         model, used_adapter = load_tier(tier, adapter_root)
         adapters_used[tier] = used_adapter
-        print(f"  QAT adapter loaded: {used_adapter}")
+        print(f"  loaded in {time.perf_counter() - t_load:.1f}s; "
+              f"QAT adapter loaded: {used_adapter}", flush=True)
 
         def generate(prompt):
             inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
@@ -354,9 +370,18 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
                                     skip_special_tokens=True)
             return text, n_new
 
-        for p in prompts[:N_WARMUP]:
+        for w, p in enumerate(prompts[:N_WARMUP]):
+            t_w = time.perf_counter()
             generate(p["prompt"])
+            print(f"  warmup {w + 1}/{min(N_WARMUP, len(prompts))} "
+                  f"({time.perf_counter() - t_w:.1f}s)", flush=True)
 
+        # Progress every 50 prompts on a full run, but every prompt on a
+        # short dry run — at the old fixed stride a 10-prompt run printed
+        # nothing between tiers, so a merely slow tier (8bit is several
+        # times slower than fp16) was indistinguishable from a hang.
+        stride = 50 if len(prompts) > 100 else 1
+        t_tier = time.perf_counter()
         for i, p in enumerate(prompts):
             meter.start()
             t0 = time.perf_counter()
@@ -372,8 +397,12 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
                 "correct": is_correct(text, p.get("reference_answer", "")),
                 "response": text,
             }
-            if (i + 1) % 50 == 0:
-                print(f"  {i + 1}/{len(prompts)} prompts done")
+            if (i + 1) % stride == 0:
+                el = time.perf_counter() - t_tier
+                eta = el / (i + 1) * (len(prompts) - i - 1)
+                print(f"  {i + 1}/{len(prompts)} prompts done "
+                      f"({el:.0f}s elapsed, ~{eta:.0f}s left, "
+                      f"{n_tok} tok, {joules:.1f} J)", flush=True)
         del model
         gc.collect()
         torch.cuda.empty_cache()
@@ -383,10 +412,28 @@ def phase_a(prompts, meter, tokenizer, adapter_root):
 # ====================================================================
 # Phase B: derive all conditions from Phase A measurements
 # ====================================================================
+def _clamp_tier(tier):
+    """Map a router's choice onto a tier we actually measured.
+
+    Only ever a no-op on a full run. Under --tiers (dry runs) the routers
+    still choose from the full 4/8/16-bit space, so without this a pick of
+    an unmeasured tier would KeyError in Phase B *after* all the GPU work
+    was already spent. Falls back to the nearest measured tier by cost
+    order, which keeps the dry run alive; the resulting Phase B numbers are
+    not comparable to a full run, which --tiers already warns about.
+    """
+    if tier in TIERS:
+        return tier
+    order = ALL_TIERS.index(tier)
+    return min(TIERS, key=lambda t: abs(ALL_TIERS.index(t) - order))
+
+
 def summarize_condition(name, picks, meas, extra=None):
     """picks: list of (prompt_id, [tiers_actually_executed], billed_tier)."""
     energy, tokens, correct, dist = 0.0, 0, 0, {t: 0 for t in TIERS}
     latency = 0.0
+    picks = [(pid, [_clamp_tier(t) for t in executed], _clamp_tier(billed))
+             for pid, executed, billed in picks]
     for pid, executed, billed in picks:
         for t in executed:
             m = meas[(pid, t)]
@@ -485,12 +532,51 @@ def phase_b(prompts, meas):
     return rows, complexity, naive_complexity, fuzzy_tiers, final_tiers, router_overhead_s
 
 
+def parse_args():
+    import argparse
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument("--limit", type=int, default=None,
+                   help="only evaluate the first N prompts (dry runs)")
+    p.add_argument("--output-dir", default=None,
+                   help="where to write the CSVs (default: Kaggle working dir "
+                        "or cwd)")
+    p.add_argument("--warmup", type=int, default=N_WARMUP,
+                   help=f"warmup generations per tier (default {N_WARMUP}; "
+                        "0 disables)")
+    p.add_argument("--tiers", default=",".join(TIERS),
+                   help="comma-separated subset of tiers to measure, e.g. "
+                        "'4bit,16bit' to skip the slow 8bit tier. Note that "
+                        "dropping a tier makes the derived conditions in "
+                        "Phase B incomparable to a full run — dry runs only.")
+    return p.parse_args()
+
+
 def main():
+    global OUT_DIR, N_WARMUP, TIERS
+    args = parse_args()
+
+    N_WARMUP = args.warmup
+    requested = [t.strip() for t in args.tiers.split(",") if t.strip()]
+    unknown = [t for t in requested if t not in TIERS]
+    if unknown:
+        raise SystemExit(f"unknown tier(s) {unknown}; choose from {TIERS}")
+    if requested != TIERS:
+        print(f"WARNING: measuring only {requested} — Phase B conditions will "
+              f"not be comparable to a full run.")
+    TIERS = requested
+    if args.output_dir:
+        OUT_DIR = Path(args.output_dir)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+    print(f"Output dir: {OUT_DIR.resolve()}")
+
     torch.manual_seed(SEED)
     random.seed(SEED)
     meter = GpuEnergyMeter()
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     prompts = load_prompts()
+    if args.limit:
+        prompts = prompts[:args.limit]
+        print(f"--limit {args.limit}: evaluating {len(prompts)} prompts")
 
     adapter_root = ADAPTER_ROOT if ADAPTER_ROOT and Path(ADAPTER_ROOT).exists() else None
     meas, adapters_used = phase_a(prompts, meter, tokenizer, adapter_root)
