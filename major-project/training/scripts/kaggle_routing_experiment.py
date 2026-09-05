@@ -253,10 +253,47 @@ def is_correct(response: str, reference: str) -> bool:
 # ====================================================================
 # NVML energy meter (same protocol as Session 1)
 # ====================================================================
+def _resolve_nvml_index(cuda_ordinal=0):
+    """Map a CUDA device ordinal to the PHYSICAL NVML index.
+
+    nvmlDeviceGetHandleByIndex() ignores CUDA_VISIBLE_DEVICES, but torch
+    honours it: under SLURM, `cuda:0` is whichever physical GPU was
+    allocated. On a multi-GPU node that means a hardcoded NVML index 0
+    can silently meter a DIFFERENT user's GPU while the model runs on
+    ours — no error, just wrong joules. Observed live on hpc.spit.ac.in
+    2026-09-05, which has two RTX 6000 Ada and another tenant on GPU 1.
+    """
+    vis = os.environ.get("CUDA_VISIBLE_DEVICES", "").strip()
+    if not vis:
+        return cuda_ordinal
+    entries = [e.strip() for e in vis.split(",") if e.strip()]
+    if cuda_ordinal >= len(entries):
+        raise RuntimeError(
+            f"CUDA_VISIBLE_DEVICES={vis!r} exposes {len(entries)} device(s); "
+            f"cannot resolve cuda:{cuda_ordinal}")
+    entry = entries[cuda_ordinal]
+    if entry.isdigit():
+        return int(entry)
+    # CUDA_VISIBLE_DEVICES may hold UUIDs ("GPU-xxxx") rather than indices.
+    for i in range(pynvml.nvmlDeviceGetCount()):
+        uuid = pynvml.nvmlDeviceGetUUID(pynvml.nvmlDeviceGetHandleByIndex(i))
+        if (uuid.decode() if isinstance(uuid, bytes) else uuid) == entry:
+            return i
+    raise RuntimeError(f"No NVML device matches CUDA_VISIBLE_DEVICES entry {entry!r}")
+
+
 class GpuEnergyMeter:
-    def __init__(self, gpu_index=0):
+    def __init__(self, gpu_index=None):
         pynvml.nvmlInit()
+        if gpu_index is None:
+            gpu_index = _resolve_nvml_index(0)
+        self.nvml_index = gpu_index
         self.handle = pynvml.nvmlDeviceGetHandleByIndex(gpu_index)
+        _uuid = pynvml.nvmlDeviceGetUUID(self.handle)
+        self.uuid = _uuid.decode() if isinstance(_uuid, bytes) else _uuid
+        print(f"Energy meter bound to NVML index {gpu_index} ({self.uuid}); "
+              f"CUDA_VISIBLE_DEVICES={os.environ.get('CUDA_VISIBLE_DEVICES', '<unset>')}",
+              flush=True)
         try:
             pynvml.nvmlDeviceGetTotalEnergyConsumption(self.handle)
             self.has_counter = True
@@ -299,9 +336,22 @@ class GpuEnergyMeter:
         # Phase A/B have already spent hours of GPU time.
         gpu = pynvml.nvmlDeviceGetName(self.handle)
         driver = pynvml.nvmlSystemGetDriverVersion()
+        # Record who else was on this GPU. The NVML energy counter is
+        # device-wide, not per-process, so a co-tenant's power draw lands
+        # in our joules. Logging it makes a contaminated run auditable
+        # after the fact instead of an unexplained outlier.
+        try:
+            procs = pynvml.nvmlDeviceGetComputeRunningProcesses(self.handle)
+            cotenants = [p.pid for p in procs if p.pid != os.getpid()]
+        except pynvml.NVMLError:
+            cotenants = None
         return {"gpu": gpu.decode() if isinstance(gpu, bytes) else gpu,
                 "driver": driver.decode() if isinstance(driver, bytes) else driver,
-                "energy_counter": self.has_counter}
+                "energy_counter": self.has_counter,
+                "nvml_index": self.nvml_index,
+                "gpu_uuid": self.uuid,
+                "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+                "cotenant_pids_on_this_gpu": cotenants}
 
 
 # ====================================================================
