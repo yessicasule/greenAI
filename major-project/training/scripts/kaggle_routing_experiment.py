@@ -142,6 +142,11 @@ RANDOM_ROUTER_RESAMPLES = 20
 EVAL_FILE_CANDIDATES = [
     "/kaggle/input/eval-prompts/eval_prompts.jsonl",
     "eval_prompts.jsonl",
+    # Cluster layout: the job runs with cwd at green_weight/ (required by
+    # the bare same-directory imports the router modules use), and the eval
+    # set lives in green_weight/data/.
+    "data/eval_prompts.jsonl",
+    str(_GREEN_WEIGHT_DIR / "data" / "eval_prompts.jsonl"),
 ]
 ADAPTER_ROOT = "/kaggle/input/greenweight-adapters"  # set to None to disable
 ADAPTER_FOR_TIER = {"4bit": "adapter_simple", "8bit": "adapter_medium",
