@@ -1,0 +1,30 @@
+{
+  "gpu": "NVIDIA RTX 6000 Ada Generation",
+  "driver": "610.43.02",
+  "energy_counter": true,
+  "nvml_index": 0,
+  "gpu_uuid": "GPU-c53791fb-b98b-4aee-128e-5c75e0fe7bc3",
+  "cuda_visible_devices": "0",
+  "cotenant_pids_on_this_gpu": [],
+  "timestamp_utc": "2026-09-05T16:21:54.253851+00:00",
+  "model": "meta-llama/Llama-3.2-1B",
+  "max_new_tokens": 128,
+  "seed": 42,
+  "n_prompts": 500,
+  "adapters_used": {
+    "4bit": true,
+    "8bit": true,
+    "16bit": true
+  },
+  "phase_a_ordering": "interleaved",
+  "tiers_measured": [
+    "4bit",
+    "8bit",
+    "16bit"
+  ],
+  "router_overhead_s_total": 3.8766,
+  "router_overhead_ms_per_prompt": 7.753,
+  "correctness_metric": "reference-match proxy (see is_correct docstring)",
+  "routing_source": "real backend/src/green_weight/router/ modules (complexity_scorer + fuzzy_controller + routellm_bridge), not an embedded copy",
+  "routellm_bridge_status": "provisional threshold pass-through, not a real RouteLLM classifier \u2014 see router/routellm_bridge.py docstring"
+}
