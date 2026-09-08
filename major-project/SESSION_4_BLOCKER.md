@@ -169,3 +169,61 @@ having two orderings is more informative than having one.
 
 `routing_run_info.json` records `phase_a_ordering` (`by_tier` /
 `interleaved`) for every run, so the two can never be conflated later.
+
+---
+
+## Confirmed at 500 prompts (runs #1 and #2, 2026-09-05)
+
+Both full runs completed. Run #1 (job 1505, by-tier) finished 17:43; run #2
+(job 1507, interleaved) finished 21:51. Same code, same 500 prompts, same
+GPU, four hours apart:
+
+| Condition | run #1 by-tier | run #2 interleaved | ratio |
+|---|---|---|---|
+| static_4bit | 125.08 J/req | 595.26 J/req | **4.76x** |
+| static_8bit | 286.86 J/req | 1041.69 J/req | **3.63x** |
+| static_16bit | 1160.36 J/req | 788.00 J/req | **0.68x** |
+
+### The decisive detail: accuracy is identical in both runs
+
+Every condition scores exactly the same in both runs — static_4bit 0.110,
+static_8bit 0.186, static_16bit 0.162, fuzzy_router 0.130, oracle 0.258.
+
+Generation is greedy (`do_sample=False`), so this is expected and it is the
+point: **both runs produced token-for-token identical outputs.** The
+computational work was the same to the token. Only the joules differed, by
+up to 4.8x.
+
+That rules out every workload-side explanation. The variance is not in what
+the model did; it is in the environment the measurement was taken in.
+
+### Interleaving did not fix it, and that is informative
+
+`--interleave` was added to stop drift landing on whichever tier ran last.
+It worked as designed — within run #2 the tiers no longer show the
+monotonic 4bit < 8bit < 16bit ordering that time-confounding produced — but
+it cannot help across runs, because the whole node's load moved between
+17:43 and 21:51.
+
+Note the ordering inverted rather than tightened: run #2 puts 8-bit
+(1041 J) above 16-bit (788 J), which is physically implausible. Interleaving
+converted a systematic bias into unsystematic noise. That is an improvement
+in kind, not in magnitude.
+
+### The co-tenant was constant across both runs
+
+`squeue` on 2026-09-08 shows job 1508 (`rehanansari2`, 7-day limit) started
+**2026-09-05T16:50** — before run #1 finished and before run #2 began. The
+same neighbour was resident for both runs.
+
+So the earlier framing in this document ("another user's job sits on the
+same node") understates the problem. It is not that a co-tenant arrives or
+leaves between runs. A *stable* set of co-tenants varies its own load enough
+over four hours to swing our energy numbers by 4.8x. Scheduling runs on
+different days cannot average this out, because there is no stationary
+quantity to average.
+
+**This is the argument for `--exclusive`.** Not "the node is sometimes
+busy", but: identical deterministic work, measured twice on the same GPU
+four hours apart, differs by up to 4.8x in energy while agreeing exactly on
+every output token.
