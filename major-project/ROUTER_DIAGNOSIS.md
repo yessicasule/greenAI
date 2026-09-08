@@ -133,3 +133,102 @@ the system under test, so:
 
 Neither run #1 nor #2 counts toward the gate anyway, both having been
 measured under host contention, so there is no sunk cost in fixing now.
+
+---
+
+# Root cause of defect 2: the sensor has no opinion about half the set
+
+**Added 2026-09-08 after running the scorer and controller over the real 500
+prompts.** Reproduced the 47% figure exactly: 235/500 score 50.000.
+
+## Two paths produce exactly 50.0, and both mean "no signal"
+
+| path | count | mechanism |
+|---|---|---|
+| no rule fires at all | 181 (77%) | skfuzzy aggregates an empty output; defuzzifying it returns the centroid of the universe `np.arange(0,101,1)`, which is 50.0 |
+| only MEDIUM rules fire | 54 | `complexity["medium"] = trimf([25, 50, 75])` is symmetric about 50, so its centroid is also exactly 50.0 |
+
+Either way the value is indistinguishable from a real mid-complexity
+estimate, and nothing downstream can tell the difference.
+
+## Why no rule fires
+
+Rule firing strengths across the 235 neutral prompts:
+
+```
+R1 fk_lo & tl_lo & sd_lo & nocode -> LOW     fires on   0
+R2 (sd_hi | ent_hi) & fk_hi       -> HIGH    fires on   0
+R3 code                           -> HIGH    fires on   0
+R4 tl_hi                          -> MEDIUM  fires on  13
+R5 ent_hi & fk_hi                 -> HIGH    fires on   0
+R6 tl_med | sd_med                -> MEDIUM  fires on  41
+R7 fk_lo & tl_lo                  -> LOW     fires on   0
+```
+
+Three independent defects combine:
+
+### 1. The rule base has no rule for `flesch_kincaid["medium"]`
+
+Dominant FK band across the eval set: **low 232, medium 238, high 30.**
+
+All seven rules reference FK only as `low` (R1, R7) or `high` (R2, R5).
+The band containing 47.6% of prompts appears in no rule at all. Those
+prompts get no FK-driven activation regardless of their other features.
+
+### 2. `syntax_depth["medium"]` is unreachable by construction
+
+`SYNTAX_DEPTH_RANGE = (2, 14)` and parse depth is an integer, so one depth
+step is exactly 1/12 = 0.08333 in normalised space.
+
+Breakpoints `[4, 5]` normalise to lo=0.16667, hi=0.25000 — a medium band
+**0.08333 wide, exactly one quantisation step.** The triangle
+`trimf([lo, mid, hi])` is zero at both lo and hi, and no integer depth lands
+strictly between them. The set can never be entered.
+
+Worse, depth 4 lands exactly on lo and depth 5 exactly on hi, where the
+neighbouring triangles are also zero. **247 of 500 prompts (49.4%) have zero
+membership in all three syntax_depth sets** — they belong to no band at all.
+
+Note this defect alone does not explain the neutrality: widening the
+breakpoints to `[3.5, 6.5]` or `[3, 7]` leaves the neutral count at 236 and
+235 respectively, because the FK gap above still starves the rule base.
+Both must be fixed; neither is sufficient alone.
+
+### 3. Most prompts sit below `token_length["low"]`'s upper edge
+
+Median normalised token length is 0.106 against a lo edge of 0.2
+(TOKEN_LENGTH_RANGE tops out at 154 tokens, so 0.2 is ~31 tokens). Most
+prompts are firmly `low`, and the only rules keyed on `tl["low"]` also
+require `fk["low"]`, which defect 1 blocks.
+
+## This is what feeds the bridge bug
+
+The two defects in this document are one causal chain:
+
+```
+sensor has no opinion  ->  emits exactly 50.0  ->  bridge reads >= 0.5
+                                               ->  routes to fp16
+```
+
+47% of the evaluation set is routed to the most expensive tier **because the
+controller had nothing to say about it.** The bridge's `>=` turns "no
+signal" into "maximum complexity". That is why fixing the bridge alone
+recovers 41% of the energy but does not make the router beat matched
+random: the underlying decision was never informative.
+
+## Fixes, in order
+
+1. **Add rules covering `flesch_kincaid["medium"]`.** Without this the
+   largest FK band drives nothing.
+2. **Widen `syntax_depth_breakpoints`** to span more than one quantisation
+   step and place them off integer values, e.g. `[3.5, 6.5]`, so real depths
+   fall inside bands rather than on their edges.
+3. **Make "no rule fired" observable.** A defuzzified 50.0 from an empty
+   aggregate is not a complexity estimate and must not be consumed as one.
+   Either raise, or return an explicit `None`/confidence flag that the
+   bridge routes to the middle tier rather than the top.
+4. Re-run this analysis (CPU, no GPU) and confirm the neutral count drops
+   before spending GPU hours on runs #3-5.
+
+Until 1-3 land, the three reproducibility runs would certify a router whose
+decisions are uninformative on half the evaluation set.
