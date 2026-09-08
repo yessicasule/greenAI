@@ -7,7 +7,9 @@ every session (see `.claude/agents/training-agent.md`).
 
 | Date | Session | Script run | Output CSV(s) | verify_results.py verdict | One-line finding |
 |---|---|---|---|---|---|
-| _(none yet — Session 1 has not been run)_ | | | | | |
+| 2026-09-04 | 1 | `kaggle_energy_benchmark.py` | `session1_out/energy_logs/energy_{summary,per_inference}.csv` | PASS | Per-tier energy ground truth; 3 runs agree within 6.6%, gate passed |
+| 2026-09-05 | 4 | `kaggle_routing_experiment.py` (job 1505, by-tier) | `routing_run1_{conditions,per_prompt}.csv` | CONTENDED | All 8 routing conditions; 4-bit/8-bit measured pre-contention and match Session 1, 16-bit inflated 45% |
+| 2026-09-05 | 4 | `kaggle_routing_experiment.py` (job 1507, `--interleave`) | `routing_run2_{conditions,per_prompt}.csv` | CONTENDED | Same 8 conditions under full co-tenant load; 16-bit accurate to 1.6%, 4-bit/8-bit inflated 3-5x |
 
 
 

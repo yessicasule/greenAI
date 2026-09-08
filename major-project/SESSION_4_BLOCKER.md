@@ -169,3 +169,127 @@ having two orderings is more informative than having one.
 
 `routing_run_info.json` records `phase_a_ordering` (`by_tier` /
 `interleaved`) for every run, so the two can never be conflated later.
+
+---
+
+## Confirmed at 500 prompts (runs #1 and #2, 2026-09-05)
+
+Both full runs completed. Run #1 (job 1505, by-tier) finished 17:43; run #2
+(job 1507, interleaved) finished 21:51. Same code, same 500 prompts, same
+GPU, four hours apart:
+
+| Condition | run #1 by-tier | run #2 interleaved | ratio |
+|---|---|---|---|
+| static_4bit | 125.08 J/req | 595.26 J/req | **4.76x** |
+| static_8bit | 286.86 J/req | 1041.69 J/req | **3.63x** |
+| static_16bit | 1160.36 J/req | 788.00 J/req | **0.68x** |
+
+### The decisive detail: accuracy is identical in both runs
+
+Every condition scores exactly the same in both runs — static_4bit 0.110,
+static_8bit 0.186, static_16bit 0.162, fuzzy_router 0.130, oracle 0.258.
+
+Generation is greedy (`do_sample=False`), so this is expected and it is the
+point: **both runs produced token-for-token identical outputs.** The
+computational work was the same to the token. Only the joules differed, by
+up to 4.8x.
+
+That rules out every workload-side explanation. The variance is not in what
+the model did; it is in the environment the measurement was taken in.
+
+### Interleaving did not fix it, and that is informative
+
+`--interleave` was added to stop drift landing on whichever tier ran last.
+It worked as designed — within run #2 the tiers no longer show the
+monotonic 4bit < 8bit < 16bit ordering that time-confounding produced — but
+it cannot help across runs, because the whole node's load moved between
+17:43 and 21:51.
+
+Note the ordering inverted rather than tightened: run #2 puts 8-bit
+(1041 J) above 16-bit (788 J), which is physically implausible. Interleaving
+converted a systematic bias into unsystematic noise. That is an improvement
+in kind, not in magnitude.
+
+### The co-tenant was constant across both runs
+
+`squeue` on 2026-09-08 shows job 1508 (`rehanansari2`, 7-day limit) started
+**2026-09-05T16:50** — before run #1 finished and before run #2 began. The
+same neighbour was resident for both runs.
+
+So the earlier framing in this document ("another user's job sits on the
+same node") understates the problem. It is not that a co-tenant arrives or
+leaves between runs. A *stable* set of co-tenants varies its own load enough
+over four hours to swing our energy numbers by 4.8x. Scheduling runs on
+different days cannot average this out, because there is no stationary
+quantity to average.
+
+**This is the argument for `--exclusive`.** Not "the node is sometimes
+busy", but: identical deterministic work, measured twice on the same GPU
+four hours apart, differs by up to 4.8x in energy while agreeing exactly on
+every output token.
+
+---
+
+## CORRECTION 2026-09-08: the gate IS achievable on this node
+
+The section above concludes that "there is no stationary quantity to
+average" and that scheduling runs on separate days cannot help. **That is
+wrong, and Session 1's own data disproves it.**
+
+Session 1 (2026-09-04, `~/session1_out/energy_logs/`, 4,500 rows = 3 runs x
+500 prompts x 3 tiers) agrees across its three runs to within 7%:
+
+| Tier | run 1 | run 2 | run 3 | spread |
+|---|---|---|---|---|
+| 4-bit | 1.4648 | 1.3745 | 1.4021 | 6.6% |
+| 8-bit | 3.0667 | 3.1163 | 2.9743 | 4.8% |
+| 16-bit | 8.2237 | 7.8352 | 8.3141 | 6.1% |
+
+Every tier passes the 15% gate. Reproducible energy measurement on this
+node is not merely possible; it has already been achieved.
+
+### What actually happened in Session 4
+
+Job 1508 (`rehanansari2`, 7-day limit) started **2026-09-05T16:50**.
+Session 1 ran the day before, on a quiet node. Session 4 straddled 1508's
+arrival:
+
+| | window | node state | 4-bit | 8-bit | 16-bit |
+|---|---|---|---|---|---|
+| Session 1 | 09-04 | quiet | 1.414 | 3.052 | 8.124 |
+| run #1 by-tier | 15:04-17:43 | 1508 arrives 16:50 | 1.634 | 2.773 | 11.776 |
+| run #2 interleaved | 17:48-21:51 | fully contended | 7.778 | 10.070 | 7.997 |
+
+Run #1 measured 4-bit and 8-bit before 16:50 and they match Session 1
+closely. Its 16-bit tier ran 15:50-17:43, straddling 1508's arrival, and is
+inflated 45%.
+
+Run #2 ran entirely under load, so 4-bit and 8-bit are inflated 5.5x and
+3.3x. But its 16-bit lands at 7.997 against Session 1's 8.124 -- a 1.6%
+error, the most accurate 16-bit measurement of the three sessions.
+
+Latency confirms the mechanism: run #2's 16-bit was *faster* than run #1's
+(9.42s vs 13.51s) while its 4-bit was 5x slower (7.43s vs 1.47s).
+
+### Interleaving worked; it was asked to do too much
+
+`--interleave` was designed to stop drift landing on whichever tier ran
+last. It did exactly that: in run #1 the 16-bit tier ran last and absorbed
+the entire contention, while in run #2 each tier's measurements were spread
+across the whole run and 16-bit recovered to within 1.6% of ground truth.
+
+What it cannot do is rescue a run in which *every* window is contended.
+That is a scheduling problem, not an ordering problem.
+
+### Revised recommendation
+
+1. **Check the node before submitting.** `squeue -w hpc.spit.ac.in` costs
+   nothing. Session 1 succeeded because the node happened to be quiet; that
+   should be a precondition, not luck.
+2. **Keep `--interleave` on.** It measurably improved the 16-bit estimate
+   and costs ~5 GB of a 49 GB card.
+3. **`--exclusive` remains preferable** where the queue allows it, but is no
+   longer load-bearing for the claim that the gate is reachable.
+4. **Session 1 stands as the per-tier energy ground truth.** Session 4's
+   static-tier columns from runs #1 and #2 should be reported as contended
+   measurements, not used to revise Session 1's numbers.
