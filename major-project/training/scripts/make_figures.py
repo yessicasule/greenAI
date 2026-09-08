@@ -18,6 +18,7 @@ Usage (run from major-project/):
 
 import argparse
 import csv
+import json
 import random
 from pathlib import Path
 
@@ -123,7 +124,15 @@ def fig_energy_per_tier(results_dir, outdir):
     ax.yaxis.grid(True, zorder=0)
     ax.set_axisbelow(True)
     n = min(len(v) for v in data.values())
-    ax.annotate(f"mean ± 95% bootstrap CI, n≥{n} per tier, Llama-3.2-1B, T4",
+    # Read the device from hardware_info.json rather than hardcoding it.
+    # Session 1 ran on an RTX 6000 Ada, not the T4 this caption used to
+    # claim; a mislabelled device in a published energy figure is not a
+    # cosmetic error, since J/token is meaningless without it.
+    _hw = results_dir / "energy_logs" / "hardware_info.json"
+    gpu = "unknown GPU"
+    if _hw.exists():
+        gpu = json.loads(_hw.read_text()).get("gpu", gpu)
+    ax.annotate(f"mean ± 95% bootstrap CI, n≥{n} per tier, Llama-3.2-1B, {gpu}",
                 (0, -0.28), xycoords="axes fraction", fontsize=7, color=MUTED)
     save(fig, outdir, "fig1_energy_per_tier")
 
