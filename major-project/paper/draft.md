@@ -43,12 +43,19 @@ tier, 3 repeated runs, seed = 42), we find mean energy of 1.414 ± 0.055,
 statistically separated energy gradient across precision. This result
 passes this project's own pre-registered go/no-go gate for whether dynamic
 precision routing is worth building at all. The routing energy/accuracy
-tradeoff, baseline comparisons against naive routers, and a quantization-
-aware-training adapter ablation remain open empirical questions at the
-time of this draft: the measurement sessions that will answer them are
-implemented and scripted but not yet executed. We report their exact
-protocol so the remaining results can be added without redesigning the
-system, and we are explicit throughout about what is and is not yet known.
+tradeoff and baseline comparisons against naive routers (RQ2/RQ3) have now
+been measured twice (Session 4, 2026-09-05, jobs 1505 and 1507), but
+neither run passed this project's own validation gate: both were run under
+diagnosed shared-node contention, and a separate, real defect in the
+routing controller's tie-break logic was diagnosed from the same data. We
+report both findings — the contention's effect on the energy figures, and
+the defect's effect on accuracy and energy — as an honest interim status,
+not an answered result: the runs that will actually settle RQ2/RQ3 are
+scheduled after the defect's fix, on a confirmed-quiet node. A
+quantization-aware-training adapter ablation (RQ4) remains open and not yet
+executed. We report exact protocols throughout so the remaining results can
+be added without redesigning the system, and we are explicit at every stage
+about what is and is not yet known.
 
 **Keywords** — energy-proportional inference, dynamic quantization,
 fuzzy logic control, LLM inference routing, green AI, hardware energy
@@ -113,11 +120,15 @@ Concretely, this paper reports:
    across all three tiers. This is this project's pre-registered go/no-go
    gate (`major-project/NEW.md`, Phase 1) for whether the rest of the
    routing system is worth evaluating, and it passes.
-4. A fully specified, not-yet-executed remainder of the empirical program
-   — routing energy/accuracy tradeoff (RQ2), baseline comparison against
-   naive routers and an oracle (RQ3), and a QAT-adapter ablation (RQ4) —
-   with the exact GPU sessions that will produce each (§V-B–D), so this
-   paper's present evidentiary boundary is unambiguous to the reader.
+4. A partially executed, not-yet-gate-passing remainder of the empirical
+   program: the routing energy/accuracy tradeoff (RQ2) and baseline
+   comparison against naive routers and an oracle (RQ3) have each been
+   measured twice (Session 4, §V-B–C), but both runs are host-contended and
+   a real routing-controller defect was diagnosed in the same analysis, so
+   neither counts toward this paper's gate; a QAT-adapter ablation (RQ4)
+   remains fully unexecuted. We report the exact GPU sessions and diagnosed
+   defects involved (§V-B–D), so this paper's present evidentiary boundary
+   is unambiguous to the reader.
 
 **Contributions:**
 - A complete mathematical formalization of the complexity sensor and
@@ -133,9 +144,11 @@ Concretely, this paper reports:
   separation across three precision tiers of a real 1B-parameter LLM on a
   commodity workstation GPU (§V-A) — the empirical premise the rest of
   this research program depends on.
-- Honest, explicit scoping of the three research questions (RQ2–RQ4) that
-  remain open at the time of this draft, with no projected or implied
-  outcome for any of them (§V-B–D, §VII).
+- Honest, explicit reporting of the current state of the three remaining
+  research questions: RQ2/RQ3 have interim, non-gate-passing measurements
+  and a diagnosed, partially-fixed routing defect (§V-B–C), and RQ4 remains
+  fully open (§V-D) — with no overstated or implied final outcome for any
+  of them (§VII).
 
 ## II. Related Work
 
@@ -559,10 +572,14 @@ has been executed as a full sweep over the 500-prompt evaluation set,
 repeated three times, and has passed the automated validation gate
 described above; the resulting per-tier energy figures are reported in
 §V-A, not here, since this section is confined to methodology. Per-tier
-accuracy evaluation (Session 2, via lm-eval-harness, §IV-C) and the main
-routing experiment (Session 4) had not, as of this draft, produced a
-validator-passing, citable result — no accuracy or routing numbers are
-stated anywhere in this paper until they do.
+accuracy evaluation (Session 2, via lm-eval-harness, §IV-C) has not yet
+been run. The main routing experiment (Session 4) has been run twice
+(2026-09-05, jobs 1505 and 1507; §V-B–C), but neither run produced a
+validator-passing result — both are marked CONTENDED in `paper/results.md`
+due to diagnosed shared-node contention, and a separate routing-controller
+defect was found in the same analysis — so no gate-passing accuracy or
+routing-energy number is stated anywhere in this paper until a run does
+pass.
 
 ## V. Results
 
@@ -609,33 +626,170 @@ Generation), single-model (Llama-3.2-1B) measurement. We do not claim it
 generalizes to other GPU architectures, other model sizes/families, or
 other decoding configurations; see §VI for the full scope discussion.
 
-### B. RQ2 (Routing) — Pending
+### B. RQ2 (Routing) — Interim status: measured twice, neither run gate-passing
 
 RQ2 asks how much energy complexity-aware fuzzy routing (§III-B) uses
-relative to static fp16 inference, and at what accuracy cost, across the
-full 500-prompt evaluation set. Per `RESEARCH_PLAN.md`, this requires
-running all routing conditions (static tiers, fuzzy router, and the
-baseline/oracle conditions listed under RQ3 below) over the same
-prompt×tier measurement grid described in §IV, produced by Session 4
-(`training/scripts/kaggle_routing_experiment.py`). This session is
-implemented and scripted but has not yet been run on the GPU cluster as of
-this draft. No energy, accuracy, or energy/accuracy-tradeoff number for
-routing is stated anywhere in this paper; this subsection will be filled
-in from a validator-passing row of `paper/results.md` once Session 4
-completes.
+relative to static tiers, and at what accuracy cost, across the full
+500-prompt evaluation set, per `RESEARCH_PLAN.md`'s Session 4 design
+(`training/scripts/kaggle_routing_experiment.py`, all 8 routing conditions:
+static_4bit, static_8bit, static_16bit, fuzzy_router, random_matched,
+threshold_router, oracle, oracle_cascade). Since the earlier version of
+this draft reported Session 4 as not yet run, it has in fact been run
+twice, both on 2026-09-05, both over the full 500-prompt set and all 8
+conditions: job 1505 measured tiers by-tier (Phase A in fixed order 4-bit
+→ 8-bit → 16-bit), and job 1507 repeated the identical protocol with
+per-prompt tier order interleaved (`--interleave`), roughly four hours
+later on the same node. Per `paper/results.md`, `verify_results.py`'s
+verdict on both rows is **CONTENDED**, not PASS — neither run is eligible
+to be cited as this paper's answer to RQ2.
 
-### C. RQ3 (Baselines) — Pending
+**Why: a specific, diagnosed scheduling collision, not a fundamental
+measurement problem.** A co-tenant job (`rehanansari2`, job 1508, a 7-day
+wall-time-limit job that started 2026-09-05T16:50) was resident on the
+shared node throughout both runs and varied its own host-side load over the
+window separating them (`SESSION_4_BLOCKER.md`). Because batch-1 generation
+of a 1B-parameter model is launch-bound rather than compute-bound (median
+GPU utilization observed as low as ~1-7% during generation), joules-per-
+request on this hardware is sensitive to host CPU contention, not only to
+precision tier. Concretely: run #1's 4-bit and 8-bit tiers, measured before
+job 1508 arrived at 16:50, closely match Session 1's uncontended ground
+truth, but its 16-bit tier straddled the arrival and reads 45% high; run
+#2, measured entirely under load, reads 4-bit and 8-bit inflated 3-5×,
+while its 16-bit figure — because interleaving spread that tier's
+measurement windows across the whole run rather than concentrating drift on
+one tier — happens to land within 1.6% of Session 1's ground truth. This
+diagnosis is evidenced rather than speculative: Session 1's own three
+repeated runs already demonstrate that this same node gives energy readings
+reproducible to within 6.6% (4-bit), 4.8% (8-bit), and 6.1% (16-bit) when
+the node is quiet (§V-A); the contention explains Session 4's inconsistency
+without casting any doubt on RQ1's already-accepted, gate-passing result
+(§V-A, §VI).
 
-RQ3 asks whether the fuzzy controller (§III-B) outperforms trivial
-routing strategies — a random router with tier distribution matched to the
-fuzzy router, and a naive threshold router over the mean of the five raw
-complexity features (`naive_complexity_score()`, deliberately built as a
-non-tautological baseline distinct from the fuzzy controller's own
-defuzzified output, per `CREDIBILITY_REPORT.md`) — and how close it
-approaches an oracle router (cheapest tier that still answers correctly).
-This also requires Session 4's routing experiment, evaluated over the same
-conditions as RQ2. No baseline-comparison result is stated anywhere in
-this paper as of this draft.
+**The contended figures, reported with that caveat, not as an answer to
+RQ2:**
+
+| Condition | run #1, by-tier (job 1505), J/req | run #2, interleaved (job 1507), J/req | ratio |
+|---|---|---|---|
+| static_4bit | 125.08 | 595.26 | 4.76× |
+| static_8bit | 286.86 | 1041.69 | 3.63× |
+| static_16bit | 1160.36 | 788.00 | 0.68× |
+| fuzzy_router | 750.58 | 675.18 | 0.90× |
+| oracle | 941.49 | 787.41 | 0.84× |
+
+Two things make these numbers uncitable as an RQ2 result rather than merely
+noisy: run #2's ordering is not just imprecise but physically implausible
+(static_8bit at 1041.69 J/req exceeds static_16bit at 788.00 J/req, which
+should never happen for the same workload on the same hardware), and the
+swing (up to 4.76× for static_4bit) is far outside any usable
+reproducibility threshold. Figures generated from Session 4's routing CSV
+(`fig2_pareto`, `fig3_tier_distribution`; `major-project/paper/figures/`)
+exist, but `make_figures.py` reads a single fixed-name
+`routing_conditions_summary.csv` rather than a run-tagged file, so we
+cannot confirm from the artifact alone which of the two contended runs it
+reflects; accordingly we note the figures exist and are structurally ready
+but do not assert any additional number from them here beyond what is
+already sourced above.
+
+**What RQ2 still needs.** Per `ROUTER_DIAGNOSIS.md`, the tie-break defect
+diagnosed in §V-C will be fixed before, not between, the runs that count
+toward the gate, so runs #1 and #2 stand as the documented "before"
+measurements of the unfixed router under contention rather than being
+discarded. RQ2's actual answer requires three interleaved runs on a
+confirmed-quiet node (node state checked via `squeue` before submission,
+per the revised recommendation in `SESSION_4_BLOCKER.md`'s 2026-09-08
+correction) — runs #3-5, not yet executed as of this draft.
+
+### C. RQ3 (Baselines) — a diagnosed, currently-negative interim finding
+
+RQ3 asks whether the fuzzy controller (§III-B) outperforms trivial routing
+strategies — a random router with tier distribution matched to the fuzzy
+router (`random_matched`), and a naive threshold baseline over the mean of
+the five raw complexity features (`threshold_router`, via
+`naive_complexity_score()`, deliberately built as a non-tautological
+baseline distinct from the fuzzy controller's own defuzzified output, per
+`CREDIBILITY_REPORT.md`) — and how close it approaches an oracle router
+(cheapest tier that still answers correctly).
+
+Session 4's *energy* figures are not citable for the reasons given in
+§V-B, but its *accuracy* figures are, for a specific, verifiable reason.
+Decoding is greedy (`do_sample=False`), so a router's output for a given
+prompt is a deterministic function of which tier it selects, independent
+of host contention. Both runs confirm this empirically rather than merely
+assuming it: every condition scored byte-identically across the two runs,
+four hours apart, under two different (and differently contended) host
+conditions — static_4bit 0.110, static_8bit 0.186, static_16bit 0.162,
+fuzzy_router 0.130, random_matched 0.148, threshold_router 0.116, oracle
+0.258, oracle_cascade 0.258 (`routing_run1_conditions.csv`,
+`routing_run2_conditions.csv`). This is direct evidence of token-for-token
+identical output, not an assumption, and it is what licenses treating the
+accuracy comparison below as trustworthy despite the energy contention.
+
+**Defect 1: a tie-break bug inflates the router's own energy figure, and it
+is unrelated to routing quality.** Per `ROUTER_DIAGNOSIS.md` (2026-09-08,
+CPU-only analysis of `routing_run1_per_prompt.csv`, reproducible without a
+GPU), `router/routellm_bridge.py`'s mid-zone tie-break sends any prompt
+with `win_probability >= 0.5` to 16-bit (Eq. (21)). 235 of 500 prompts
+(47.0%) score exactly `win_probability = 0.500` — the fuzzy controller's
+neutral centroid output when no rule fires decisively, not a genuine
+high-complexity read — and every one of those 235 had `fuzzy_tier ==
+"8bit"` before the bridge. The bridge overrides all 235 to 16-bit and makes
+no other override in the run: the controller's own tier split, 31.6% /
+54.2% / 14.2% across 4-bit / 8-bit / 16-bit, becomes 31.6% / 7.2% / 61.2%
+after the bridge. Modeled at Session 1's uncontended per-token rates
+(1.4138 / 3.0524 / 8.1244 J/token, applied to each prompt's own measured
+token count, so run #1's contended fp16 tier does not distort the
+comparison):
+
+| Configuration | J/request | accuracy |
+|---|---|---|
+| router as shipped (post-bridge) | 530.30 | 0.130 |
+| bridge escalation removed | 311.84 | 0.152 |
+| static_8bit | 315.75 | 0.186 |
+| static_4bit | 108.20 | 0.110 |
+| static_16bit | 800.56 | 0.162 |
+
+Removing the escalation cuts modeled energy by 41.2% (530.30 → 311.84
+J/req) and raises modeled accuracy from 0.130 to 0.152 (+0.022) — the
+escalation is strictly harmful, costing more and answering worse. With it
+removed the router is no longer dominated on both axes by static_8bit: it
+sits level with static_8bit on energy (311.84 vs. 315.75 J/req) while
+still trailing it on accuracy (0.152 vs. 0.186).
+
+**Defect 2: even with Defect 1 modeled out, the router does not beat
+tier-matched random.** Recomputing the tier-matched random control (200
+shuffles of the same tier multiset across the 500 prompts) against each
+configuration: post-bridge, the router scores 0.130 against random's
+0.1475; with the bridge escalation removed, the router scores 0.152
+against random's 0.1581. Removing the escalation narrows the gap from
+0.018 to 0.006 but does not close it — assigning the same tier multiset at
+random still scores at least as well as the fuzzy controller's own
+per-prompt assignment, in both configurations. `ROUTER_DIAGNOSIS.md`
+attributes this most plausibly to the same 47% neutral-score mass: a
+sensor that emits an identical score for nearly half the evaluation set
+cannot carry per-prompt information about those prompts, and lists three
+testable, CPU-only candidate causes — `config.yaml` membership-function
+breakpoints too narrow; the rule base not covering the region of feature
+space the real prompt distribution occupies; or the five features
+genuinely not predicting quantization sensitivity — without yet
+distinguishing between them.
+
+**This is this paper's current, honest interim finding for RQ3: under the
+modeled fix for Defect 1, the fuzzy router does not outperform a
+tier-matched random baseline on accuracy (0.152 vs. 0.158).** Two caveats
+apply directly to this statement and are not optional context: (a) both
+figures use the placeholder reference-match correctness proxy (§IV-C),
+which scores 0.11-0.26 across all eight conditions and is explicitly not
+this paper's benchmark-accuracy claim of record — Session 2's
+lm-eval-harness results are a prerequisite before this finding can be
+treated as settled; and (b) the 0.152/0.158 comparison is a recomputation
+from existing per-prompt data at Session 1's uncontended per-token rates,
+not a fresh, clean GPU measurement of the fixed router. Defect 1's fix
+(changing `>=` to `>`, or explicitly routing the neutral-score mass rather
+than escalating it) will land before, not between, the three remaining
+gate-counting runs (§V-B), per `SESSION_4_PLAN.md`'s rule against mixing
+code versions across gate runs, so that the paper's gate certifies the
+corrected router rather than the diagnosed-defective one measured in runs
+#1-2.
 
 ### D. RQ4 (Ablation) — Pending
 
@@ -684,7 +838,22 @@ reported in §V-A and this paper's known measurement artifacts.
    confidence intervals (Eq. (23)); the non-overlapping CIs in Table I are
    evidence the observed tier separation exceeds this noise floor, but
    session-to-session variation beyond what three repeats capture cannot
-   be ruled out.
+   be ruled out. Session 4 (§V-B) supplies direct, measured evidence of
+   this risk rather than a hypothetical one: the same deterministic
+   workload — confirmed token-for-token identical output via greedy
+   decoding across all eight routing conditions (§V-C) — measured twice on
+   the same GPU roughly four hours apart (2026-09-05, job 1505 at
+   15:04-17:43 and job 1507 at 17:48-21:51) differed in per-request energy
+   by up to 4.8× (static_4bit: 125.08 vs. 595.26 J/req) because of a
+   co-tenant job's varying host-side load, not because the underlying
+   computation differed. This is a stronger, evidence-backed version of the
+   same threat rather than a new one, and is the direct motivation for the
+   confirmed-quiet-node precondition (§V-B) governing this paper's
+   remaining routing runs. It does not, however, extend to RQ1: Session 1's
+   three repeats already show this same node reproducible to within 7%
+   under quiet conditions (§V-A), so the contention explains Session 4's
+   runs specifically rather than undermining the measurement instrument or
+   protocol in general.
 6. **Energy counter scope (GPU-board-only).** NVML's
    `nvmlDeviceGetTotalEnergyConsumption` measures GPU-board energy only;
    host CPU and DRAM energy are excluded from every number in this paper.
@@ -724,19 +893,40 @@ Generation GPU, with statistically non-overlapping confidence intervals
 across all three tiers (§V-A). This is this project's own pre-registered
 go/no-go criterion for whether dynamic precision routing is a physically
 grounded idea worth building the rest of the system around, and it passes.
-RQ2 (routing energy/accuracy tradeoff), RQ3 (comparison against naive and
-oracle baseline routers), and RQ4 (QAT adapter ablation) remain open: the
-GPU sessions that will answer them (Session 4 for RQ2/RQ3, Session 2 for
-RQ4) are implemented and scripted against the same verifier-gated
-methodology used for RQ1, but have not yet been executed as of this draft.
-We report their exact protocol in §IV and §V rather than any projected
-outcome, so this paper's evidentiary boundary is unambiguous.
+RQ2 (routing energy/accuracy tradeoff) and RQ3 (comparison against naive
+and oracle baseline routers) have each now been measured twice — Session 4,
+jobs 1505 and 1507, both 2026-09-05 — but neither run counts toward this
+paper's gate: both were run under diagnosed shared-node contention (§V-B,
+§VI), and the same analysis diagnosed a real, partially-fixable defect in
+the routing controller's tie-break logic (§V-C). What we can report from
+these two runs is narrower than a full answer but real: the accuracy
+comparison is trustworthy despite the energy contention, because greedy
+decoding makes per-prompt output deterministic, and it currently shows the
+fuzzy router, even with the diagnosed defect modeled out, failing to
+outperform a tier-matched random baseline (0.152 vs. 0.158 accuracy) — a
+diagnosed, actionable, currently negative interim finding under active
+investigation, not this paper's final answer to RQ3. RQ4 (QAT adapter
+ablation) remains fully open: the GPU session that will answer it (Session
+2) is implemented and scripted against the same verifier-gated methodology
+used for RQ1, but has not yet been executed as of this draft. We report
+exact protocols and diagnosed defects in §IV and §V rather than a
+projected final outcome for RQ2 or RQ3, so this paper's evidentiary
+boundary remains unambiguous.
 
-Near-term future work is therefore concrete rather than speculative:
-running Sessions 2 and 4 to answer RQ2–RQ4; measuring the router's own
-compute overhead, $E_{router}$ in Eq. (22), which is currently reported as
-an un-measured but explicitly non-zero quantity, to complete the
-energy-accounting/break-even model sketched in §IV-B (the prompt-length
+Near-term future work is therefore concrete rather than speculative: fixing
+the routing-controller tie-break defect diagnosed in §V-C before, not
+between, the three remaining gate runs; running those three interleaved
+runs on a confirmed-quiet node to settle RQ2/RQ3, and Session 2 to answer
+RQ4; distinguishing the three candidate causes behind RQ3's second, deeper
+finding (§V-C) — narrow membership-function breakpoints, a rule base that
+does not cover the real feature distribution, or a genuine lack of
+predictive signal in the five complexity features — which is testable
+without further GPU time from existing per-prompt data, though conclusively
+resolving it also depends on Session 2's lm-eval-harness accuracy landing
+as a replacement for the placeholder correctness proxy; measuring the
+router's own compute overhead, $E_{router}$ in Eq. (22), which is currently
+reported as an un-measured but explicitly non-zero quantity, to complete
+the energy-accounting/break-even model sketched in §IV-B (the prompt-length
 point below which routing overhead outweighs its tier-selection savings);
 training a real tier-preference router on Session 4's per-prompt routing
 data as the genuine RouteLLM-methodology comparison point discussed in
@@ -744,8 +934,10 @@ data as the genuine RouteLLM-methodology comparison point discussed in
 memory-footprint comparison of this project's single-base-model-plus-
 adapters design against the cost of hosting multiple separate models under
 a RouteLLM-style routing scheme. We view a paper that honestly reports one
-fully measured, statistically significant finding alongside a fully
-specified but not-yet-executed remainder as the appropriate way to report
+fully measured, statistically significant finding, an interim and
+currently negative diagnosis for a second research question, and a fully
+specified but not-yet-executed remainder, as the appropriate way to report
 work at this project's current stage, and we commit to reporting whatever
-RQ2–RQ4 show once measured, whether or not the resulting numbers are as
-favorable as an earlier, retracted, non-measured estimate once assumed.
+the fixed router's clean gate runs show, whether or not the resulting
+numbers are as favorable as an earlier, retracted, non-measured estimate
+once assumed.
