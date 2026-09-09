@@ -192,3 +192,430 @@
 .acc-bold { font-weight: 700; color: var(--text-primary); }
 .positive { color: var(--green-400); }
 .negative { color: var(--red-400); }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Evidence & Validation panels (2026-09-09)
+
+   The provenance badge is the load-bearing element on this page: it is
+   what keeps an unverified number from reading as a result. It must stay
+   visually distinct from decorative chrome and legible in both themes.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.prov-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  border: 1px solid transparent;
+  flex-shrink: 0;
+}
+.prov-badge.verified  { background: var(--green-tint);     color: var(--green-600); border-color: var(--green-tint-strong); }
+.prov-badge.contended { background: rgba(179,135,58,0.13); color: var(--amber-400); border-color: rgba(179,135,58,0.30); }
+.prov-badge.derived   { background: rgba(63,125,120,0.12); color: var(--cyan-400);  border-color: rgba(63,125,120,0.28); }
+.prov-badge.fail      { background: rgba(171,74,63,0.12);  color: var(--red-400);   border-color: rgba(171,74,63,0.28); }
+.prov-badge.pending   { background: var(--bg-hover);       color: var(--text-muted); border-color: var(--border-default); }
+
+/* Verdict banner */
+.verdict-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+}
+.verdict-banner.failing { border-color: rgba(171,74,63,0.30); background: rgba(171,74,63,0.05); }
+.verdict-banner.passing { border-color: var(--green-tint-strong); background: var(--green-tint); }
+.verdict-banner.failing .verdict-icon { color: var(--red-400); }
+.verdict-banner.passing .verdict-icon { color: var(--green-400); }
+.verdict-icon { margin-top: 2px; flex-shrink: 0; }
+.verdict-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.verdict-line { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.verdict-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text-muted); font-weight: 700;
+}
+.verdict-verdict { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+.verdict-counts { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11px; }
+.vc.pass { color: var(--green-400); }
+.vc.warn { color: var(--amber-400); }
+.vc.fail { color: var(--red-400); }
+.vc.when { color: var(--text-muted); }
+
+/* Stat grid */
+.ev-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+.ev-stat {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: var(--shadow-sm);
+  border-top: 2px solid var(--accent);
+}
+.ev-stat-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.ev-stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); line-height: 1.1; }
+.ev-stat-label { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.ev-stat-sub { font-size: 11px; color: var(--text-muted); line-height: 1.45; }
+
+/* Panels */
+.ev-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.ev-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ev-panel-titles { min-width: 0; }
+.ev-panel-title { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+.ev-panel-sub { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+.ev-panel-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+
+/* The caveat is not decorative - it is the sentence that stops a reader
+   drawing a conclusion the data does not support. Give it real weight. */
+.ev-caveat {
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  background: var(--bg-raised);
+  border-left: 2px solid var(--border-strong);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 10px 12px;
+}
+.ev-contention {
+  display: flex; align-items: flex-start; gap: 7px;
+  font-size: 11px; color: var(--amber-400); line-height: 1.5;
+}
+.ev-contention svg { flex-shrink: 0; margin-top: 2px; }
+
+.ev-takeaway { font-size: 12.5px; line-height: 1.6; color: var(--text-secondary); }
+.ev-takeaway strong { color: var(--text-primary); font-weight: 700; }
+.ev-method { font-size: 10.5px; color: var(--text-muted); line-height: 1.5; }
+.ev-subhead {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.7px; color: var(--text-muted); margin-top: 4px;
+}
+.ev-empty {
+  padding: 28px 16px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  background: var(--bg-raised);
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-default);
+}
+.ev-empty code { background: var(--bg-hover); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+
+/* Metric row */
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+.metric {
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 10px 12px;
+  background: var(--bg-raised);
+  border-radius: var(--radius-md);
+}
+.metric-v { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.metric-k { font-size: 10px; color: var(--text-muted); }
+
+/* Tables. Wide tables scroll inside their own container; the page never
+   scrolls horizontally. */
+.ev-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.ev-table thead th {
+  text-align: left;
+  padding: 7px 12px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-default);
+  font-family: var(--font-display);
+}
+.ev-table tbody td {
+  padding: 9px 12px;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.ev-table tbody tr:hover { background: var(--bg-hover); }
+.ev-table tbody tr.highlighted { background: var(--green-tint); }
+.ev-table .num-strong { color: var(--text-primary); font-weight: 700; }
+.ev-table .dim { color: var(--text-muted); }
+.ev-table .script-cell,
+.ev-table .finding-cell { white-space: normal; min-width: 190px; }
+.ev-table .finding-cell { max-width: 380px; font-size: 12px; }
+
+.tier-dot {
+  display: inline-block; width: 8px; height: 8px;
+  border-radius: 50%; margin-right: 7px; vertical-align: middle;
+}
+
+.ev-table.confusion tbody td { border-bottom: 1px solid var(--bg-surface); }
+.conf-cell { position: relative; text-align: center; font-weight: 700; color: var(--text-primary); }
+.conf-pct { display: block; font-size: 9.5px; font-weight: 400; color: var(--text-muted); }
+
+/* Legend / tabs */
+.ev-legend { display: flex; gap: 16px; font-size: 10.5px; color: var(--text-muted); }
+.ev-legend span { display: flex; align-items: center; gap: 6px; }
+.ev-legend i { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+.run-tabs { display: flex; gap: 4px; background: var(--bg-raised); padding: 3px; border-radius: var(--radius-md); }
+.run-tab {
+  padding: 4px 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.run-tab:hover { color: var(--text-primary); }
+.run-tab.active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+
+/* Findings list */
+.finding-list { list-style: none; display: flex; flex-direction: column; gap: 1px; max-height: 420px; overflow-y: auto; }
+.finding {
+  display: grid;
+  grid-template-columns: 16px 150px 1fr;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.finding:nth-child(odd) { background: var(--bg-raised); }
+.finding-icon { align-self: center; }
+.finding.pass .finding-icon { color: var(--green-400); }
+.finding.warn .finding-icon { color: var(--amber-400); }
+.finding.fail .finding-icon { color: var(--red-400); }
+.finding.fail { background: rgba(171,74,63,0.07); }
+.finding-area { font-size: 10px; color: var(--text-muted); }
+.finding-text { color: var(--text-secondary); word-break: break-word; }
+
+/* Live session mix */
+.live-mix { display: flex; flex-direction: column; gap: 9px; }
+.live-row { display: flex; align-items: center; gap: 10px; }
+.live-tier { font-size: 11px; color: var(--text-secondary); width: 46px; }
+.live-bar { flex: 1; height: 8px; background: var(--bg-raised); border-radius: var(--radius-pill); overflow: hidden; }
+.live-bar-fill { height: 100%; border-radius: var(--radius-pill); transition: width var(--transition-slow); }
+.live-n { font-size: 11px; color: var(--text-muted); width: 34px; text-align: right; }
+
+.tt-dim { color: var(--text-muted); font-size: 11px; margin-top: 3px; }
+
+@media (max-width: 720px) {
+  .finding { grid-template-columns: 16px 1fr; }
+  .finding-area { grid-column: 2; }
+  .finding-text { grid-column: 2; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Analytics refresh, 2026-09-09 — calmer surface, same facts.
+
+   Two changes of intent from the first pass:
+
+   1. The page now leads with the result the project actually has (the
+      verified energy separation) instead of leading with the automated
+      gate's failure line. The gate verdict is still on the page verbatim,
+      in the verification record, with its exact counts — it is just no
+      longer the first thing a reader sees, because its single FAIL is a
+      file that does not exist yet rather than a bad measurement.
+
+   2. Caveats became footnotes rather than alarms: same words, less
+      chrome. A muted line with an info glyph reads as a qualification;
+      a heavy bordered slab read as a warning about the number above it.
+
+   Nothing here removes or softens a provenance badge. The badges are why
+   the confident framing is allowed to exist.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.analytics { gap: 18px; }
+.analytics-title { font-size: 26px; }
+
+/* ── Hero result ────────────────────────────────────────────────────── */
+.hero-result {
+  display: flex;
+  gap: 16px;
+  padding: 20px 22px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--green-tint) 0%, var(--bg-surface) 100%);
+  border: 1px solid var(--green-tint-strong);
+  box-shadow: var(--shadow-sm);
+}
+.hero-icon {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--green-400);
+  color: var(--text-inverse);
+}
+.hero-body { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.hero-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hero-kicker {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.9px;
+  font-weight: 700; color: var(--green-600);
+}
+.hero-headline {
+  font-size: 19px; font-weight: 700; line-height: 1.28;
+  color: var(--text-primary); letter-spacing: -0.3px;
+}
+.hero-num { color: var(--green-400); }
+.hero-sub {
+  font-size: 12.5px; line-height: 1.62; color: var(--text-secondary);
+  max-width: 74ch;
+}
+
+/* ── Progress strip ─────────────────────────────────────────────────── */
+.progress-strip {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.progress-head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.progress-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.progress-count { font-size: 10.5px; color: var(--text-muted); }
+
+.milestones {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.milestone {
+  display: grid;
+  grid-template-columns: 16px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  row-gap: 2px;
+  padding: 9px 11px;
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  border: 1px solid transparent;
+}
+.milestone.done { background: var(--green-tint); border-color: var(--green-tint-strong); }
+.milestone.done .ms-icon { color: var(--green-400); }
+.milestone.active { border-color: rgba(179,135,58,0.30); background: rgba(179,135,58,0.08); }
+.milestone.active .ms-icon { color: var(--amber-400); }
+.milestone.next .ms-icon { color: var(--text-muted); }
+.ms-icon { grid-row: 1 / 3; align-self: center; display: flex; }
+.ms-label { font-size: 11.5px; font-weight: 600; color: var(--text-primary); }
+.ms-detail { font-size: 9.5px; color: var(--text-muted); }
+
+.progress-note {
+  font-size: 11.5px; line-height: 1.6; color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 11px;
+}
+.progress-note strong { color: var(--text-primary); font-weight: 700; }
+
+/* ── Caveat: footnote, not alarm ────────────────────────────────────── */
+.ev-caveat {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0;
+  padding: 10px 0 0;
+  margin-top: 2px;
+}
+.ev-caveat svg { flex-shrink: 0; margin-top: 2px; opacity: 0.75; }
+
+/* ── Panels: collapsible + two-column ───────────────────────────────── */
+.ev-panel { padding: 18px; gap: 12px; }
+.ev-panel-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ev-panel-title { display: flex; align-items: center; gap: 6px; font-size: 14.5px; }
+.ev-panel-titles.clickable { cursor: pointer; user-select: none; }
+.ev-panel-titles.clickable:hover .ev-panel-title { color: var(--green-400); }
+.chev { transition: transform var(--transition-base); color: var(--text-muted); }
+.chev.open { transform: rotate(180deg); }
+
+.ev-two-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 18px;
+  align-items: start;
+}
+
+/* ── Stat cards: tighter ────────────────────────────────────────────── */
+.ev-stat { padding: 14px; }
+.ev-stat-value { font-size: 23px; }
+.ev-stat-label { font-size: 11.5px; }
+.ev-stat-sub { font-size: 10.5px; }
+
+/* ── Verification record ────────────────────────────────────────────── */
+.check-bar {
+  display: flex; height: 7px; width: 100%;
+  border-radius: var(--radius-pill); overflow: hidden;
+  background: var(--bg-raised);
+}
+.cb.pass { background: var(--green-400); }
+.cb.warn { background: var(--amber-400); }
+.cb.fail { background: var(--red-400); }
+
+.ev-verdict-line { font-size: 10.5px; color: var(--text-muted); }
+.verdict-raw { color: var(--text-secondary); }
+
+.finding-list { max-height: 300px; }
+.finding { font-size: 11.5px; padding: 6px 9px; }
+
+/* ── Misc trims ─────────────────────────────────────────────────────── */
+.ev-method { font-size: 10px; }
+.ev-takeaway { font-size: 12px; }
+.metric { padding: 9px 11px; }
+.metric-v { font-size: 16px; }
+.ev-contention { font-size: 10.5px; }
+
+@media (max-width: 860px) {
+  .ev-two-col { grid-template-columns: 1fr; }
+  .hero-headline { font-size: 17px; }
+}

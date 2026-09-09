@@ -46,3 +46,53 @@ export function useAnalytics() {
 
   return { ...data, loading, error, refresh }
 }
+
+
+/**
+ * Loads the project's measurement record for the Analytics page.
+ *
+ * Each endpoint is fetched independently and its failure isolated: a
+ * missing artifact must degrade that one panel to "no data yet", never
+ * blank the whole page or — far worse — leave a stale number on screen
+ * under a fresh-looking header.
+ */
+export function useEvidence() {
+  const [data, setData] = useState({
+    validation: null, experiments: null, energy: null,
+    routing: null, routerQuality: null,
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    const calls = [
+      ['validation', api.evidence.validation],
+      ['experiments', api.evidence.experiments],
+      ['energy', api.evidence.energy],
+      ['routing', api.evidence.routing],
+      ['routerQuality', api.evidence.routerQuality],
+    ]
+    const settled = await Promise.allSettled(calls.map(([, fn]) => fn()))
+    const next = {}
+    const failures = []
+    settled.forEach((res, i) => {
+      const key = calls[i][0]
+      if (res.status === 'fulfilled') {
+        next[key] = res.value
+      } else {
+        next[key] = null
+        failures.push(key)
+      }
+    })
+    setData(next)
+    if (failures.length === calls.length) setError('Backend offline — no evidence loaded.')
+    else if (failures.length) setError(`Could not load: ${failures.join(', ')}`)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { refresh() }, [refresh])
+
+  return { ...data, loading, error, refresh }
+}

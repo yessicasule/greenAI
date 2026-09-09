@@ -36,4 +36,16 @@ export const api = {
   results: () => request('/results'),
   energy: () => request('/energy'),
   accuracy: () => request('/accuracy'),
+
+  // Evidence endpoints (backend/src/green_weight/evidence.py). Read-only
+  // views of the committed measurement artifacts. Every response carries
+  // a `provenance` field the UI is required to render — see the
+  // ProvenanceBadge component in pages/Analytics.jsx.
+  evidence: {
+    validation: () => request('/evidence/validation'),
+    experiments: () => request('/evidence/experiments'),
+    energy: () => request('/evidence/energy'),
+    routing: () => request('/evidence/routing'),
+    routerQuality: () => request('/evidence/router-quality'),
+  },
 }

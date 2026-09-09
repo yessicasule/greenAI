@@ -126,6 +126,172 @@ paths:
             application/json:
               schema: { type: object }
 
+  # ── Evidence endpoints ──────────────────────────────────────────────
+  # Read-only. Serve the project's committed measurement artifacts to the
+  # dashboard's Analytics page. EVERY response carries `provenance`, and
+  # the frontend MUST render it: a number's trustworthiness is decided by
+  # the backend, not the UI. See backend/src/green_weight/evidence.py.
+  #
+  #   VERIFIED   verify_results.py PASS - safe to present as a result
+  #   CONTENDED  real measurement under host contention; not gate-eligible
+  #   DERIVED    computed from committed inputs, not a GPU measurement
+  #   PENDING    session has not produced data yet - never fabricate
+
+  /evidence/validation:
+    get:
+      summary: verify_results.py verdict, counts and every PASS/WARN/FAIL finding
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provenance: { type: string, example: VERIFIED }
+                  verdict: { type: string, nullable: true, example: "NOT PUBLISHABLE - failures present" }
+                  generated_at: { type: string, nullable: true }
+                  counts:
+                    type: object
+                    properties:
+                      PASS: { type: integer }
+                      WARN: { type: integer }
+                      FAIL: { type: integer }
+                  findings:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        level: { type: string, enum: [PASS, WARN, FAIL] }
+                        area: { type: string }
+                        finding: { type: string }
+
+  /evidence/experiments:
+    get:
+      summary: The append-only experiment log from paper/results.md
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provenance: { type: string }
+                  runs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string }
+                        session: { type: string }
+                        script: { type: string }
+                        outputs: { type: string }
+                        verdict: { type: string, example: PASS }
+                        finding: { type: string }
+
+  /evidence/energy:
+    get:
+      summary: >
+        Session 1 per-tier J/token - the project's one VERIFIED
+        quantitative result. `ratio_vs_16bit` is arithmetic on two measured
+        means; it is the cost of running a static tier, NOT an energy
+        saving achieved by routing.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provenance: { type: string, example: VERIFIED }
+                  session: { type: string }
+                  hardware: { type: string }
+                  method: { type: string }
+                  caveat: { type: string }
+                  tiers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tier: { type: string, example: 4bit }
+                        n: { type: number }
+                        mean_j_per_token: { type: number }
+                        std: { type: number }
+                        ci95: { type: number }
+                        ratio_vs_16bit: { type: number }
+
+  /evidence/routing:
+    get:
+      summary: >
+        Session 4 routing conditions, both runs. provenance is CONTENDED -
+        measured under host contention, not gate-eligible, and predating
+        the 2026-09-09 router fixes. The `accuracy` column is a coarse
+        reference-match proxy (0.11-0.26), NOT lm-eval accuracy.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provenance: { type: string, example: CONTENDED }
+                  caveat: { type: string }
+                  runs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        run: { type: string }
+                        source: { type: string }
+                        contention_detail: { type: string }
+                        conditions:
+                          type: array
+                          items: { type: object }
+
+  /evidence/router-quality:
+    get:
+      summary: >
+        Routing-decision precision/recall/F1 per tier, from
+        training/scripts/router_quality_report.py. provenance DERIVED.
+        Reference labels are dataset provenance, not measured quantization
+        sensitivity - this describes the routing DECISION, not model
+        accuracy and not energy.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  provenance: { type: string, example: DERIVED }
+                  caveat: { type: string }
+                  n_prompts: { type: integer }
+                  overall:
+                    type: object
+                    properties:
+                      exact_agreement: { type: number }
+                      macro_precision: { type: number }
+                      macro_recall: { type: number }
+                      macro_f1: { type: number }
+                      spearman_rho: { type: number }
+                  per_tier:
+                    type: object
+                    additionalProperties:
+                      type: object
+                      properties:
+                        precision: { type: number }
+                        recall: { type: number }
+                        f1: { type: number }
+                        support: { type: integer }
+                  tier_mix: { type: object }
+                  confusion: { type: object }
+                  complexity_by_difficulty: { type: object }
+
+
 components:
   schemas:
     InferRequest:
