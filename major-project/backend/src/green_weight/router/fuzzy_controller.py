@@ -162,13 +162,35 @@ class FuzzyController:
                 self.entropy["high"] & self.flesch_kincaid["high"],
                 self.complexity["high"]
             ),
-            
+
+            # Medium readability (47.6% of eval set) -> route based on other features
+            ctrl.Rule(
+                self.flesch_kincaid["medium"] & self.token_length["low"],
+                self.complexity["medium"]
+            ),
+
+            ctrl.Rule(
+                self.flesch_kincaid["medium"] & self.token_length["high"],
+                self.complexity["medium"]
+            ),
+
+            ctrl.Rule(
+                self.flesch_kincaid["medium"] & (self.entropy["high"] | self.syntax_depth["high"]),
+                self.complexity["high"]
+            ),
+
+            # Fallback for medium FK with no other signal
+            ctrl.Rule(
+                self.flesch_kincaid["medium"],
+                self.complexity["medium"]
+            ),
+
             # Default/fallback: medium complexity for mid-range features
             ctrl.Rule(
                 self.token_length["medium"] | self.syntax_depth["medium"],
                 self.complexity["medium"]
             ),
-            
+
             # Low on everything else -> favor 4-bit
             ctrl.Rule(
                 self.flesch_kincaid["low"] & self.token_length["low"],

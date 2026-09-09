@@ -100,7 +100,7 @@ router:
     # regardless of actual difficulty. Unlike entropy, this feature does
     # show real separation by difficulty, so getting the breakpoints right
     # matters for the routing signal, not just correctness.
-    syntax_depth_breakpoints: [4, 5]  # LOW/MEDIUM, MEDIUM/HIGH edges
+    syntax_depth_breakpoints: [3, 7]  # LOW/MEDIUM, MEDIUM/HIGH edges (widened to make medium band reachable)
     
     # Code/math detection is binary, not fuzzy
     
