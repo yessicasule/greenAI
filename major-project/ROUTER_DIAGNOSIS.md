@@ -1,5 +1,69 @@
 # Why the fuzzy router underperforms
 
+> **RESOLVED 2026-09-09 — both defects fixed. Read this before using
+> `routing_run1_*.csv` / `routing_run2_*.csv` for anything.**
+>
+> Runs #1 and #2 measured the router *before* these fixes. They are the
+> documented "before" case and must not be mixed with any later run
+> (`SESSION_4_PLAN.md` note 4). Neither counted toward the gate anyway,
+> both having been measured under host contention.
+>
+> **Defect 1 (bridge escalation)** — fixed in `router/routellm_bridge.py`.
+> The whole MID zone now maps to 8-bit; the `win_probability >= 0.5 ->
+> 16bit` tie-break is gone.
+>
+> **Defect 2 (the sensor does not discriminate)** — the mechanism was
+> found and fixed. It was candidate cause (1) below, "membership-function
+> breakpoints are too narrow, so most feature values fall outside every
+> band and no rule fires", plus (2). Specifically:
+>
+> - Every feature's HIGH term was `trimf([hi, 1, 1])`, which reaches full
+>   membership only at a normalized feature value of exactly 1.0. Features
+>   are normalized against their *observed* range, so nothing reaches 1.0.
+>   Mean HIGH membership over the eval set measured 0.000 (token_length),
+>   0.000 (syntax_depth), 0.008 (entropy), 0.047 (flesch_kincaid). Every
+>   rule with a HIGH antecedent fired at ~zero strength. Fixed by making
+>   LOW and HIGH saturating shoulders (`trapmf`) instead of triangles.
+> - The breakpoints themselves were hand-picked round numbers sitting
+>   above the real distribution — token_length's HIGH band began at 0.500
+>   against an observed max of 0.13. Now set to empirical terciles by
+>   `training/scripts/calibrate_breakpoints.py`, so every band is
+>   populated by construction.
+> - The rule base had no path from a single strong signal to HIGH, and
+>   `flesch_kincaid medium -> medium` was an unconditional catch-all.
+>   Replaced with a complete 3x3 coverage grid over flesch_kincaid x
+>   syntax_depth.
+> - `has_code_or_math` detected only symbolic math and missed the GSM8K
+>   arithmetic word problems that make up much of the "hard" split —
+>   recall on hard prompts was 42%. Now 73%, with false positives on easy
+>   unchanged at 1%.
+>
+> **Measured effect** over the same 500-prompt eval set (CPU-only,
+> `verify_results.py` not involved — these are routing-decision metrics,
+> not energy or accuracy measurements, and nothing here belongs in
+> `paper/results.md`):
+>
+> | metric | before | after |
+> |---|---|---|
+> | Spearman rho, complexity score vs difficulty label | 0.317 | **0.395** |
+> | agreement with difficulty label | 45.0% | **47.8%** |
+> | macro-F1 across the three tiers | 0.428 | **0.475** |
+> | easy->hard mean score separation | 12.2 pts | **22.8 pts** |
+> | tier mix (4/8/16-bit) | 14.0 / 28.6 / 57.4% | **15.6 / 51.6 / 32.8%** |
+>
+> **What is NOT fixed:** the sensor still cannot separate easy from
+> medium (mean score 49.9 vs 54.2), and 32% of prompts still land on the
+> neutral 50.0 score. Candidate cause (3) below — that the five features
+> may not predict quantization sensitivity — remains open and still needs
+> Session 2 data to settle. The difficulty labels used above are dataset
+> provenance (TriviaQA=easy, Alpaca=medium, GSM8K/CodeAlpaca=hard), a
+> proxy for quantization sensitivity, not a measurement of it.
+>
+> Regression guard: `backend/tests/test_tier_coverage.py` (15 prompts, 5
+> per tier) fails if any tier becomes unreachable or the bridge starves
+> the middle tier again.
+
+
 **Found:** 2026-09-08, CPU-only analysis of `routing_run1_per_prompt.csv`
 (500 prompts, job 1505). No GPU required to reproduce.
 

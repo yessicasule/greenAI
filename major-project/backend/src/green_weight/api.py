@@ -11,6 +11,15 @@ Endpoints:
     GET  /energy         — load energy_summary.csv
     GET  /accuracy       — load accuracy_results.json
     GET  /health         — health check
+
+    Evidence endpoints (see evidence.py) — read-only, serve the
+    committed measurement artifacts to the dashboard's Analytics page.
+    Every payload carries a `provenance` the UI must render:
+    GET  /evidence/validation     — verify_results.py verdict + findings
+    GET  /evidence/experiments    — the paper/results.md experiment log
+    GET  /evidence/energy         — per-tier J/token (Session 1, VERIFIED)
+    GET  /evidence/routing        — Session 4 conditions (CONTENDED)
+    GET  /evidence/router-quality — routing precision/recall/F1 (DERIVED)
 """
 
 import json
@@ -27,6 +36,7 @@ from config import get_config
 from router.complexity_scorer import score as score_complexity
 from router.fuzzy_controller import FuzzyController
 from router.routellm_bridge import RouteLLMBridge
+import evidence
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +49,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Read-only measurement-record endpoints under /evidence (see evidence.py).
+app.include_router(evidence.router)
 
 # ── Singletons (initialised once at startup) ──────────────────────────────────
 _fuzzy = None

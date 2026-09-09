@@ -176,12 +176,35 @@ class TestVerifyEnergy:
         n_msgs = [m for lvl, area, m in vr.findings if lvl == "PASS" and "n=" in m and "4bit" in m]
         assert any(f"n={vr.MIN_N_PER_TIER}" in m for m in n_msgs)
 
-    def test_zero_or_negative_energy_is_fail(self, tmp_path):
+    def test_zero_energy_on_a_long_generation_is_fail(self, tmp_path):
+        # verify_energy no longer emits one combined "zero/negative energy"
+        # finding. It splits the two cases, because they mean different
+        # things: a zero reading on a LONG generation is meter failure,
+        # while a zero on a 1-2 token generation is just below NVML's
+        # millijoule resolution (a WARN, not a FAIL). make_energy_rows
+        # defaults to tokens_out=50, so this is the meter-failure case.
         rows = make_energy_rows("4bit", 30, energy_j=0.0)
         _write_csv(tmp_path / "energy_logs" / "energy_per_inference.csv", ENERGY_FIELDS, rows)
         vr.verify_energy(tmp_path)
         fails = [m for lvl, area, m in vr.findings if lvl == "FAIL"]
-        assert any("zero/negative energy" in m for m in fails)
+        assert any("zero readings on generations longer" in m for m in fails)
+
+    def test_zero_energy_on_a_short_generation_is_warn_not_fail(self, tmp_path):
+        # The other half of the split: below the counter's resolution.
+        rows = make_energy_rows("4bit", 30, energy_j=0.0, tokens_out=1)
+        _write_csv(tmp_path / "energy_logs" / "energy_per_inference.csv", ENERGY_FIELDS, rows)
+        vr.verify_energy(tmp_path)
+        fails = [m for lvl, area, m in vr.findings if lvl == "FAIL"]
+        warns = [m for lvl, area, m in vr.findings if lvl == "WARN"]
+        assert not any("zero readings on generations longer" in m for m in fails)
+        assert any("below NVML counter resolution" in m for m in warns)
+
+    def test_negative_energy_is_fail(self, tmp_path):
+        rows = make_energy_rows("4bit", 30, energy_j=-1.0)
+        _write_csv(tmp_path / "energy_logs" / "energy_per_inference.csv", ENERGY_FIELDS, rows)
+        vr.verify_energy(tmp_path)
+        fails = [m for lvl, area, m in vr.findings if lvl == "FAIL"]
+        assert any("negative energy readings" in m for m in fails)
 
     def test_zero_tokens_is_fail(self, tmp_path):
         rows = make_energy_rows("4bit", 30, tokens_out=0)

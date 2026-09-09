@@ -32,10 +32,19 @@ class TestDecide:
     def test_just_above_upper_zone_routes_16bit(self, bridge):
         assert bridge.decide("irrelevant", 0.660001) == "16bit"
 
-    def test_mid_zone_high_half_routes_16bit(self, bridge):
-        # >= 0.5 within the mid zone -> 16bit
-        assert bridge.decide("irrelevant", 0.5) == "16bit"
-        assert bridge.decide("irrelevant", 0.6) == "16bit"
+    def test_mid_zone_routes_8bit_across_the_whole_band(self, bridge):
+        # The entire MID zone maps to 8-bit. This used to be split at 0.5,
+        # with the upper half escalated to 16-bit; that tie-break was
+        # removed 2026-09-09 after it was measured to collapse the 8-bit
+        # tier from 42.8% of prompts to 4.2% and to drop agreement with
+        # the eval set's difficulty labels from 49.8% to 38.4%. See
+        # ROUTER_DIAGNOSIS.md and routellm_bridge.decide()'s docstring.
+        #
+        # 0.5 specifically is what the fuzzy controller emits when its
+        # MEDIUM term fires alone — "no rule discriminated" — so it must
+        # resolve to the middle tier, not the most expensive one.
+        for wp in (0.34, 0.4, 0.5, 0.6, 0.66):
+            assert bridge.decide("irrelevant", wp) == "8bit", wp
 
     def test_mid_zone_low_half_routes_8bit(self, bridge):
         # < 0.5 within the mid zone -> 8bit
@@ -46,8 +55,11 @@ class TestDecide:
         assert bridge.decide("irrelevant", 0.33) == "8bit"  # 0.33 < 0.5
 
     def test_upper_boundary_inclusive_is_mid_zone(self, bridge):
-        # win_probability == mid_zone_upper is NOT > upper -> falls into MID
-        assert bridge.decide("irrelevant", 0.66) == "16bit"  # 0.66 >= 0.5
+        # win_probability == mid_zone_upper is NOT > upper -> falls into MID,
+        # and the whole MID zone is 8-bit (see above). Only a score strictly
+        # above the upper boundary reaches 16-bit.
+        assert bridge.decide("irrelevant", 0.66) == "8bit"
+        assert bridge.decide("irrelevant", 0.660001) == "16bit"
 
     def test_zero_routes_4bit(self, bridge):
         assert bridge.decide("irrelevant", 0.0) == "4bit"
