@@ -10,7 +10,19 @@ info:
     frontend-agent must flag (not silently patch around) any mismatch it
     finds between this file and actual backend behavior.
 servers:
+  # The backend itself.
   - url: http://localhost:8000
+    description: FastAPI backend (uvicorn api:app --port 8000)
+  # How the dashboard actually reaches it. src/lib/api.js sends every
+  # request to the relative '/api' prefix, which Vite proxies to the
+  # backend with the prefix stripped (vite.config.js, applied to both
+  # `npm run dev` on :5173 and `npm run preview` on :4173). So GET
+  # /api/health at the dashboard's origin == GET /health here. Keeping
+  # requests same-origin means the dashboard does not depend on api.py's
+  # CORS allow-list. Set VITE_API_BASE to bypass the proxy and call the
+  # backend directly (see frontend/.env.example).
+  - url: http://localhost:5173/api
+    description: Vite dev-server proxy to the same backend
 
 paths:
   /health:

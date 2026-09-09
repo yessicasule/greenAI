@@ -24,6 +24,7 @@ nothing is written into the real repo tree.
 
 import json
 
+import importlib.util
 import pytest
 
 from benchmark.accuracy_eval import AccuracyEvaluator, RoutedLM, TIER_TO_SERVICE
@@ -55,12 +56,32 @@ class TestInit:
 
 class TestRaisesWithoutModel:
     """The whole point of the 2026-08-22 rewrite: a failed/impossible
-    evaluation must fail loudly, not silently return a placeholder."""
+    evaluation must fail loudly, not silently return a placeholder.
 
+    evaluate_condition() checks whether lm-eval is importable *before* it
+    checks whether any tier model is loaded, so without lm-eval installed
+    these two raise the install error rather than the "not loaded" one
+    they are written to pin. That is correct behaviour, not a bug — but
+    it means the assertion below only tests what it claims to on a
+    machine that has lm-eval. Skip rather than assert the wrong thing.
+    The sibling tests in this class do not reach that guard and run
+    everywhere.
+    """
+
+    @pytest.mark.skipif(
+        importlib.util.find_spec("lm_eval") is None,
+        reason="lm-eval not installed; evaluate_condition raises the "
+               "install error before reaching the model-loaded guard",
+    )
     def test_always_tier_raises_when_no_model_loaded(self, evaluator):
         with pytest.raises(RuntimeError, match="not loaded"):
             evaluator.evaluate_condition("always_4bit", "4bit")
 
+    @pytest.mark.skipif(
+        importlib.util.find_spec("lm_eval") is None,
+        reason="lm-eval not installed; evaluate_condition raises the "
+               "install error before reaching the model-loaded guard",
+    )
     def test_routed_raises_when_no_model_loaded(self, evaluator):
         with pytest.raises(RuntimeError, match="No tier models are loaded"):
             evaluator.evaluate_condition("routed")

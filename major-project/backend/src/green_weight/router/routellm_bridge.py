@@ -50,8 +50,32 @@ class RouteLLMBridge:
         (see module docstring) will need the actual text to score, and
         callers already pass it.
         < 0.33  -> 4-bit (simple)
-        0.33-0.66 -> 8-bit (medium), upper half (>=0.5) -> 16-bit (complex)
+        0.33-0.66 -> 8-bit (medium)
         > 0.66  -> 16-bit (complex)
+
+        The MID zone maps to 8-bit with no further tie-break. It used to
+        carry one — `win_probability >= 0.5` was escalated to 16-bit —
+        and that single line was measured to be the router's dominant
+        failure mode (ROUTER_DIAGNOSIS.md, 2026-09-08, and re-measured
+        2026-09-09 after the sensor was recalibrated):
+
+            tier    controller decides   after the >=0.5 escalation
+            4-bit         15.6%                    15.6%
+            8-bit         42.8%                     4.2%
+            16-bit        41.6%                    80.2%
+
+        Agreement with the eval set's own difficulty labels fell from
+        49.8% to 38.4% because of it, and on the earlier Session-4 run it
+        cost 41.2% more energy while *lowering* accuracy by 0.022 — the
+        component was strictly harmful on both axes.
+
+        The reason it did so much damage: 0.500 is exactly what the fuzzy
+        controller emits when its MEDIUM term fires alone, i.e. when no
+        rule discriminated. `>=` therefore sent every undecided prompt to
+        the most expensive tier. A score that means "no strong evidence
+        either way" should resolve to the middle tier, which is what the
+        zone boundaries in config.yaml already say and what this module's
+        own __main__ example has always expected (0.5 -> 8-bit).
         """
         if win_probability < self.mid_zone_lower:
             logger.debug(f"Win probability {win_probability:.3f} -> 4bit")
@@ -60,11 +84,7 @@ class RouteLLMBridge:
             logger.debug(f"Win probability {win_probability:.3f} -> 16bit")
             return "16bit"
         else:
-            # MID zone: >= 0.5 goes to 16-bit (complex-leaning), < 0.5 stays 8-bit
-            if win_probability >= 0.5:
-                logger.debug(f"Win probability {win_probability:.3f} MID-high -> 16bit")
-                return "16bit"
-            logger.debug(f"Win probability {win_probability:.3f} MID-low -> 8bit")
+            logger.debug(f"Win probability {win_probability:.3f} MID -> 8bit")
             return "8bit"
 
 

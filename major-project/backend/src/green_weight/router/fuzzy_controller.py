@@ -31,21 +31,51 @@ logger = logging.getLogger(__name__)
 
 
 def _trimf_low_mid_high(antecedent, bps, default_lo=0.33, default_hi=0.66):
-    """Build symmetric LOW/MEDIUM/HIGH triangular membership functions from
-    two edge breakpoints (lo, hi); MEDIUM's peak is their midpoint.
+    """Build a LOW/MEDIUM/HIGH fuzzy partition from two edge breakpoints
+    (lo, hi); MEDIUM is a triangle peaking at their midpoint, LOW and HIGH
+    are *shoulders* (saturating trapezoids).
 
     Only reads bps[0]/bps[1]. A 3rd breakpoint value, if present (kept in
     config.yaml purely as a documented LOW/HIGH edge pair per the comments
     there), is intentionally ignored — see the 2026-08-22 note in
     config.yaml's fuzzy_controller section for why a true 3-breakpoint
     asymmetric partition was considered and deferred.
+
+    HIGH is a shoulder, not a triangle (fixed 2026-09-09). It used to be
+    `trimf([hi, 1, 1])`, which reaches full membership ONLY at a feature
+    value of exactly 1.0. Every feature here is normalized against its
+    *observed* range (complexity_scorer's FLESCH_KINCAID_RANGE etc.), and
+    real prompts do not sit at the top of that range — measured over
+    data/eval_prompts.jsonl the mean HIGH membership was 0.047
+    (flesch_kincaid), 0.008 (entropy), and exactly 0.000 for both
+    token_length and syntax_depth. So every rule with a HIGH antecedent
+    fired at ~zero strength, only the MEDIUM-consequent rules carried any
+    weight, and the defuzzified score collapsed onto ~50 for almost every
+    prompt: 16-bit was structurally unreachable (1/30 eval prompts) and
+    everything piled into 8-bit (22/30).
+
+    A shoulder is the standard shape for the extreme terms of a fuzzy
+    partition precisely because it saturates: `trapmf([hi, sat, 1, 1])`
+    reaches full membership at `sat` and stays there. `sat` is placed one
+    MEDIUM half-width above `hi`, so the partition stays symmetric — HIGH
+    ramps up over exactly the span MEDIUM ramps down over. LOW is the
+    mirror image. This is a shape fix and is correct independent of any
+    dataset; the breakpoints themselves are calibrated separately (see
+    training/scripts/calibrate_breakpoints.py).
     """
     lo = bps[0] if bps else default_lo
     hi = bps[1] if len(bps) > 1 else default_hi
     mid = (lo + hi) / 2.0
-    antecedent["low"] = fuzz.trimf(antecedent.universe, [0, 0, lo])
+
+    # Half-width of MEDIUM's ramp — reused so LOW/HIGH saturate over the
+    # same span, keeping the three terms a symmetric partition.
+    half = max((hi - lo) / 2.0, 1e-6)
+    low_sat = max(0.0, lo - half)    # LOW is fully true at or below this
+    high_sat = min(1.0, hi + half)   # HIGH is fully true at or above this
+
+    antecedent["low"] = fuzz.trapmf(antecedent.universe, [0, 0, low_sat, lo])
     antecedent["medium"] = fuzz.trimf(antecedent.universe, [lo, mid, hi])
-    antecedent["high"] = fuzz.trimf(antecedent.universe, [hi, 1, 1])
+    antecedent["high"] = fuzz.trapmf(antecedent.universe, [hi, high_sat, 1, 1])
 
 
 class FuzzyController:
@@ -128,76 +158,144 @@ class FuzzyController:
         self.complexity["medium"] = fuzz.trimf(self.complexity.universe, [25, 50, 75])
         self.complexity["high"] = fuzz.trimf(self.complexity.universe, [67, 100, 100])
         
-        # Define fuzzy rules
-        # Rule base: heuristics for routing
+        # ── Rule base ────────────────────────────────────────────────
+        # Rebuilt 2026-09-09. The previous base was an ad-hoc list of 11
+        # overlapping heuristics with two structural faults:
+        #
+        #   (a) No single strong signal could reach HIGH. The only
+        #       non-code path to HIGH was `(syntax_depth high | entropy
+        #       high) & flesch_kincaid high` — a conjunction, so a prompt
+        #       that is unambiguously hard on reading level alone (e.g.
+        #       "Discuss the philosophical implications of Godel's
+        #       incompleteness theorems", flesch_kincaid = 0.98) could
+        #       never be routed to 16-bit.
+        #   (b) `flesch_kincaid medium -> medium` was an unconditional
+        #       catch-all overlapping almost every other rule. MEDIUM
+        #       therefore fired alone for a large share of prompts, and
+        #       MEDIUM alone defuzzifies to *exactly* 50.0 — the neutral
+        #       centroid that ROUTER_DIAGNOSIS.md measured on 47% of the
+        #       eval set and identified as the reason the router does not
+        #       beat a tier-matched random control. A score that means
+        #       "no rule discriminated" is not a complexity estimate.
+        #
+        # The replacement is a complete 3x3 coverage grid over the two
+        # features that actually discriminate difficulty on this dataset
+        # (flesch_kincaid and syntax_depth — see complexity_scorer's note
+        # that entropy barely separates easy from hard), with code/math
+        # and length as modifiers:
+        #
+        #     fk \ sd |  low     medium   high
+        #     --------+---------------------------
+        #     low     |  LOW      LOW     MEDIUM
+        #     medium  |  MEDIUM   MEDIUM  HIGH
+        #     high    |  MEDIUM   HIGH    HIGH
+        #
+        # Every (fk, sd) combination is covered, so some rule always
+        # fires — no prompt falls through to the neutral default. The
+        # grid is deliberately asymmetric on the diagonal: agreement
+        # between the two features is trusted, disagreement (low reading
+        # level but deep syntax, or vice versa) resolves to the middle
+        # tier rather than to either extreme.
         rules = [
-            # Simple prompts (low on most features) -> use 4-bit
+            # ---- fk LOW row ----
             ctrl.Rule(
-                self.flesch_kincaid["low"] & self.token_length["low"] & 
-                self.syntax_depth["low"] & self.has_code_or_math["no"],
+                self.flesch_kincaid["low"] & self.syntax_depth["low"],
                 self.complexity["low"]
             ),
-            
-            # Complex reasoning (high on multiple features) -> use 16-bit
             ctrl.Rule(
-                (self.syntax_depth["high"] | self.entropy["high"]) & 
-                self.flesch_kincaid["high"],
+                self.flesch_kincaid["low"] & self.syntax_depth["medium"],
+                self.complexity["low"]
+            ),
+            ctrl.Rule(
+                self.flesch_kincaid["low"] & self.syntax_depth["high"],
+                self.complexity["medium"]
+            ),
+
+            # ---- fk MEDIUM row ----
+            ctrl.Rule(
+                self.flesch_kincaid["medium"] & self.syntax_depth["low"],
+                self.complexity["medium"]
+            ),
+            ctrl.Rule(
+                self.flesch_kincaid["medium"] & self.syntax_depth["medium"],
+                self.complexity["medium"]
+            ),
+            ctrl.Rule(
+                self.flesch_kincaid["medium"] & self.syntax_depth["high"],
                 self.complexity["high"]
             ),
-            
-            # Code/math detected -> lean toward 16-bit
+
+            # ---- fk HIGH row ----
+            ctrl.Rule(
+                self.flesch_kincaid["high"] & self.syntax_depth["low"],
+                self.complexity["medium"]
+            ),
+            ctrl.Rule(
+                self.flesch_kincaid["high"] & self.syntax_depth["medium"],
+                self.complexity["high"]
+            ),
+            ctrl.Rule(
+                self.flesch_kincaid["high"] & self.syntax_depth["high"],
+                self.complexity["high"]
+            ),
+
+            # ---- Modifier: code/math is a direct HIGH signal ----
+            # Code and symbolic math are the clearest evidence that a
+            # prompt needs full precision, and this is the one feature
+            # that fires far more on hard prompts than easy ones on the
+            # real eval set (42% of hard, 1% of easy).
             ctrl.Rule(
                 self.has_code_or_math["yes"],
                 self.complexity["high"]
             ),
-            
-            # Long prompts -> lean toward 8-bit or 16-bit
+
+            # ---- Modifier: length ----
+            # Length is the WEAKEST of the five signals on this dataset
+            # and must never drive a decision on its own. TriviaQA "easy"
+            # questions are wordy but trivially answerable ("Which ITV
+            # magazine style show ran from 1968 to 1980 and featured...")
+            # — measured over the eval set, easy prompts sit at
+            # token_length p75 = 0.25, well inside the HIGH band, purely
+            # because trivia is verbose.
+            #
+            # So length only escalates when reading level ALSO says the
+            # prompt is dense; long-but-plain resolves to the middle
+            # tier. An earlier version of this rule guarded with
+            # `~flesch_kincaid["low"]`, which medium-FK satisfies, and
+            # that sent 70 of 200 easy prompts to 16-bit at full HIGH
+            # membership (score 89.0) on length alone.
             ctrl.Rule(
-                self.token_length["high"],
+                self.token_length["high"] & self.flesch_kincaid["high"],
+                self.complexity["high"]
+            ),
+            ctrl.Rule(
+                self.token_length["high"] & self.flesch_kincaid["medium"],
                 self.complexity["medium"]
             ),
-            
-            # High entropy (diverse vocabulary) -> lean toward 16-bit
+            ctrl.Rule(
+                self.token_length["high"] & self.flesch_kincaid["low"],
+                self.complexity["medium"]
+            ),
+
+            # ---- Modifier: entropy reinforcement ----
+            # Entropy barely separates difficulty on its own (easy mean
+            # 4.11 vs hard 4.11 bits), so it is used only to reinforce an
+            # already-high reading level, never as a standalone driver.
             ctrl.Rule(
                 self.entropy["high"] & self.flesch_kincaid["high"],
                 self.complexity["high"]
             ),
 
-            # Medium readability (47.6% of eval set) -> route based on other features
+            # ---- Reinforce clean-easy ----
+            # Short, plainly-worded, shallow, no code: the strongest
+            # available evidence for the cheapest tier.
             ctrl.Rule(
-                self.flesch_kincaid["medium"] & self.token_length["low"],
-                self.complexity["medium"]
-            ),
-
-            ctrl.Rule(
-                self.flesch_kincaid["medium"] & self.token_length["high"],
-                self.complexity["medium"]
-            ),
-
-            ctrl.Rule(
-                self.flesch_kincaid["medium"] & (self.entropy["high"] | self.syntax_depth["high"]),
-                self.complexity["high"]
-            ),
-
-            # Fallback for medium FK with no other signal
-            ctrl.Rule(
-                self.flesch_kincaid["medium"],
-                self.complexity["medium"]
-            ),
-
-            # Default/fallback: medium complexity for mid-range features
-            ctrl.Rule(
-                self.token_length["medium"] | self.syntax_depth["medium"],
-                self.complexity["medium"]
-            ),
-
-            # Low on everything else -> favor 4-bit
-            ctrl.Rule(
-                self.flesch_kincaid["low"] & self.token_length["low"],
+                self.flesch_kincaid["low"] & self.token_length["low"] &
+                self.syntax_depth["low"] & self.has_code_or_math["no"],
                 self.complexity["low"]
             ),
         ]
-        
+
         # Create control system
         self.system = ctrl.ControlSystem(rules)
         self.simulator = ctrl.ControlSystemSimulation(self.system)

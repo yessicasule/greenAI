@@ -48,9 +48,15 @@ def test_get_routing_zone_boundaries():
     # was written, so config.yaml's lists were cut to match actual
     # behavior instead of carrying a misleading dead number. See
     # CREDIBILITY_REPORT.md / NEW.md Phase 4.
-    ("flesch_kincaid", [6, 12]),
-    ("token_length", [0.2, 0.5]),
-    ("entropy", [3.8, 4.1]),
+    # Values re-calibrated 2026-09-09 by
+    # training/scripts/calibrate_breakpoints.py — empirical terciles of
+    # each feature over the authoritative 500-prompt eval set (seed 42),
+    # replacing hand-picked round numbers that put every HIGH band above
+    # where real prompts land. Re-run that script if the eval
+    # distribution changes, then update these. See config.yaml's note.
+    ("flesch_kincaid", [5.0, 7.7]),
+    ("token_length", [0.086, 0.125]),
+    ("entropy", [3.98, 4.16]),
     ("syntax_depth", [4, 5]),
 ])
 def test_get_fuzzy_membership_breakpoints(feature, expected):
