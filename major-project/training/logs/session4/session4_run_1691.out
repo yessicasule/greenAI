@@ -1,0 +1,88 @@
+Output dir: /home/khushiwadhwa23/session4_run4_j1691_output
+Energy meter bound to NVML index 0 (GPU-c53791fb-b98b-4aee-128e-5c75e0fe7bc3); CUDA_VISIBLE_DEVICES=0
+Loaded 500 unique prompts from data/eval_prompts.jsonl
+Preflight: checking dependencies...
+[OK] Loaded config from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/config.yaml
+Preflight OK: parse depth 1/5, sample routes to 8bit (win_prob 0.628)
+QAT adapters: /home/khushiwadhwa23/greenAI/major-project/adapters
+Streaming per-prompt measurements to /home/khushiwadhwa23/session4_run4_j1691_output/phase_a_live.csv
+
+===== Phase A: tier 4bit =====
+  loaded in 15.9s; QAT adapter loaded: True
+  warmup 1/5 (5.9s)
+  warmup 2/5 (0.5s)
+  warmup 3/5 (0.2s)
+  warmup 4/5 (0.1s)
+  warmup 5/5 (0.0s)
+  50/500 prompts done (69s elapsed, ~623s left, 1 tok, 0.0 J)
+  100/500 prompts done (121s elapsed, ~484s left, 1 tok, 7.5 J)
+  150/500 prompts done (198s elapsed, ~461s left, 128 tok, 201.8 J)
+  200/500 prompts done (253s elapsed, ~380s left, 42 tok, 70.2 J)
+  250/500 prompts done (327s elapsed, ~327s left, 128 tok, 192.8 J)
+  300/500 prompts done (392s elapsed, ~261s left, 128 tok, 193.2 J)
+  350/500 prompts done (455s elapsed, ~195s left, 128 tok, 203.9 J)
+  400/500 prompts done (526s elapsed, ~131s left, 128 tok, 203.3 J)
+  450/500 prompts done (600s elapsed, ~67s left, 128 tok, 194.4 J)
+  500/500 prompts done (671s elapsed, ~0s left, 27 tok, 43.2 J)
+
+===== Phase A: tier 8bit =====
+  loaded in 4.0s; QAT adapter loaded: True
+  warmup 1/5 (5.8s)
+  warmup 2/5 (3.0s)
+  warmup 3/5 (0.9s)
+  warmup 4/5 (0.1s)
+  warmup 5/5 (0.1s)
+  50/500 prompts done (175s elapsed, ~1573s left, 128 tok, 357.2 J)
+  100/500 prompts done (338s elapsed, ~1354s left, 46 tok, 131.2 J)
+  150/500 prompts done (519s elapsed, ~1210s left, 128 tok, 361.6 J)
+  200/500 prompts done (685s elapsed, ~1027s left, 40 tok, 107.4 J)
+  250/500 prompts done (868s elapsed, ~868s left, 128 tok, 353.3 J)
+  300/500 prompts done (1046s elapsed, ~697s left, 128 tok, 369.9 J)
+  350/500 prompts done (1226s elapsed, ~525s left, 128 tok, 353.6 J)
+  400/500 prompts done (1417s elapsed, ~354s left, 71 tok, 198.3 J)
+  450/500 prompts done (1594s elapsed, ~177s left, 128 tok, 347.8 J)
+  500/500 prompts done (1767s elapsed, ~0s left, 128 tok, 370.0 J)
+
+===== Phase A: tier 16bit =====
+  loaded in 2.3s; QAT adapter loaded: True
+  warmup 1/5 (21.9s)
+  warmup 2/5 (25.6s)
+  warmup 3/5 (2.8s)
+  warmup 4/5 (0.0s)
+  warmup 5/5 (0.0s)
+  50/500 prompts done (736s elapsed, ~6622s left, 128 tok, 1184.5 J)
+  100/500 prompts done (1423s elapsed, ~5694s left, 128 tok, 1746.0 J)
+  150/500 prompts done (2179s elapsed, ~5084s left, 128 tok, 1039.9 J)
+  200/500 prompts done (2782s elapsed, ~4174s left, 49 tok, 347.9 J)
+  250/500 prompts done (3599s elapsed, ~3599s left, 128 tok, 1472.7 J)
+  300/500 prompts done (4189s elapsed, ~2793s left, 128 tok, 3538.7 J)
+  350/500 prompts done (5220s elapsed, ~2237s left, 26 tok, 309.9 J)
+  400/500 prompts done (6351s elapsed, ~1588s left, 128 tok, 2538.1 J)
+  450/500 prompts done (7433s elapsed, ~826s left, 128 tok, 3046.1 J)
+  500/500 prompts done (8419s elapsed, ~0s left, 128 tok, 2562.9 J)
+Phase A raw measurements written to /home/khushiwadhwa23/session4_run4_j1691_output/phase_a_raw.csv
+
+================= CONDITION SUMMARY =================
+         static_4bit: acc=0.110  J/req=117.37  J/tok=1.5337
+         static_8bit: acc=0.186  J/req=291.4  J/tok=2.817
+        static_16bit: acc=0.162  J/req=1367.56  J/tok=13.8785
+        fuzzy_router: acc=0.156  J/req=567.62  J/tok=5.9175
+      random_matched: acc=0.166  J/req=608.157  J/tok=6.2525
+    threshold_router: acc=0.120  J/req=167.94  J/tok=1.9218
+              oracle: acc=0.258  J/req=1109.46  J/tok=11.2252
+      oracle_cascade: acc=0.258  J/req=1433.17  J/tok=5.8848
+
+  Fuzzy vs static fp16: 58.5% energy/request saved, accuracy 0.162 -> 0.156
+
+Saved: routing_per_prompt.csv, routing_conditions_summary.csv, routing_run_info.json — download all three.
+=== run 4 exiting (status 0) ===
+total 2084
+drwx------.  2 khushiwadhwa23 khushiwadhwa23   4096 Sep 29 14:51 .
+drwx------. 32 khushiwadhwa23 khushiwadhwa23   4096 Sep 29 12:47 ..
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23     41 Sep 29 11:48 git_commit.txt
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23   1689 Sep 29 11:48 nvidia_smi.txt
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23 705862 Sep 29 14:51 phase_a_live.csv
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23 705862 Sep 29 14:51 phase_a_raw.csv
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23    687 Sep 29 14:51 routing_conditions_summary.csv
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23 689729 Sep 29 14:51 routing_per_prompt.csv
+-rw-------.  1 khushiwadhwa23 khushiwadhwa23   1015 Sep 29 14:51 routing_run_info.json
