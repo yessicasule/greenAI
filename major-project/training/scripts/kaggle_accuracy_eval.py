@@ -140,9 +140,11 @@ def main():
     torch.manual_seed(42)
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     tasks, limit = resolve_tasks()
-    if os.environ.get("SMOKE_LIMIT"):
-        limit = int(os.environ["SMOKE_LIMIT"])
-        print(f"SMOKE TEST: limit={limit} examples per task -- not a real run")
+    # tinyBenchmarks' IRT scoring needs all 100 items per task, so a smoke
+    # test keeps the full tasks and instead runs only the first condition.
+    smoke = bool(os.environ.get("SMOKE_LIMIT"))
+    if smoke:
+        print("SMOKE TEST: first condition only -- not a real run")
 
     adapter_root = Path(ADAPTER_ROOT) if ADAPTER_ROOT else None
     if adapter_root and not adapter_root.exists():
@@ -188,6 +190,10 @@ def main():
                 gc.collect()
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats()
+            if smoke:
+                break
+        if smoke:
+            break
 
     (OUT_DIR / "accuracy_per_tier.json").write_text(
         json.dumps(all_results, indent=2, default=str)
