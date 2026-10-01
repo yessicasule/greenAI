@@ -1,0 +1,3 @@
+comparison,metric,mean_diff,ci_lo,ci_hi
+fuzzy - static_16bit,J/request,71.7299,61.0147,82.2246
+fuzzy - static_16bit,accuracy,-0.006,-0.034,0.02

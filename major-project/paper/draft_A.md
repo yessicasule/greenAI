@@ -202,12 +202,17 @@ the by-tier runs, 16-bit ran last and happened to coincide with it.
    (completeness, positivity, plausibility, oracle consistency) cannot
    see a uniform slowdown.
 4. **GPU isolation.** The GPU was not shared at the level SLURM
-   allocates. Our hypothesis is that the disruption comes from the shared
-   host — CPU or scheduling contention that starves a launch-bound
-   workload. Batch-size-1 float16 decoding of a 1B model is the most
-   launch-bound of the three tiers, which would explain why it is the most
-   sensitive. [PENDING: diagnostic job 1706 measures GPU utilisation
-   during 16-bit generation to test this.]
+   allocates. A daytime diagnostic (job 1706) isolated plain float16
+   generation — no router, adapters or energy meter — on the same GPU:
+   8.5 tokens/s on average (4.4–25.6) against 80+ overnight, with GPU SM
+   utilisation at 0% (median) and the process on-CPU 100% of the time.
+   The GPU was waiting on a CPU-side launch path that had become ~10×
+   slower per token. The disruption is therefore host-side, not GPU
+   contention. We did not isolate the exact host mechanism (e.g.
+   contention for shared CPU or memory resources from other jobs on the
+   node). Batch-size-1 float16 decoding of a 1B model is the most
+   launch-bound of the three tiers, which is consistent with it being the
+   most visibly affected when it happens to run during disruption.
 
 ### E. A Cheap Check That Does Catch It
 
@@ -221,12 +226,28 @@ We recommend that energy studies on shared infrastructure:
 - re-measure any tier whose throughput departs from its clean baseline;
 - record co-tenancy continuously, not at a single point.
 
-## V. Results: Energy per Token by Precision — PENDING (run 6)
+## V. Results: Energy per Token by Precision
 
-Planned content: clean per-tier J/token (runs 5 and 6), throughput and
-power per tier, and the headline comparison. Current single clean run
-(run 5): 4-bit 1.71, 8-bit 3.12, 16-bit 1.69 J/token. Do not state as
-reproducible until run 6 agrees.
+Two clean runs on different nights (runs 5 and 6) agree within 4%
+(medians over prompts with ≥16 generated tokens; Fig. 2):
+
+| Tier | Throughput (tok/s) | Mean power (W) | Energy (J/token) |
+|---|---|---|---|
+| 4-bit (NF4) | 56.4 / 56.5 | 96 / 97 | 1.71 / 1.71 |
+| 8-bit (LLM.int8) | 29.0 / 29.4 | 91 / 91 | 3.12 / 3.10 |
+| 16-bit (float16) | 80.7 / 81.8 | 136 / 142 | 1.69 / 1.73 |
+
+(run 5 / run 6)
+
+**Finding.** With bitsandbytes on an RTX 6000 Ada at batch size 1, 4-bit
+weights do not reduce energy per token relative to float16 (1.71 vs.
+~1.7 J/token), and 8-bit nearly doubles it (~3.1 J/token). float16 draws
+the most power but is fastest by a wide margin, so it finishes each token
+sooner; the quantized tiers draw less power but run 1.4× (4-bit) to 2.8×
+(8-bit) slower, and that extra time costs more energy than the lower power
+saves.
+
+[TODO: mean ± 95% CI over all prompts alongside the medians.]
 
 Planned explanation, to be checked against the measurements: at batch size
 1 on this GPU, bitsandbytes 4-bit and 8-bit kernels dequantize weights on
@@ -247,6 +268,27 @@ Planned content (numbers from run 5, confirm with run 6):
   166 J/request — routing costs more than never quantizing.
 - Oracle upper bound: accuracy 0.258.
 - Lesson: routing can only save what the tiers save.
+
+**Run 5 analysis (`paper/analysis/routing_run5_*.csv`, Fig. 3). Confirmed by
+run 6 (2026-10-01): paired energy difference +65.4 J/request (54.9–75.8),
+same accuracy difference, oracle 141 J/request; tier mixes per difficulty
+match run 5.**
+- Paired per-prompt bootstrap, fuzzy router − static 16-bit: **+71.7 J/request
+  (95% CI 61.0–82.2)**, accuracy **−0.006 (95% CI −0.034 to +0.020)** — about
+  43% more energy for no measurable accuracy difference.
+- The sensor does react to difficulty: the router sends 60.7% of hard
+  prompts to 16-bit vs. 21% of easy ones. But it sends 51.6% of all prompts
+  to 8-bit, the most expensive tier (323 J/request).
+- Agreement with the oracle's tier: 26.6% of prompts (28.7% of the 129
+  prompts any tier answers correctly) — below the 33% expected from a
+  uniform random pick.
+- Only 129/500 prompts are answered correctly by any tier under the
+  reference-match proxy, which caps what any router can gain in accuracy.
+- Oracle definition: we use the tier with the lowest *measured* energy
+  among those that answer correctly (140 J/request, accuracy 0.258). The
+  experiment script's own oracle assumes fewer bits = cheaper and reports
+  184 J/request at the same accuracy; that assumption is false for 8-bit
+  here. State the definition in the paper.
 
 ## VII. Threats to Validity — PENDING (partly draftable now)
 
