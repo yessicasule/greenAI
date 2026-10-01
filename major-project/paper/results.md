@@ -13,6 +13,7 @@ every session (see `.claude/agents/training-agent.md`).
 | 2026-09-09 | 4 | `kaggle_routing_experiment.py` (job 1529, by-tier) | `routing_run3_{conditions,per_prompt,info}` | CONTENDED | Contended throughout by job 1508; static_16bit 1581.35 J/req. Not gate-eligible |
 | 2026-09-29 | 4 | `kaggle_routing_experiment.py` (job 1691, by-tier, daytime) | `routing_run4_{conditions,per_prompt,info}` | PASS routing checks (1 WARN) — but 16-bit phase DISRUPTED | 4/8-bit clean; 16-bit starved at 6.2 tok/s median, 81 W, 12.97 J/tok. See "Session 4 runs 4-5" below |
 | 2026-09-30 | 4 | `kaggle_routing_experiment.py` (job 1692, by-tier, started 00:05) | `routing_run5_{conditions,per_prompt,info}` | PASS routing checks (1 WARN) — CLEAN | All tiers clean: 16-bit 80.7 tok/s, 136 W, 1.69 J/tok; 4-bit 1.71; 8-bit 3.12 J/tok |
+| 2026-10-01 | 4 | `kaggle_routing_experiment.py` (job 1707, by-tier, started 00:58) | `routing_run6_{conditions,per_prompt,info}` | PASS routing checks (1 WARN) — CLEAN | Reproduces run 5: 16-bit 81.8 tok/s, 142 W, 1.73 J/tok; 4-bit 1.71; 8-bit 3.10 J/tok |
 
 
 
@@ -93,3 +94,34 @@ Routing (identical in runs 4 and 5): fuzzy_router accuracy 0.156 vs
 random_matched 0.1657 at the same tier mix — verify_results WARN, routing
 adds no measurable intelligence. Accuracy metric is the reference-match
 proxy (static tiers 0.11 / 0.186 / 0.162 for 4/8/16-bit).
+
+## Session 4 run 6 and 16-bit diagnostic (logged 2026-10-01)
+
+**Run 6 (job 1707, 2026-10-01 00:58-01:51, 53 min).** Clean; reproduces run 5.
+Per-tier medians (>=16 output tokens): 4-bit 56.5 tok/s · 97 W · 1.71 J/tok;
+8-bit 29.4 · 91 · 3.10; 16-bit 81.8 · 142 · 1.73. 16-bit per-decile
+throughput 80.8-84.2 tok/s (steady). No co-tenant PID. Routing results
+identical to runs 4-5 (deterministic). Condition J/request: static 4/8/16-bit
+130.2 / 320.2 / 173.9; fuzzy 239.3; random_matched 242.2.
+
+**Runs 5 vs 6 (the two clean runs):** J/token 4-bit 1.71 vs 1.71, 8-bit 3.12
+vs 3.10, 16-bit 1.69 vs 1.73 (summary-file values 1.69 vs 1.76) — agree
+within 4%. **Clean result, reproduced:** with bitsandbytes on this GPU,
+4-bit ≈ 16-bit (~1.7 J/token) and 8-bit ≈ 1.8x 16-bit (~3.1 J/token).
+
+**Fuzzy vs static 16-bit, paired per-prompt bootstrap (95% CI):** run 5
++71.7 J/req (61.0-82.2), run 6 +65.4 J/req (54.9-75.8); accuracy -0.006
+(-0.034 to +0.020) in both. Energy-based oracle: 140 / 141 J/req at
+accuracy 0.258 (`paper/analysis/`).
+
+**16-bit diagnostic (job 1706, `micro_1706.out`, 2026-09-30 13:50-13:56,
+daytime).** Plain fp16 generation, no router/adapters/energy meter, 8 CPUs
+pinned, dtype confirmed float16 (2.47 GB allocated): 12 runs x 128 tokens at
+mean 8.5 tok/s (range 4.4-25.6, 5.8x spread) vs 80+ tok/s in the clean
+overnight runs. GPU SM utilisation p50 = 0%, p90 = 25% (GPU idle). cpu/wall
+= 1.00 in every run: the process was on-CPU the whole time, not
+descheduled. Interpretation: host-side slowdown — the CPU-side launch path
+took ~10x longer per token while the GPU waited. Not GPU co-tenancy (GPU 0
+was ours alone; only other job on the node was 1704 on the other GPU).
+The exact host mechanism (e.g. contention for shared CPU/memory
+resources) is not isolated — state as such.
