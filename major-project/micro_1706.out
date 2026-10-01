@@ -1,0 +1,44 @@
+=== GPU state before ===
+index, utilization.gpu [%], memory.used [MiB], power.draw [W], clocks.current.sm [MHz], temperature.gpu
+0, 0 %, 2 MiB, 25.04 W, 210 MHz, 41
+torch 2.13.0+cu130, CUDA 13.0
+threads: torch intra-op=8, affinity=8 CPUs, OMP_NUM_THREADS=8
+CUDA_VISIBLE_DEVICES=0
+device: NVIDIA RTX 6000 Ada Generation
+loaded in 14.2s
+model.dtype = torch.float16
+first param dtype = torch.float16
+allocated = 2.47 GB (fp16 ~2.5, fp32 ~4.9)
+
+--- timed runs ---
+  cpu_s is this process's own CPU time. Generation at batch 1 is launch-bound, so:
+    cpu_s flat while wall_s grows  -> we are WAITING (descheduled by a co-tenant; environmental)
+    cpu_s grows with wall_s        -> we are doing more work per token (internal: our stack)
+  run  1: 128 tok  wall   5.01s  cpu   4.99s  cpu/wall 1.00   25.6 tok/s
+  run  2: 128 tok  wall  14.71s  cpu  14.70s  cpu/wall 1.00    8.7 tok/s
+  run  3: 128 tok  wall  21.64s  cpu  21.62s  cpu/wall 1.00    5.9 tok/s
+  run  4: 128 tok  wall   7.45s  cpu   7.43s  cpu/wall 1.00   17.2 tok/s
+  run  5: 128 tok  wall  27.94s  cpu  27.90s  cpu/wall 1.00    4.6 tok/s
+  run  6: 128 tok  wall  29.08s  cpu  29.06s  cpu/wall 1.00    4.4 tok/s
+  run  7: 128 tok  wall  28.58s  cpu  28.51s  cpu/wall 1.00    4.5 tok/s
+  run  8: 128 tok  wall  17.82s  cpu  17.79s  cpu/wall 1.00    7.2 tok/s
+  run  9: 128 tok  wall  28.79s  cpu  28.76s  cpu/wall 1.00    4.4 tok/s
+  run 10: 128 tok  wall  23.17s  cpu  23.14s  cpu/wall 1.00    5.5 tok/s
+  run 11: 128 tok  wall  15.65s  cpu  15.63s  cpu/wall 1.00    8.2 tok/s
+  run 12: 128 tok  wall  21.96s  cpu  21.93s  cpu/wall 1.00    5.8 tok/s
+
+mean 8.5 tok/s, range 4.4-25.6 (5.81x spread)
+
+Expectation: a 1B model in fp16 on an RTX 6000 Ada should reach roughly 40-80 tok/s with a tight spread.
+  ~40-80 tok/s, tight  -> fp16 is fine; the slowness is in phase_a
+  ~10 tok/s            -> the node cannot run fp16 at speed (environmental: CPU starvation from a co-tenant)
+  wide spread          -> contention, and the 3-run reproducibility gate is not achievable as scheduled
+=== GPU utilisation during run (sm%, percentiles) ===
+samples=200  min=0  p50=0  p90=25  max=53  mean=5.6
+=== GPU state after ===
+index, utilization.gpu [%], memory.used [MiB], power.draw [W], clocks.current.sm [MHz], temperature.gpu
+0, 100 %, 2 MiB, 71.20 W, 2745 MHz, 46
+=== other jobs on this node ===
+   JOBID               NAME         USER ST       TIME TRES_PER_NODE
+    1706           gw_micro khushiwadhwa  R       5:13 gres:gpu:1
+    1704       RHEL_3d_mods rehanansari2  R   12:57:29 gres:gpu:1
