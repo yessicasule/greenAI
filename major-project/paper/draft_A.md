@@ -273,55 +273,110 @@ sooner; the quantized tiers draw less power but run 1.4× (4-bit) to 2.8×
 (8-bit) slower, and that extra time costs more energy than the lower power
 saves.
 
-[TODO: mean ± 95% CI over all prompts alongside the medians.]
+Means agree with the medians. Over prompts with ≥16 generated tokens,
+mean J/token ± 95% CI is 1.692 ± 0.007 / 1.698 ± 0.008 (4-bit),
+3.124 ± 0.006 / 3.095 ± 0.008 (8-bit) and 1.683 ± 0.009 / 1.762 ± 0.016
+(16-bit) for runs 5 / 6. The 4-bit vs. 16-bit difference changes sign
+between runs (+0.5%, −3.6%), so we report them as equal, not ranked.
 
-Planned explanation, to be checked against the measurements: at batch size
-1 on this GPU, bitsandbytes 4-bit and 8-bit kernels dequantize weights on
-the fly. The memory-traffic saving that should favour low precision is
-offset (4-bit) or outweighed (8-bit: LLM.int8's mixed-precision outlier
-path) by the extra compute, while float16 runs on the GPU's native path.
+**Short generations.** Very short outputs make J/token unreliable: 81–86
+of 500 4-bit generations, 13–15 of 8-bit and 36–41 of 16-bit read 0 J (the
+energy counter did not advance during a 1–2 token generation). Including
+them inflates mean J/token and widens its CI (e.g. 4-bit, all prompts:
+1.935 ± 0.173); we therefore report the ≥16-token subset and the median.
 
-## VI. Case Study: Complexity-Aware Precision Routing — a Negative Result — PENDING
+**Memory (calculated, not measured).** Llama-3.2-1B has 1.24 B parameters,
+262.7 M of them in the tied embedding, which bitsandbytes leaves in
+float16. Weights therefore occupy ≈2.47 GB in float16 (measured: 2.47 GB
+allocated), ≈1.5 GB at 8-bit and ≈1.0 GB at 4-bit. The memory saving is
+real (1.6–2.4×); the energy saving is not.
 
-Planned content (numbers from run 5, confirm with run 6):
-- System: 5-feature complexity sensor + Mamdani fuzzy controller choosing
-  4/8/16-bit per prompt (describe briefly; full formalization is in
-  `draft.md` §III and can be condensed).
-- Accuracy: fuzzy router 0.156 vs. random router with the same tier mix
-  0.1657 — no routing intelligence. Diagnosis: the sensor has no opinion on
-  about half the evaluation set (ROUTER_DIAGNOSIS.md).
-- Energy: with clean 16-bit, fuzzy router 238 J/request vs. static 16-bit
-  166 J/request — routing costs more than never quantizing.
-- Oracle upper bound: accuracy 0.258.
-- Lesson: routing can only save what the tiers save.
+## VI. Case Study: Per-Prompt Precision Routing — a Negative Result
 
-**Run 5 analysis (`paper/analysis/routing_run5_*.csv`, Fig. 3). Confirmed by
-run 6 (2026-10-01): paired energy difference +65.4 J/request (54.9–75.8),
-same accuracy difference, oracle 141 J/request; tier mixes per difficulty
-match run 5.**
-- Paired per-prompt bootstrap, fuzzy router − static 16-bit: **+71.7 J/request
-  (95% CI 61.0–82.2)**, accuracy **−0.006 (95% CI −0.034 to +0.020)** — about
-  43% more energy for no measurable accuracy difference.
-- The sensor does react to difficulty: the router sends 60.7% of hard
-  prompts to 16-bit vs. 21% of easy ones. But it sends 51.6% of all prompts
-  to 8-bit, the most expensive tier (323 J/request).
-- Agreement with the oracle's tier: 26.6% of prompts (28.7% of the 129
-  prompts any tier answers correctly) — below the 33% expected from a
-  uniform random pick.
-- Only 129/500 prompts are answered correctly by any tier under the
-  reference-match proxy, which caps what any router can gain in accuracy.
-- Oracle definition: we use the tier with the lowest *measured* energy
-  among those that answer correctly (140 J/request, accuracy 0.258). The
-  experiment script's own oracle assumes fewer bits = cheaper and reports
-  184 J/request at the same accuracy; that assumption is false for 8-bit
-  here. State the definition in the paper.
+**Router.** A complexity sensor computes five features per prompt —
+Flesch–Kincaid grade, approximate token length, character entropy,
+dependency-parse depth, and a code/maths indicator — normalised to [0, 1]
+with ranges calibrated on the evaluation set. A Mamdani fuzzy controller
+(scikit-fuzzy; triangular low/medium/high membership functions, seven
+rules, min/max operators, centroid defuzzification) maps them to a
+complexity score in [0, 100], cut at 33/66 into 4-, 8- or 16-bit. The
+router runs on the CPU in 10.1–10.3 ms per prompt, ≈0.4% of a routed
+request's latency (its CPU energy is not included in our GPU
+measurements).
 
-## VII. Threats to Validity — PENDING (partly draftable now)
+**Baselines.** Static 4/8/16-bit; *random-matched*, which assigns tiers at
+random with exactly the fuzzy router's tier mix (mean of 20 draws);
+*threshold*, which applies the same 33/66 cuts to the plain mean of the
+five raw features; and an *oracle* that picks, per prompt, the tier with
+the lowest measured energy among those that answer correctly. Because
+decoding is greedy, every condition is evaluated on the same per-prompt ×
+per-tier measurement grid.
 
-To cover: single model and GPU; bitsandbytes only (other kernels such as
-AWQ or FP8 may behave differently — the motivation for follow-up work);
-GPU-board energy only; batch size 1 only; weak reference-match accuracy
-proxy; adapters loaded on every tier; small number of clean runs;
-unconfirmed cause of disruption.
+**Results (runs 5 and 6 identical in routing; energy from both; Fig. 3).**
 
-## VIII. Conclusion — PENDING
+| Condition | Accuracy | J/request (run 5 / 6) |
+|---|---|---|
+| Static 4-bit | 0.110 | 130 / 130 |
+| Static 8-bit | 0.186 | 323 / 320 |
+| Static 16-bit | 0.162 | 166 / 174 |
+| Fuzzy router | 0.156 | 238 / 239 |
+| Random, matched mix | 0.166 | 241 / 242 |
+| Threshold | 0.120 | 185 / 184 |
+| Oracle | 0.258 | 140 / 141 |
+
+Paired per-prompt bootstrap, fuzzy router − static 16-bit: +71.7 J/request
+(95% CI 61.0–82.2) in run 5 and +65.4 (54.9–75.8) in run 6, i.e. 38–43%
+more energy; accuracy −0.006 (−0.034 to +0.020), not distinguishable from
+zero.
+
+**Why it fails.** The sensor does respond to difficulty — it sends 61% of
+hard prompts to 16-bit against 21% of easy ones — but it sends 52% of all
+prompts to 8-bit, the most expensive tier. Its tier choice matches the
+oracle's on 27% of prompts (run 5), below the 33% expected from a uniform
+random choice. The oracle
+itself shows the ceiling: 0.258 accuracy at 140 J/request, mostly by
+using 4-bit where it suffices and float16 otherwise, and almost never
+8-bit. The lesson generalises beyond this router: per-request precision
+routing can only save energy that the precision tiers themselves save, so
+the tiers' measured costs must come first.
+
+**Accuracy metric.** Accuracy here is a reference-match proxy (numeric
+match, normalised substring match, or token-F1 ≥ 0.5) on our 500 prompts;
+only 129 prompts are answered correctly by any tier, which caps what a
+router can gain. Standard-benchmark accuracy per tier, with and without
+the LoRA adapters, is in Table [PENDING Session 2, job 1731].
+
+## VII. Threats to Validity
+
+- **One model, one GPU, one library.** Llama-3.2-1B on an RTX 6000 Ada
+  with bitsandbytes. Larger models, other GPUs, and kernels that compute
+  in low precision (e.g. AWQ or FP8 paths) may show real energy savings;
+  our result is a statement about this widely used configuration, not
+  about quantization in general.
+- **Batch size 1.** Interactive, single-request decoding. Prior work finds
+  quantized models become cheaper at large batch sizes [Poddar et al.].
+- **GPU-board energy only.** NVML reports GPU energy; CPU, DRAM and
+  cooling are excluded, as is the router's CPU energy.
+- **Disruption mechanism not isolated.** We show the slowdown is
+  host-side and not GPU contention, but not which host resource caused it.
+- **Few clean runs.** Two clean routing runs (a third is queued) and one
+  daytime diagnostic.
+- **Weak accuracy proxy.** The reference-match metric is coarse; routing
+  conclusions rest mainly on energy, where the result is unambiguous.
+- **Adapters.** All Session 4 tiers carry LoRA adapters, adding a small
+  overhead (Session 1 without adapters: 67 vs. 57 tok/s at 4-bit).
+
+## VIII. Conclusion
+
+Measured with a hardware energy counter at batch size 1, bitsandbytes
+4-bit quantization of a 1B-parameter LLM saves memory but not energy, and
+8-bit costs 1.8× more than float16, because the quantized kernels' lower
+power does not make up for their slower decoding. Getting this answer
+right was harder than expected: on a shared cluster, a host-side slowdown
+inflated float16 energy by up to 7.7×, passed every safeguard we had, and
+had already contaminated a baseline. Reporting per-prompt throughput and
+power alongside energy catches it. Finally, a fuzzy per-prompt precision
+router, built on the assumption that fewer bits cost less, uses more
+energy than never quantizing. Future work will test whether kernels that
+compute natively in low precision (AWQ, FP8) and larger models change the
+picture, and whether routing becomes worthwhile when they do.
