@@ -1,86 +1,112 @@
-# Does Weight Quantization Save LLM Inference Energy? A Hardware Measurement Study, with Pitfalls and a Negative Routing Result
+# When Fewer Bits Don't Save Energy: Measurement Pitfalls and a Negative Result for Precision Routing in LLM Inference
 
-> **Working draft (paper A), started 2026-09-30.** Reframes the project as a
-> measurement study; supersedes `draft.md`'s framing, which rested on
-> Session 1's 16-bit number (8.124 J/token) — now known to be a disrupted
-> measurement (see `results.md`, "Session 4 runs 4-5"). Every number here
-> must trace to a row in `paper/results.md`. Sections marked **PENDING**
-> wait on run 6 (job 1707) and Session 2 (jobs 1708/1709).
-> IEEE conference conventions; convert to IEEEtran at submission.
+> **Working draft (paper A).** Target: AI-SPC workshop @ HiPC 2026
+> (deadline 2026-10-09; 4 pages + 1 page references, IEEE two-column).
+> Every number must trace to `paper/results.md`. Sections still marked
+> PENDING: Session 2 adapter accuracy (jobs 1723/1724), conclusion,
+> final page fitting. Bibliographic details must be verified before
+> submission.
 
-## Abstract — PENDING (after run 6)
+## Abstract
 
-Draft skeleton: weight quantization is widely assumed to reduce LLM
-inference energy. We measure per-token GPU energy for Llama-3.2-1B at 4-bit
-(NF4), 8-bit (LLM.int8) and 16-bit (float16) with the GPU's on-board
-energy counter on an NVIDIA RTX 6000 Ada. [Headline per-tier J/token from
-runs 5-6.] We further show that on a shared cluster the 16-bit
-measurement can be inflated up to ~8x by disruption that neither an
-end-of-run co-tenant check nor our own validation gate detects, and that a
-previously gate-passing baseline was affected. Finally, we report a
-negative result: a fuzzy-logic per-prompt precision router does not beat a
-random router with the same tier mix, and cannot save energy that the
-quantization tiers themselves do not save.
+Weight quantization is widely assumed to reduce the energy of large
+language model (LLM) inference. We measure per-token GPU energy for
+Llama-3.2-1B at 4-bit (NF4), 8-bit (LLM.int8) and 16-bit (float16) using
+bitsandbytes at batch size 1, read from the GPU's on-board energy counter
+on an NVIDIA RTX 6000 Ada in a shared academic cluster. In two clean runs
+that agree within 4%, 4-bit costs the same energy per token as float16
+(≈1.7 J/token) and 8-bit costs 1.8× more (≈3.1 J/token): the quantized
+kernels draw less power but run 1.4–2.8× slower. Our main finding concerns
+measurement itself. On the shared node, the float16 measurement was
+inflated by up to 7.7× in daytime runs, while the GPU was not shared and
+sat idle on a slowed host-side launch path. An end-of-run co-tenancy
+check, agreement across repeated runs, and an automated validation gate
+all failed to detect this, and one previously accepted baseline was
+affected. Per-prompt throughput and power expose it immediately. Finally,
+we report a negative result: a fuzzy-logic router that picks a precision
+tier per prompt is no more accurate than a random router with the same
+tier mix, and uses 38–43% more energy than always serving float16.
 
 **Keywords** — LLM inference energy, quantization, bitsandbytes, GPU
-energy measurement, measurement methodology, precision routing, green AI.
+energy measurement, measurement methodology, precision routing.
 
-## I. Introduction — PENDING (after run 6)
+## I. Introduction
 
-Planned structure:
-1. The assumption: fewer bits → less energy. Why it is plausible (memory
-   traffic) and why it may fail (dequantization kernels, small models,
-   batch size 1).
-2. What we measure and on what hardware; why the NVML counter.
-3. Contributions (below).
-4. Why a negative routing result is worth reporting.
+Quantizing an LLM's weights to 8 or 4 bits shrinks its memory footprint
+by 2–4×, and it is natural to expect a matching energy saving: fewer bits
+moved per weight, less energy per token. Whether that holds depends on how
+the low-precision arithmetic is executed. The most widely used drop-in
+path, bitsandbytes in Hugging Face Transformers, dequantizes weights to
+16-bit on the fly, and prior benchmarking has found that this can increase
+inference energy rather than reduce it [Poddar et al.].
 
-**Contributions (draft):**
-- A per-token energy measurement of three bitsandbytes precision tiers of
-  a 1B-parameter LLM on a modern datacenter-class GPU, showing [4-bit ≈
-  16-bit; 8-bit ≈ 1.8× 16-bit — confirm with run 6].
-- A measurement-pitfall analysis on a shared GPU cluster (§IV): the
-  disruption signature, why common safeguards miss it, and a simple
-  per-prompt throughput/power check that catches it.
-- A negative result for complexity-aware precision routing (§VI): a
-  Mamdani fuzzy router is no better than random at the same tier mix, and
-  with clean energy numbers routing cannot beat static 16-bit.
+We set out to build on the opposite premise: a router that sends each
+prompt to the cheapest precision tier of one resident model able to answer
+it. Measuring that premise carefully on a shared GPU cluster led to three
+findings, which are this paper's contributions:
+
+1. **A measurement pitfall that standard safeguards miss (§IV).** The
+   same float16 model on the same GPU consumed between 1.7 and 13.0
+   J/token depending on when it ran. The GPU was not shared; it sat idle
+   (median SM utilisation 0%) while a host-side launch path slowed ~10×.
+   An end-of-run co-tenancy snapshot, agreement across back-to-back
+   repeated runs, and an automated validation gate all accepted the
+   inflated measurement, and a baseline we had treated as verified was
+   affected. We show that per-prompt throughput and mean power — already
+   derivable from standard energy logs — separate clean from disrupted
+   runs without ambiguity, and we give a short checklist.
+2. **Per-token energy of bitsandbytes tiers at batch size 1 (§V).** In
+   two clean runs that agree within 4%, 4-bit NF4 breaks even with
+   float16 (≈1.7 J/token) and 8-bit LLM.int8 costs 1.8× more. This refines
+   prior batched measurements [Poddar et al.] for the interactive,
+   single-request setting, using a hardware energy counter rather than a
+   software estimator.
+3. **A negative result for per-prompt precision routing (§VI).** A
+   five-feature complexity sensor with a Mamdani fuzzy controller is no
+   more accurate than a random router with the same tier mix, and costs
+   65–72 J/request more than static float16 (paired 95% CIs exclude zero)
+   with no measurable accuracy difference. Routing can only save what the
+   tiers themselves save.
 
 ## II. Related Work
 
-*Bibliographic details must be checked against primary sources before
-submission.*
+**Energy of LLM inference.** Poddar et al. benchmark inference energy
+across NLP tasks and find that bitsandbytes 8-bit and 4-bit quantization
+increases energy to almost 2× at equal batch size, because of conversions
+to 16-bit; only larger batches made quantized models cheaper (A6000,
+batch sizes 8–256, CodeCarbon/CarbonTracker). TokenPowerBench [Niu et al.]
+measures joules per token across model families from 1B to 405B
+parameters, varying batch size, context length, parallelism and
+quantization. Vellaisamy et al. decompose request energy for Llama-3.2-1B
+on H100/H200 into prefill, setup and per-token components. These works
+characterise *what* inference costs; none examines how measurements are
+corrupted by interference on shared infrastructure, which is our main
+concern, and we study the batch-size-1 case with a hardware counter.
 
-**Quantization.** GPTQ (Frantar et al., 2022) and AWQ (Lin et al., 2023)
-are post-training weight-quantization methods; LLM.int8() (Dettmers et al.,
-2022) introduced mixed-precision int8 matrix multiplication with outlier
-handling; QLoRA (Dettmers et al., 2023) introduced 4-bit NormalFloat (NF4)
-with double quantization for memory-efficient fine-tuning. These works
-primarily report memory footprint and task quality. We study the
-bitsandbytes implementations of LLM.int8() and NF4 — the most widely used
-drop-in path in Hugging Face Transformers — and ask a different question:
-what they cost in energy per generated token at batch size 1.
+**Measurement tooling.** Zeus [Chung et al.] and LLMCarbon [Faiz et al.]
+measure or model deep-learning energy and carbon. We read the GPU's
+cumulative hardware counter via NVML, and show that even a hardware
+counter yields wrong answers when the workload itself is slowed by the
+host.
 
-**Energy measurement of deep learning.** Zeus (Chung et al., NSDI 2023)
-and LLMCarbon (Faiz et al., 2024) represent work on measuring and modelling
-the energy and carbon cost of training and inference. We follow their
-emphasis on measurement over analytic estimation, using the GPU's on-board
-cumulative energy counter via NVML. Our pitfall analysis (§IV) is
-complementary: it concerns how such measurements go wrong on shared
-infrastructure, and how to detect it.
+**Quantization.** LLM.int8() [Dettmers et al., 2022] and QLoRA's NF4
+[Dettmers et al., 2023] — the bitsandbytes methods we measure — and GPTQ
+[Frantar et al.] and AWQ [Lin et al.] target memory and accuracy. Kernels
+that compute directly in low precision may behave differently from
+bitsandbytes; we leave them to future work.
 
-**Routing and cascades.** RouteLLM (Ong et al., 2024) learns to route
-between a weak and a strong model from preference data; FrugalGPT (Chen,
-Zaharia & Zou, 2023) cascades across API models with a learned judger.
-Both choose among *different models*. Our router chooses among *precision
-tiers of one model* from prompt-complexity features, which is only
-worthwhile if lower-precision tiers are actually cheaper — the premise §V
-tests.
+**Routing.** RouteLLM [Ong et al.] and FrugalGPT [Chen et al.] route or
+cascade between *different* models. Our router chooses among *precision
+tiers of one model*, which is worthwhile only if lower precision is
+cheaper — the premise §V tests.
 
-**Adaptive computation.** Early exit, mixture-of-depths and speculative
-decoding vary compute per input. Per-request precision is another such
-axis; our results suggest its energy benefit depends on the quantization
-kernel, not only on bit-width.
+**References to verify:** Poddar et al., "Towards Sustainable NLP:
+Insights from Benchmarking Inference Energy in Large Language Models,"
+NAACL 2025 (arXiv:2502.05610); Niu et al., "TokenPowerBench," AAAI 2026
+(arXiv:2512.03024); Vellaisamy et al., "Characterization of Request and
+Token Energy Costs for LLM Inference Workloads on GPU Platforms,"
+arXiv:2608.28044, 2026; plus Zeus, LLMCarbon, LLM.int8(), QLoRA, GPTQ,
+AWQ, RouteLLM, FrugalGPT.
 
 ## III. Experimental Setup and Methodology
 
