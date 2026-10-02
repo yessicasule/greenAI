@@ -1,0 +1,8 @@
+condition,tier,variant,task,metric,value
+16bit_base,16bit,base,tinyMMLU,sample_len,100
+16bit_base,16bit,base,tinyMMLU,"acc_norm,none",0.4461122612948888
+16bit_base,16bit,base,tinyGSM8k,sample_len,100
+16bit_base,16bit,base,tinyGSM8k,"exact_match,strict-match",0.061577586265551376
+16bit_base,16bit,base,tinyGSM8k,"exact_match,flexible-extract",0.061577586265551376
+16bit_base,16bit,base,tinyHellaswag,sample_len,100
+16bit_base,16bit,base,tinyHellaswag,"acc_norm,none",0.6373375824068012

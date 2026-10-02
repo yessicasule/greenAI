@@ -1,0 +1,27 @@
+{
+  "16bit_base": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.4461122612948888,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.061577586265551376,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.061577586265551376,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.6373375824068012,
+      "acc_norm_stderr,none": "N/A"
+    }
+  }
+}
