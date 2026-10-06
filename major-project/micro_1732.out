@@ -1,0 +1,44 @@
+=== GPU state before ===
+index, utilization.gpu [%], memory.used [MiB], power.draw [W], clocks.current.sm [MHz], temperature.gpu
+0, 0 %, 2 MiB, 31.69 W, 210 MHz, 51
+torch 2.13.0+cu130, CUDA 13.0
+threads: torch intra-op=8, affinity=8 CPUs, OMP_NUM_THREADS=8
+CUDA_VISIBLE_DEVICES=0
+device: NVIDIA RTX 6000 Ada Generation
+loaded in 13.1s
+model.dtype = torch.float16
+first param dtype = torch.float16
+allocated = 2.47 GB (fp16 ~2.5, fp32 ~4.9)
+
+--- timed runs ---
+  cpu_s is this process's own CPU time. Generation at batch 1 is launch-bound, so:
+    cpu_s flat while wall_s grows  -> we are WAITING (descheduled by a co-tenant; environmental)
+    cpu_s grows with wall_s        -> we are doing more work per token (internal: our stack)
+  run  1: 128 tok  wall   1.16s  cpu   1.15s  cpu/wall 0.99  110.4 tok/s
+  run  2: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.9 tok/s
+  run  3: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.4 tok/s
+  run  4: 128 tok  wall   1.16s  cpu   1.16s  cpu/wall 0.99  110.1 tok/s
+  run  5: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.5 tok/s
+  run  6: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.8 tok/s
+  run  7: 128 tok  wall   1.16s  cpu   1.15s  cpu/wall 0.99  110.6 tok/s
+  run  8: 128 tok  wall   1.16s  cpu   1.16s  cpu/wall 0.99  110.0 tok/s
+  run  9: 128 tok  wall   1.16s  cpu   1.15s  cpu/wall 0.99  110.4 tok/s
+  run 10: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.5 tok/s
+  run 11: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.6 tok/s
+  run 12: 128 tok  wall   1.17s  cpu   1.16s  cpu/wall 0.99  109.6 tok/s
+
+mean 109.9 tok/s, range 109.4-110.6 (1.01x spread)
+
+Expectation: a 1B model in fp16 on an RTX 6000 Ada should reach roughly 40-80 tok/s with a tight spread.
+  ~40-80 tok/s, tight  -> fp16 is fine; the slowness is in phase_a
+  ~10 tok/s            -> the node cannot run fp16 at speed (environmental: CPU starvation from a co-tenant)
+  wide spread          -> contention, and the 3-run reproducibility gate is not achievable as scheduled
+=== GPU utilisation during run (sm%, percentiles) ===
+samples=73  min=0  p50=0  p90=47  max=47  mean=9.0
+=== GPU state after ===
+index, utilization.gpu [%], memory.used [MiB], power.draw [W], clocks.current.sm [MHz], temperature.gpu
+0, 0 %, 2 MiB, 94.17 W, 2505 MHz, 50
+=== other jobs on this node ===
+   JOBID               NAME         USER ST       TIME TRES_PER_NODE
+    1732           gw_micro khushiwadhwa  R       1:14 gres:gpu:1
+    1715          vd16_s123 stevegonsalv  R 1-11:08:46 gres:gpu:1
