@@ -123,7 +123,10 @@ def resolve_tasks():
 def evaluate(model, tokenizer, tasks, limit):
     import lm_eval
     from lm_eval.models.huggingface import HFLM
-    lm = HFLM(pretrained=model, tokenizer=tokenizer, batch_size="auto")
+    # Fixed size: "auto" probes multi-GB batches, and bitsandbytes 8-bit turns
+    # the resulting OOM into a fatal CUDA error instead of a catchable one.
+    lm = HFLM(pretrained=model, tokenizer=tokenizer,
+              batch_size=int(os.environ.get("EVAL_BATCH_SIZE", "16")))
     try:
         results = lm_eval.simple_evaluate(
             model=lm, tasks=tasks, limit=limit, random_seed=42,
@@ -141,10 +144,10 @@ def main():
     tokenizer = AutoTokenizer.from_pretrained(MODEL_ID)
     tasks, limit = resolve_tasks()
     # tinyBenchmarks' IRT scoring needs all 100 items per task, so a smoke
-    # test keeps the full tasks and instead runs only the first condition.
+    # test keeps the full tasks and instead runs the base model of each tier.
     smoke = bool(os.environ.get("SMOKE_LIMIT"))
     if smoke:
-        print("SMOKE TEST: first condition only -- not a real run")
+        print("SMOKE TEST: base model of each tier only -- not a real run")
 
     adapter_root = Path(ADAPTER_ROOT) if ADAPTER_ROOT else None
     if adapter_root and not adapter_root.exists():
@@ -183,18 +186,21 @@ def main():
                                 "task": task, "metric": metric, "value": value,
                             })
                 print(json.dumps(res, indent=2, default=str))
+                save(all_results, rows)
             finally:
-                if hasattr(model, 'to'):
-                    model.to('cpu')
+                # no model.to("cpu"): transformers forbids it on bitsandbytes models
                 del model
                 gc.collect()
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats()
             if smoke:
                 break
-        if smoke:
-            break
 
+    print("\nSaved: accuracy_per_tier.json, accuracy_summary.csv — download both.")
+
+
+def save(all_results, rows):
+    """Rewritten after every condition so a crash keeps finished results."""
     (OUT_DIR / "accuracy_per_tier.json").write_text(
         json.dumps(all_results, indent=2, default=str)
     )
@@ -204,8 +210,6 @@ def main():
         )
         writer.writeheader()
         writer.writerows(rows)
-
-    print("\nSaved: accuracy_per_tier.json, accuracy_summary.csv — download both.")
 
 
 if __name__ == "__main__":
