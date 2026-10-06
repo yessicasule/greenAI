@@ -14,6 +14,7 @@ every session (see `.claude/agents/training-agent.md`).
 | 2026-09-29 | 4 | `kaggle_routing_experiment.py` (job 1691, by-tier, daytime) | `routing_run4_{conditions,per_prompt,info}` | PASS routing checks (1 WARN) — but 16-bit phase DISRUPTED | 4/8-bit clean; 16-bit starved at 6.2 tok/s median, 81 W, 12.97 J/tok. See "Session 4 runs 4-5" below |
 | 2026-09-30 | 4 | `kaggle_routing_experiment.py` (job 1692, by-tier, started 00:05) | `routing_run5_{conditions,per_prompt,info}` | PASS routing checks (1 WARN) — CLEAN | All tiers clean: 16-bit 80.7 tok/s, 136 W, 1.69 J/tok; 4-bit 1.71; 8-bit 3.12 J/tok |
 | 2026-10-01 | 4 | `kaggle_routing_experiment.py` (job 1707, by-tier, started 00:58) | `routing_run6_{conditions,per_prompt,info}` | PASS routing checks (1 WARN) — CLEAN | Reproduces run 5: 16-bit 81.8 tok/s, 142 W, 1.73 J/tok; 4-bit 1.71; 8-bit 3.10 J/tok |
+| 2026-10-03 | 4 | `kaggle_routing_experiment.py` (job 1733, by-tier, started 00:57) | `routing_run7_{conditions,per_prompt,info}` | CLEAN (by throughput check) | Third clean run: 16-bit 81.5 tok/s, 130 W, 1.59 J/tok; 4-bit 1.66; 8-bit 3.06 J/tok |
 
 
 
@@ -125,3 +126,23 @@ took ~10x longer per token while the GPU waited. Not GPU co-tenancy (GPU 0
 was ours alone; only other job on the node was 1704 on the other GPU).
 The exact host mechanism (e.g. contention for shared CPU/memory
 resources) is not isolated — state as such.
+
+## Session 4 run 7 and night diagnostic (logged 2026-10-06)
+
+**Run 7 (job 1733, 2026-10-03 00:57-01:49).** Clean by the throughput/power
+check: per-tier medians (>=16 tokens) 4-bit 57.4 tok/s · 96 W · 1.66 J/tok;
+8-bit 29.6 · 91 · 3.06; 16-bit 81.5 · 130 · 1.59. Routing identical to runs
+4-6. Condition J/request: static 4/8/16-bit 128.5 / 316.8 / 155.4; fuzzy
+231.8; random_matched 234.2; energy-based oracle 134.1. Paired bootstrap
+fuzzy - static 16-bit: +76.4 J/req (95% CI 66.5-86.9), accuracy -0.006
+(-0.032 to +0.020).
+
+**Three clean runs (5, 6, 7), median J/token:** 4-bit 1.71 / 1.71 / 1.66;
+8-bit 3.12 / 3.10 / 3.06; 16-bit 1.69 / 1.73 / 1.59. 16-bit spread 8.8%;
+4-bit vs 16-bit by run +1.4% / -1.4% / +4.4% (no consistent order).
+
+**Night diagnostic (job 1732, `micro_1732.out`, 2026-10-03 00:55).** Same
+script as daytime job 1706: 12 x 128 tokens, mean 109.9 tok/s, range
+109.4-110.6 (1.01x spread), vs daytime 8.5 tok/s (4.4-25.6, 5.8x). ~13x
+faster, same code and GPU. (dmon SM% samples mostly cover model loading
+at this speed, so not cited.)

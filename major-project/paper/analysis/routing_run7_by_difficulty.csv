@@ -1,0 +1,16 @@
+condition,difficulty,n,accuracy,j_per_request,pct_4bit,pct_8bit,pct_16bit
+static_4bit,easy,200,0.145,131.2269,1.0,0.0,0.0
+static_4bit,hard,150,0.0667,72.3704,1.0,0.0,0.0
+static_4bit,medium,150,0.1067,181.0566,1.0,0.0,0.0
+static_8bit,easy,200,0.285,330.8497,0.0,1.0,0.0
+static_8bit,hard,150,0.1133,253.3551,0.0,1.0,0.0
+static_8bit,medium,150,0.1267,361.6587,0.0,1.0,0.0
+static_16bit,easy,200,0.22,166.2229,0.0,0.0,1.0
+static_16bit,hard,150,0.14,113.5173,0.0,0.0,1.0
+static_16bit,medium,150,0.1067,182.9372,0.0,0.0,1.0
+fuzzy_router,easy,200,0.215,240.9659,0.26,0.53,0.21
+fuzzy_router,hard,150,0.1133,159.5723,0.02,0.3733,0.6067
+fuzzy_router,medium,150,0.12,291.7538,0.1533,0.64,0.2067
+oracle,easy,200,0.35,147.1737,0.315,0.12,0.565
+oracle,hard,150,0.2067,81.1175,0.4533,0.06,0.4867
+oracle,medium,150,0.1867,169.6026,0.24,0.0733,0.6867

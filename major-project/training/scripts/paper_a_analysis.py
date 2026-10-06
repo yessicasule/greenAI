@@ -24,7 +24,7 @@ N_BOOT = 2000
 RNG = np.random.default_rng(42)
 
 # validated categorical slots (dataviz reference palette, light mode)
-BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
+BLUE, ORANGE, AQUA, YELLOW = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"
 INK, INK2, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 
 plt.rcParams.update({
@@ -61,7 +61,7 @@ def save(fig, name):
 def fig_disruption(runs):
     """16-bit throughput over the course of each run: disrupted vs clean."""
     fig, ax = plt.subplots(figsize=(6.4, 2.8))
-    colors = {r: c for r, c in zip(runs, [ORANGE, BLUE, AQUA])}
+    colors = {r: c for r, c in zip(runs, [ORANGE, BLUE, AQUA, YELLOW])}
     for r in runs:
         s = per_prompt(r)
         s = s[(s.tier == "16bit") & (s.tokens_out >= MIN_TOK)].sort_values("prompt_id")
@@ -96,7 +96,7 @@ def fig_tier_bars(runs):
 
     metrics = [("tps", "Throughput (tokens/s)"), ("watts", "Mean GPU power (W)"),
                ("jpt", "Energy (J/token)")]
-    colors = [BLUE, ORANGE, AQUA]
+    colors = [BLUE, ORANGE, AQUA, YELLOW]
     fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.6))
     n = len(sources)
     w = 0.8 / n
@@ -104,7 +104,7 @@ def fig_tier_bars(runs):
         for i, (name, _) in enumerate(sources):
             vals = [tab[(tab.source == name) & (tab.tier == t)][m].item() for t in TIERS]
             xs = np.arange(3) + (i - (n - 1) / 2) * w
-            ax.bar(xs, vals, w * 0.92, color=colors[i % 3], label=name.replace("\n", " "))
+            ax.bar(xs, vals, w * 0.92, color=colors[i], label=name.replace("\n", " "))
             for x, v in zip(xs, vals):
                 ax.text(x, v, f"{v:.0f}" if m != "jpt" else f"{v:.1f}",
                         ha="center", va="bottom", fontsize=6, color=INK2)
@@ -256,7 +256,7 @@ def main():
     OUT.mkdir(parents=True, exist_ok=True)
 
     fig_disruption(args.disruption_runs)
-    tiers = fig_tier_bars(sorted(set(args.disruption_runs + args.clean_runs)))
+    tiers = fig_tier_bars(args.disruption_runs)
     print(tiers.round(2).to_string(index=False))
     for run in args.clean_runs:
         tab, paired, by_diff, agree, agreement = routing_study(run)
