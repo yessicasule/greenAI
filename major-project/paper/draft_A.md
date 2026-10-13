@@ -13,9 +13,9 @@ Weight quantization is widely assumed to reduce the energy of large
 language model (LLM) inference. We measure per-token GPU energy for
 Llama-3.2-1B at 4-bit (NF4), 8-bit (LLM.int8) and 16-bit (float16) using
 bitsandbytes at batch size 1, read from the GPU's on-board energy counter
-on an NVIDIA RTX 6000 Ada in a shared academic cluster. In two clean runs
-that agree within 4%, 4-bit costs the same energy per token as float16
-(≈1.7 J/token) and 8-bit costs 1.8× more (≈3.1 J/token): the quantized
+on an NVIDIA RTX 6000 Ada in a shared academic cluster. In three clean runs
+that agree within 9%, 4-bit costs the same energy per token as float16
+(≈1.6–1.7 J/token) and 8-bit costs 1.8× more (≈3.1 J/token): the quantized
 kernels draw less power but run 1.4–2.8× slower. Our main finding concerns
 measurement itself. On the shared node, the float16 measurement was
 inflated by up to 7.7× in daytime runs, while the GPU was not shared and
@@ -25,7 +25,7 @@ all failed to detect this, and one previously accepted baseline was
 affected. Per-prompt throughput and power expose it immediately. Finally,
 we report a negative result: a fuzzy-logic router that picks a precision
 tier per prompt is no more accurate than a random router with the same
-tier mix, and uses 38–43% more energy than always serving float16.
+tier mix, and uses 38–49% more energy than always serving float16.
 
 **Keywords** — LLM inference energy, quantization, bitsandbytes, GPU
 energy measurement, measurement methodology, precision routing.
@@ -56,15 +56,15 @@ findings, which are this paper's contributions:
    derivable from standard energy logs — separate clean from disrupted
    runs without ambiguity, and we give a short checklist.
 2. **Per-token energy of bitsandbytes tiers at batch size 1 (§V).** In
-   two clean runs that agree within 4%, 4-bit NF4 breaks even with
-   float16 (≈1.7 J/token) and 8-bit LLM.int8 costs 1.8× more. This refines
+   three clean runs on different nights, 4-bit NF4 breaks even with
+   float16 (≈1.6–1.7 J/token) and 8-bit LLM.int8 costs 1.8× more. This refines
    prior batched measurements [Poddar et al.] for the interactive,
    single-request setting, using a hardware energy counter rather than a
    software estimator.
 3. **A negative result for per-prompt precision routing (§VI).** A
    five-feature complexity sensor with a Mamdani fuzzy controller is no
    more accurate than a random router with the same tier mix, and costs
-   65–72 J/request more than static float16 (paired 95% CIs exclude zero)
+   65–76 J/request more than static float16 (paired 95% CIs exclude zero)
    with no measurable accuracy difference. Routing can only save what the
    tiers themselves save.
 
@@ -230,8 +230,10 @@ the by-tier runs, 16-bit ran last and happened to coincide with it.
 4. **GPU isolation.** The GPU was not shared at the level SLURM
    allocates. A daytime diagnostic (job 1706) isolated plain float16
    generation — no router, adapters or energy meter — on the same GPU:
-   8.5 tokens/s on average (4.4–25.6) against 80+ overnight, with GPU SM
-   utilisation at 0% (median) and the process on-CPU 100% of the time.
+   8.5 tokens/s on average (4.4–25.6, a 5.8× spread across 12 repeats),
+   with GPU SM utilisation at 0% (median) and the process on-CPU 100% of
+   the time. The identical diagnostic at night (job 1732) ran at 109.9
+   tokens/s with a 1.01× spread — 13× faster, same code and GPU.
    The GPU was waiting on a CPU-side launch path that had become ~10×
    slower per token. The disruption is therefore host-side, not GPU
    contention. We did not isolate the exact host mechanism (e.g.
@@ -254,16 +256,16 @@ We recommend that energy studies on shared infrastructure:
 
 ## V. Results: Energy per Token by Precision
 
-Two clean runs on different nights (runs 5 and 6) agree within 4%
+Three clean runs on different nights (runs 5, 6 and 7) agree closely
 (medians over prompts with ≥16 generated tokens; Fig. 2):
 
 | Tier | Throughput (tok/s) | Mean power (W) | Energy (J/token) |
 |---|---|---|---|
-| 4-bit (NF4) | 56.4 / 56.5 | 96 / 97 | 1.71 / 1.71 |
-| 8-bit (LLM.int8) | 29.0 / 29.4 | 91 / 91 | 3.12 / 3.10 |
-| 16-bit (float16) | 80.7 / 81.8 | 136 / 142 | 1.69 / 1.73 |
+| 4-bit (NF4) | 56.4 / 56.5 / 57.4 | 96 / 97 / 96 | 1.71 / 1.71 / 1.66 |
+| 8-bit (LLM.int8) | 29.0 / 29.4 / 29.6 | 91 / 91 / 91 | 3.12 / 3.10 / 3.06 |
+| 16-bit (float16) | 80.7 / 81.8 / 81.5 | 136 / 142 / 130 | 1.69 / 1.73 / 1.59 |
 
-(run 5 / run 6)
+(run 5 / run 6 / run 7)
 
 **Finding.** With bitsandbytes on an RTX 6000 Ada at batch size 1, 4-bit
 weights do not reduce energy per token relative to float16 (1.71 vs.
@@ -277,7 +279,8 @@ Means agree with the medians. Over prompts with ≥16 generated tokens,
 mean J/token ± 95% CI is 1.692 ± 0.007 / 1.698 ± 0.008 (4-bit),
 3.124 ± 0.006 / 3.095 ± 0.008 (8-bit) and 1.683 ± 0.009 / 1.762 ± 0.016
 (16-bit) for runs 5 / 6. The 4-bit vs. 16-bit difference changes sign
-between runs (+0.5%, −3.6%), so we report them as equal, not ranked.
+between runs (4-bit +1.4%, −1.4%, +4.4% relative to 16-bit by median in runs 5–7), so
+we report them as equal, not ranked.
 
 **Short generations.** Very short outputs make J/token unreliable: 81–86
 of 500 4-bit generations, 13–15 of 8-bit and 36–41 of 16-bit read 0 J (the
@@ -312,21 +315,21 @@ the lowest measured energy among those that answer correctly. Because
 decoding is greedy, every condition is evaluated on the same per-prompt ×
 per-tier measurement grid.
 
-**Results (runs 5 and 6 identical in routing; energy from both; Fig. 3).**
+**Results (routing identical in runs 5–7; energy from all three; Fig. 3).**
 
-| Condition | Accuracy | J/request (run 5 / 6) |
+| Condition | Accuracy | J/request (run 5 / 6 / 7) |
 |---|---|---|
-| Static 4-bit | 0.110 | 130 / 130 |
-| Static 8-bit | 0.186 | 323 / 320 |
-| Static 16-bit | 0.162 | 166 / 174 |
-| Fuzzy router | 0.156 | 238 / 239 |
-| Random, matched mix | 0.166 | 241 / 242 |
+| Static 4-bit | 0.110 | 130 / 130 / 129 |
+| Static 8-bit | 0.186 | 323 / 320 / 317 |
+| Static 16-bit | 0.162 | 166 / 174 / 155 |
+| Fuzzy router | 0.156 | 238 / 239 / 232 |
+| Random, matched mix | 0.166 | 241 / 242 / 234 |
 | Threshold | 0.120 | 185 / 184 |
-| Oracle | 0.258 | 140 / 141 |
+| Oracle | 0.258 | 140 / 141 / 134 |
 
 Paired per-prompt bootstrap, fuzzy router − static 16-bit: +71.7 J/request
-(95% CI 61.0–82.2) in run 5 and +65.4 (54.9–75.8) in run 6, i.e. 38–43%
-more energy; accuracy −0.006 (−0.034 to +0.020), not distinguishable from
+(95% CI 61.0–82.2) in run 5, +65.4 (54.9–75.8) in run 6 and +76.4
+(66.5–86.9) in run 7, i.e. 38–49% more energy; accuracy −0.006 (−0.034 to +0.020), not distinguishable from
 zero.
 
 **Why it fails.** The sensor does respond to difficulty — it sends 61% of
@@ -359,8 +362,8 @@ the LoRA adapters, is in Table [PENDING Session 2, job 1731].
   cooling are excluded, as is the router's CPU energy.
 - **Disruption mechanism not isolated.** We show the slowdown is
   host-side and not GPU contention, but not which host resource caused it.
-- **Few clean runs.** Two clean routing runs (a third is queued) and one
-  daytime diagnostic.
+- **Few runs.** Three clean routing runs and one daytime and one
+  night-time diagnostic.
 - **Weak accuracy proxy.** The reference-match metric is coarse; routing
   conclusions rest mainly on energy, where the result is unambiguous.
 - **Adapters.** All Session 4 tiers carry LoRA adapters, adding a small
