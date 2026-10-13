@@ -3,7 +3,7 @@
 # Run on the login node:  bash ~/greenAI/major-project/training/scripts/setup_vllm_env.sh
 set -euo pipefail
 module load python/3.11.14
-uv venv ~/vllm_venv --python 3.11
+uv venv ~/vllm_venv --python 3.11 --allow-existing
 source ~/vllm_venv/bin/activate
 uv pip install vllm nvidia-ml-py "lm-eval[vllm]" git+https://github.com/felipemaiapolo/tinyBenchmarks
 # Activation helper used by the session5 job scripts. Reuses HF_TOKEN from the existing env file.
