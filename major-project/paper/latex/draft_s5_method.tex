@@ -1,0 +1,13 @@
+% DRAFT, not yet \input into main.tex. Methodology for the Session 5 (vLLM) study.
+% Insert as a subsection of \section{Methodology} once the Session 5 results exist.
+% Every [TBD] must be filled from paper/results.md, never estimated.
+
+\textbf{Production serving stack.} To test whether the bitsandbytes result is a property of quantization or of its implementation, we repeat the measurement on vLLM~\cite{kwon2023vllm} (v0.31.0, CUDA graphs enabled, float16 activations). We compare float16, FP8 weight-and-activation quantization (dynamic per-tensor scales, executed on the Ada GPU's native FP8 tensor cores) and AWQ 4-bit weights~\cite{lin2024awq} (Marlin kernels, public \texttt{hugging-quants} checkpoint). Unlike bitsandbytes, these kernels never materialise 16-bit weights: FP8 multiplies in FP8, and Marlin dequantizes inside the matrix-multiply tile, so a 4-bit model moves a quarter of the weight bytes per decoded token.
+
+\textbf{Models and batch size.} Llama-3.2-1B (float16, FP8) for continuity with Sections~[TBD], and Llama-3.1-8B-Instruct (float16, FP8, AWQ-INT4), where decoding is more memory-bound and weight compression should matter more. Each configuration runs in its own process at batch size 1 and 8 (static batches of consecutive prompts), with the same 500 prompts, greedy decoding, 128 new tokens and seed 42 as before. Batch energy is attributed to prompts in proportion to their output tokens.
+
+\textbf{Guarding against host disruption.} Section~\ref{sec:pitfall} showed that an end-of-run check misses disruptions. A monitor thread therefore samples every 2\,s, for the whole run: GPU utilisation, power and SM clock; other processes on our GPU (excluding vLLM's own engine process tree); host load average; and the clock of our pinned CPU cores. A configuration is excluded if any co-tenant appears or if its median GPU utilisation while busy falls below 50\%. Energy runs were scheduled at night, when Section~\ref{sec:pitfall} found the node undisturbed, and repeated on [TBD] separate nights.
+
+\textbf{Accuracy.} Each configuration is scored with lm-eval-harness's vLLM backend on tinyMMLU, tinyGSM8k and tinyHellaswag~\cite{polo2024tiny}, and against the reference-match proxy on our 500 prompts.
+
+\textbf{Reporting.} We report energy per output token as total energy over total tokens per run, its ratio to the same model's float16 with a 95\% paired bootstrap CI over prompts, and the spread across nights. Results are reported whichever direction they fall.
