@@ -1,0 +1,152 @@
+{
+  "16bit_base": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.433178730262071,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.061577586265551376,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.061577586265551376,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.6360308997749358,
+      "acc_norm_stderr,none": "N/A"
+    }
+  },
+  "16bit_qat_adapter": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.3997614789216236,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.060923308285976,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.060923308285976,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.622852081619017,
+      "acc_norm_stderr,none": "N/A"
+    }
+  },
+  "8bit_base": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.3908773919209899,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.10369663665374793,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.10369663665374793,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.633738159144407,
+      "acc_norm_stderr,none": "N/A"
+    }
+  },
+  "8bit_qat_adapter": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.38792585394097456,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.07543846243898816,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.07543846243898816,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.6403891395082093,
+      "acc_norm_stderr,none": "N/A"
+    }
+  },
+  "4bit_base": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.39332946311347516,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.04406240241042217,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.06327746226142833,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.5731532918544855,
+      "acc_norm_stderr,none": "N/A"
+    }
+  },
+  "4bit_qat_adapter": {
+    "tinyMMLU": {
+      "name": "tinyMMLU",
+      "alias": "tinyMMLU",
+      "sample_len": 100,
+      "acc_norm,none": 0.3683859954846677,
+      "acc_norm_stderr,none": "N/A"
+    },
+    "tinyGSM8k": {
+      "name": "tinyGSM8k",
+      "alias": "tinyGSM8k",
+      "sample_len": 100,
+      "exact_match,strict-match": 0.018705924020118607,
+      "exact_match_stderr,strict-match": "N/A",
+      "exact_match,flexible-extract": 0.04105121637531507,
+      "exact_match_stderr,flexible-extract": "N/A"
+    },
+    "tinyHellaswag": {
+      "name": "tinyHellaswag",
+      "alias": "tinyHellaswag",
+      "sample_len": 100,
+      "acc_norm,none": 0.5944704893712474,
+      "acc_norm_stderr,none": "N/A"
+    }
+  }
+}
