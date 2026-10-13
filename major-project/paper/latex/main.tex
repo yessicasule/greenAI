@@ -49,7 +49,7 @@ We set out to build on the opposite premise: a router that sends each prompt to 
 
 \textbf{Energy.} Energy per generation is the change in the GPU's cumulative on-board counter (NVML \texttt{nvmlDeviceGetTotalEnergyConsumption}, mJ resolution) across the generation, bracketed by \texttt{torch.cuda.synchronize()}. It is GPU-board energy only. We log per-prompt energy, tokens and latency, from which we derive throughput (tok/s) and mean power (W). Generations of 1--2 tokens often read 0\,J because the counter does not advance, so J/token is reported as the median over prompts with $\geq$16 generated tokens (371--469 per tier).
 
-\textbf{Accuracy and validation.} Routing accuracy uses a reference-match proxy on our prompts (numeric match, normalised substring match, or token-F1 $\geq$ 0.5). Every run passes an automated validator checking grid completeness, positivity, plausibility and oracle consistency.
+\textbf{Accuracy and validation.} Per-tier accuracy, with and without each tier's adapter, uses lm-eval-harness on tinyMMLU, tinyGSM8k and tinyHellaswag (100 items each)~\cite{polo2024tiny}. Routing accuracy uses a reference-match proxy on our prompts (numeric match, normalised substring match, or token-F1 $\geq$ 0.5). Every run passes an automated validator checking grid completeness, positivity, plausibility and oracle consistency.
 
 \section{Measurement Pitfall on a Shared Cluster}
 \label{sec:pitfall}
@@ -96,6 +96,26 @@ The three clean runs (5--7, on different nights; Table~\ref{tab:tiers}) give 1.6
 
 float16 draws the most power but is fastest; the quantized tiers draw less power but run 1.4$\times$ (4-bit) to 2.8$\times$ (8-bit) slower, and the extra time costs more energy than the lower power saves. Memory tells the opposite story: weights occupy 2.47\,GB in float16 (measured), and by calculation about 1.5\,GB at 8-bit and 1.0\,GB at 4-bit, because bitsandbytes leaves the 263\,M-parameter tied embedding in float16. Quantization here saves memory, not energy.
 
+\textbf{Accuracy.} Table~\ref{tab:acc} reports benchmark accuracy per tier. 4-bit loses 0.04 on tinyMMLU and 0.06 on tinyHellaswag relative to float16, while 8-bit stays within 0.002 of float16 on tinyHellaswag but loses 0.04 on tinyMMLU. The LoRA adapters do not help: they lower tinyMMLU accuracy at every tier and tinyGSM8k accuracy at both quantized tiers, with mixed effects on tinyHellaswag. With 100 items per task, differences of a few points are within noise, and tinyGSM8k scores of 4--10\% are near the floor for a 1B model. So on this setup, 4-bit costs accuracy without saving energy, and 8-bit costs energy.
+
+\begin{table}[t]
+\caption{Benchmark accuracy per tier (tinyBenchmarks, 100 items per task), without and with the tier's LoRA adapter.}
+\label{tab:acc}
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Tier & tinyMMLU & tinyHellaswag & tinyGSM8k \\
+\midrule
+16-bit & 0.433 & 0.636 & 0.062 \\
+\quad + adapter & 0.400 & 0.623 & 0.061 \\
+8-bit & 0.391 & 0.634 & 0.104 \\
+\quad + adapter & 0.388 & 0.640 & 0.075 \\
+4-bit & 0.393 & 0.573 & 0.063 \\
+\quad + adapter & 0.368 & 0.594 & 0.041 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \section{Case Study: Per-Prompt Precision Routing}
 \label{sec:routing}
 \textbf{Router.} A sensor computes five features per prompt (Flesch--Kincaid grade, approximate token length, character entropy, dependency-parse depth, and a code/maths indicator), normalised to $[0,1]$ with ranges calibrated on the evaluation set. A Mamdani fuzzy controller (scikit-fuzzy; triangular low/medium/high memberships, seven rules, centroid defuzzification) maps them to a score in $[0,100]$, cut at 33/66 into 4-, 8- or 16-bit. Routing takes 10.1--10.3\,ms per prompt on the CPU, about 0.4\% of request latency.
@@ -131,10 +151,9 @@ Oracle & 0.258 & 140 / 141 / 134 \\
 \textbf{Results.} Table~\ref{tab:routing} and Fig.~\ref{fig:routing}. A paired per-prompt bootstrap of fuzzy router minus static 16-bit gives $+$71.7 (95\% CI 61.0--82.2), $+$65.4 (54.9--75.8) and $+$76.4 (66.5--86.9)\,J/request in runs 5--7, i.e.\ 38--49\% more energy, with an accuracy difference of $-$0.006 (CI $-$0.034 to $+$0.020).
 
 \textbf{Why it fails.} The sensor does respond to difficulty, sending 61\% of hard prompts to 16-bit against 21\% of easy ones, but it sends 52\% of all prompts to 8-bit, the most expensive tier. Its choice matches the oracle's on 27\% of prompts (run 5), below the 33\% of a uniform random pick. The oracle reaches 0.258 accuracy at 134--141\,J/request by using 4-bit where it suffices, float16 otherwise, and almost never 8-bit. Only 129 of 500 prompts are answered correctly by any tier under the proxy metric, which also caps what routing can gain.
-% TODO Session 2: standard-benchmark accuracy per tier, with/without adapters (tinyBenchmarks), if job 1784 completes.
 
 \section{Threats to Validity}
-One model, one GPU and one library: kernels that compute natively in low precision (AWQ, FP8) and larger models may show real savings. Batch size~1 only; prior work finds quantized models cheaper at large batches~\cite{poddar2025}. GPU-board energy only, excluding CPU, DRAM and the router. The host mechanism behind the disruption is not isolated. The reference-match accuracy proxy is coarse; routing conclusions rest mainly on energy. All Session~4 tiers carry LoRA adapters.
+One model, one GPU and one library: kernels that compute natively in low precision (AWQ, FP8) and larger models may show real savings. Batch size~1 only; prior work finds quantized models cheaper at large batches~\cite{poddar2025}. GPU-board energy only, excluding CPU, DRAM and the router. The host mechanism behind the disruption is not isolated. The reference-match accuracy proxy is coarse, and the tinyBenchmarks tasks have 100 items each; routing conclusions rest mainly on energy. All Session~4 tiers carry LoRA adapters, which Table~\ref{tab:acc} shows do not improve accuracy.
 
 \section{Conclusion}
 Measured with a hardware counter at batch size~1, bitsandbytes 4-bit quantization of a 1B-parameter LLM saves memory but not energy, and 8-bit costs 1.8$\times$ more than float16. Getting this right was harder than expected: on a shared cluster, a host-side slowdown inflated float16 energy by up to 7.7$\times$, passed every safeguard we had, and contaminated a baseline. Reporting per-prompt throughput and power alongside energy catches it. A fuzzy per-prompt precision router, built on the assumption that fewer bits cost less, uses more energy than never quantizing. Future work will test whether native low-precision kernels and larger models change the picture, and whether routing becomes worthwhile when they do.

@@ -146,3 +146,25 @@ script as daytime job 1706: 12 x 128 tokens, mean 109.9 tok/s, range
 109.4-110.6 (1.01x spread), vs daytime 8.5 tok/s (4.4-25.6, 5.8x). ~13x
 faster, same code and GPU. (dmon SM% samples mostly cover model loading
 at this speed, so not cited.)
+
+## Session 2 — per-tier benchmark accuracy (jobs 1783 trial, 1784 full; 2026-10-07; logged 2026-10-13)
+
+`kaggle_accuracy_eval.py` at commit 1cb7489 (includes fixed batch size 16,
+per-condition saving). Trial 1783 ran the base model of every tier; full
+run 1784 ran all 6 conditions (8.5 min). lm-eval 0.4.13, tinyBenchmarks
+(100 items/task), seed 42. Outputs: `results/session2_j1784/`.
+
+| Condition | tinyMMLU acc_norm | tinyHellaswag acc_norm | tinyGSM8k exact_match (flexible) |
+|---|---|---|---|
+| 16bit_base | 0.433 | 0.636 | 0.062 |
+| 16bit_qat_adapter | 0.400 | 0.623 | 0.061 |
+| 8bit_base | 0.391 | 0.634 | 0.104 |
+| 8bit_qat_adapter | 0.388 | 0.640 | 0.075 |
+| 4bit_base | 0.393 | 0.573 | 0.063 |
+| 4bit_qat_adapter | 0.368 | 0.594 | 0.041 |
+
+16bit_base matches the earlier trial (job 1723: tinyGSM8k 0.062, tinyHellaswag
+0.637). **Finding:** adapters do not improve accuracy (lower on tinyMMLU at
+every tier, lower on tinyGSM8k at 4- and 8-bit, mixed on tinyHellaswag).
+4-bit costs ~0.04-0.06 vs 16-bit. No per-task stderr reported (IRT
+estimator); 100 items/task, so differences of a few points are within noise.
