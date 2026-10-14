@@ -1,0 +1,43 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,8b_awq4,8,medium,29.24,128,0.2284,0.8378,False," Renewable energy sources are sustainable, clean, and abundant. They produce little to no greenhouse gas emissions, contributing to a cleaner environment and a healthier climate. Renewable energy can be harnessed from various sources, including solar, wind, hydro, geothermal, and biomass. These sources are becoming increasingly cost-competitive with fossil fuels, making them a viable alternative for meeting energy demands. Renewable energy can also create jobs and stimulate local economies, particularly in rural areas where renewable energy projects are often located. Furthermore, renewable energy can improve energy security by reducing dependence on imported fuels and enhancing energy self-sufficiency. Overall, the advantages of renewable energy"
+1,8b_awq4,8,medium,29.24,128,0.2284,0.8378,False," 
+The natural process which occurs in food preservation is Dehydration. 
+Dehydration is a natural process in which the water content of food is reduced. This is done to prevent the growth of microorganisms and to extend the shelf life of food. Dehydration is a common method of food preservation used for fruits, vegetables, and meats. 
+Other natural processes used in food preservation include:
+1. Fermentation: This process involves the action of microorganisms that break down the food and produce lactic acid, which acts as a natural preservative.
+2. Smoking: This process involves exposing food to smoke, which acts as a natural preservative"
+2,8b_awq4,8,hard,29.24,128,0.2284,0.8378,False," - ProProfs
+## Step 1: Calculate the number of miles Pancho walks on weekdays.
+Pancho walks 20 miles a day on weekdays, and there are 5 weekdays in a week. So, the total miles walked on weekdays is 20 * 5 = 100 miles.
+
+## Step 2: Calculate the number of miles Pancho walks on weekends.
+Pancho walks 10 miles a day on weekends, and there are 2 weekend days in a week. So, the total miles walked on weekends is 10 * 2 = 20 miles.
+
+## Step 3: Calculate the total number of"
+3,8b_awq4,8,hard,29.24,128,0.2284,0.8378,True," 
+Step 1: Calculate the total cost of the chicken meal, 5 packs of milk, and 4 apples.
+The cost of the chicken meal is $12. The cost of 5 packs of milk is 5 x $3 = $15. The cost of 4 apples is 4 x $1.50 = $6. The total cost of these items is $12 + $15 + $6 = $33.
+
+Step 2: Subtract the total cost of the chicken meal, 5 packs of milk, and 4 apples from the total amount Marie paid to find the total cost of the boxes of"
+4,8b_awq4,8,hard,29.24,128,0.2284,0.8378,False," 
+Step 1: Calculate the total number of bananas needed for the monkeys for 2 months.
+The monkeys need 200 bananas every month, so for 2 months, they need 200 * 2 = 400 bananas.
+
+Step 2: Calculate the total number of bananas needed for the gorillas for 2 months.
+The gorillas need 400 bananas every month, so for 2 months, they need 400 * 2 = 800 bananas.
+
+Step 3: Calculate the total number of bananas needed for the baboons for 2 months.
+The baboons need 100 bananas every month, so for "
+5,8b_awq4,8,medium,29.24,128,0.2284,0.8378,False," Stress is a common issue that affects many people, and it can have a significant impact on both physical and mental health. Here are some tips to help reduce stress:
+1. Practice Deep Breathing: Deep breathing is a simple yet effective way to reduce stress. It involves taking slow, deep breaths in through the nose and out through the mouth, focusing on the sensation of the breath in the body. This can help calm the nervous system and reduce feelings of anxiety.
+2. Exercise Regularly: Regular exercise can help reduce stress by releasing endorphins, which are natural mood-boosters. Exercise can also help improve sleep quality,"
+6,8b_awq4,8,medium,29.24,128,0.2284,0.8378,False," The Tour de France is a prestigious annual multiple-stage bicycle race that covers approximately 3,500 kilometers (2,200 miles) of French terrain. The first Tour de France took place in 1903 and was organized by the French sports newspaper L'Auto. The race was created to boost the circulation of the newspaper and to promote the sport of cycling in France. The first Tour de France was won by Maurice Garin, a French cyclist who completed the race in 94 hours and 33 minutes.
+The early years of the Tour de France were marked by controversy and scandal, including doping and cheating. However, the race gained popularity"
+7,8b_awq4,8,medium,29.24,128,0.2284,0.8378,False," with a basement. The house has a total of 4 bedrooms, 2 bathrooms, a living room, a kitchen, a dining room, and a laundry room. The basement has a storage area and a utility room. The house has a total of 8 water closets, 4 showers, 2 bathtubs, and 1 laundry tub. The house has a total of 6 sinks, 2 dishwashers, and 1 ice maker. The house has a total of 4 toilets, 2 bidets, and 1 urinal. The house has a total of 2 washing machines and 1"
+8,8b_awq4,8,medium,115.892,128,0.9054,0.8215,True,"
+The Tour de France is a prestigious annual multiple-stage bicycle race that covers approximately 3,500 kilometers (2,200 miles) of French terrain. Here are three facts about the Tour de France:
+1. The Tour de France was first held in 1903 and was created by the French sports newspaper L'Auto. The first winner was Maurice Garin, who completed the race in 95 hours and 33 minutes.
+2. The Tour de France is considered one of the most challenging and prestigious cycling events in the world. The race typically takes place over three weeks in July, covering a variety of terrain, including mountains,"
+9,8b_awq4,8,easy,115.892,128,0.9054,0.8215,True," A) Hastings B) Stamford Bridge C) Senlac D) Stamford Bridge and Hastings
+Answer: D) Stamford Bridge and Hastings
+The best answer is D. The Saxon army, led by King Harold II, was defeated by the Normans at the Battle of Hastings in 1066. However, before that, the Saxons had defeated the Norwegians at the Battle of Stamford Bridge in September 1066. King Harold II was killed in the Battle of Hastings. Therefore, the correct answer is D) Stamford Bridge and Hastings. The other options are incorrect because Harold II was killed in the Battle of Hastings, not Stamford"

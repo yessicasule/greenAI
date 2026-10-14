@@ -1,0 +1,22 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,1b_fp8,8,medium,12.707,128,0.0993,0.3165,False," What are the disadvantages?
+The advantages of renewable energy are that it is clean, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment, it is not harmful to the environment,"
+1,1b_fp8,8,medium,5.758,58,0.0993,0.3165,False," What is the purpose of this process?
+A. It is used to preserve food.
+B. It is used to prevent food from spoiling.
+C. It is used to prevent food from rotting.
+D. It is used to prevent food from getting moldy.
+Answer: B"
+2,1b_fp8,8,hard,2.482,25,0.0993,0.3165,False," A) 40 B) 50 C) 60 D) 70 E) 80
+Answer: C"
+3,1b_fp8,8,hard,12.707,128,0.0993,0.3165,True," A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each, 4 apples that cost $1.50 each, and some boxes of pizza. Marie paid a total of $50. How many boxes of pizza did Marie order if each box costs $8.50? A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each,"
+4,1b_fp8,8,hard,0.099,1,0.0993,0.3165,False,
+5,1b_fp8,8,medium,12.707,128,0.0993,0.3165,False," This list can be used as a reference for future reference.
+1. Take a break. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a break from your work and go for a walk. Take a"
+6,1b_fp8,8,medium,12.707,128,0.0993,0.3165,False, How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the
+7,1b_fp8,8,medium,12.707,128,0.0993,0.3165,False," with a basement. The house has a basement with a 2,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The basement has a 1,000 square foot area. The"
+8,1b_fp8,8,medium,47.289,128,0.3694,0.3189,False,"
+The Tour de France is a cycling race that takes place every year in France. It is the most prestigious cycling race in the world and is known for its long stages and difficult climbs. The race is held over a period of 3 weeks and covers a distance of around 3,500 km. The race is divided into 21 stages, each of which is 200 km long. The race starts in the city of Nice and ends in Paris. The race is won by the rider who completes the race in the shortest time. The Tour de France is a major event in the cycling calendar and attracts a large number of spectators and"
+9,1b_fp8,8,easy,47.289,128,0.3694,0.3189,False," Harold was killed in the Battle of Stamford Bridge, which was fought on 25 September 1066. Harold was killed in the Battle of Stamford Bridge, which was fought on 25 September 1066. Harold was killed in the Battle of Stamford Bridge, which was fought on 25 September 1066. Harold was killed in the Battle of Stamford Bridge, which was fought on 25 September 1066. Harold was killed in the Battle of Stamford Bridge, which was fought on 25 September 1066. Harold was killed in the Battle of Stamford Bridge, which was fought on 25 September 1066. Harold was"

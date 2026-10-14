@@ -1,0 +1,3 @@
+batch,n_prompts,energy_j,tokens_out,latency_s,j_per_token,tok_per_s,watts
+0,8,71.875,724,0.3165,0.0993,2287.61,227.1
+1,2,94.578,256,0.3189,0.3694,802.74,296.6

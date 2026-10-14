@@ -1,0 +1,25 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,1b_fp16,1,medium,114.152,128,0.8918,0.4154,False," What are the disadvantages?
+The advantages of renewable energy are that it is clean, it is renewable, it is sustainable, it is non-polluting, it is free, it is cheap, it is efficient, it is reliable, it is safe, it is environmentally friendly, it is efficient, it is clean, it is sustainable, it is non-polluting, it is free, it is cheap, it is efficient, it is reliable, it is safe, it is environmentally friendly, it is efficient, it is clean, it is sustainable, it is non-polluting, it is free, it is cheap, it"
+1,1b_fp16,1,medium,54.271,57,0.9521,0.1868,False," What is the purpose of this process?
+A. It is used to preserve food.
+B. It is used to prevent food from spoiling.
+C. It is used to prevent food from rotting.
+D. It is used to prevent food from being eaten.
+Answer: B"
+2,1b_fp16,1,hard,26.079,25,1.0432,0.0837,False," A) 40 B) 50 C) 60 D) 70 E) 80
+Answer: C"
+3,1b_fp16,1,hard,112.001,128,0.875,0.4152,True," A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each, 4 apples that cost $1.50 each, and some boxes of pizza. Marie paid a total of $50. How many boxes of pizza did Marie order if each box costs $8.50? A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each,"
+4,1b_fp16,1,hard,28.046,1,28.046,0.0061,False,
+5,1b_fp16,1,medium,119.682,128,0.935,0.4151,False," This list can be used to help you manage your stress levels and to help you cope with stress.
+Stress is a normal part of life. It is a feeling of being overwhelmed by a situation or a feeling of being unable to cope with a situation. Stress can be caused by many things, such as work, family, finances, health, and relationships. Stress can also be caused by a combination of these things.
+Stress can be a good thing. It can help you to be more productive and to be more creative. It can also help you to be more resilient and to be more able to cope with difficult situations. However,"
+6,1b_fp16,1,medium,114.47,128,0.8943,0.4158,False, How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the
+7,1b_fp16,1,medium,112.21,128,0.8766,0.4158,False," with a basement. The house has a basement with a bathroom, kitchen, and living room. The basement also has a laundry room and a storage room. The kitchen has a sink, stove, and refrigerator. The living room has a couch, coffee table, and TV. The bathroom has a sink, toilet, and shower. The laundry room has a washer and dryer. The storage room has a shelf and a cabinet. The basement also has a door that leads to the outside. The house has a total of 4 bedrooms and 2 bathrooms. The basement has a total of 2 bedrooms and 1 bathroom. The house has"
+8,1b_fp16,1,medium,117.259,128,0.9161,0.4157,False,"
+The Tour de France is a cycling race that takes place every year in France. It is the most famous cycling race in the world and attracts millions of spectators every year. The race is 3, 500 km long and is divided into 21 stages. The race starts in the city of Nice and ends in Paris. The race is divided into 3 stages and each stage is 100 km long. The first stage is from Nice to Gap and the second stage is from Gap to Avignon. The third stage is from Avignon to Paris. The race is very difficult and the riders have to climb many hills and pass through"
+9,1b_fp16,1,easy,148.088,128,1.1569,0.4162,True," The Battle of Hastings was fought on 14 October 1066, and was the last major battle of the Norman Conquest of England. Harold was killed in the battle, and the English lost the war. The Battle of Hastings was fought on 14 October 1066, and was the last major battle of the Norman Conquest of England. Harold was killed in the battle, and the English lost the war.
+The Battle of Hastings was fought on 14 October 1066, and was the last major battle of the Norman Conquest of England. Harold was killed in the battle, and the English lost the war.
+The Battle"

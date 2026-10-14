@@ -1,0 +1,33 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,1b_fp8,1,medium,97.771,128,0.7638,0.3093,False," What are the disadvantages of renewable energy?
+The advantages of renewable energy are that it is clean, it is renewable, it is not harmful to the environment, and it is not expensive. The disadvantages of renewable energy are that it is not as efficient as fossil fuels, it is not as abundant as fossil fuels, and it is not as cheap as fossil fuels.
+What are the advantages of renewable energy?
+What are the disadvantages of renewable energy?
+What are the advantages of renewable energy?
+What are the disadvantages of renewable energy?
+What are the advantages of renewable energy?
+What are the disadvantages of renewable energy?
+What are the advantages of renewable energy?
+"
+1,1b_fp8,1,medium,21.934,57,0.3848,0.1399,False," What is the purpose of this process?
+A. It is used to preserve food.
+B. It is used to prevent food from spoiling.
+C. It is used to prevent food from being eaten.
+D. It is used to prevent food from being contaminated.
+Answer: B"
+2,1b_fp8,1,hard,19.319,25,0.7728,0.0636,False," A) 50 B) 60 C) 70 D) 80 E) 90
+Answer: C"
+3,1b_fp8,1,hard,72.639,128,0.5675,0.3093,True," A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each, 4 apples that cost $1.50 each, and some boxes of pizza. Marie paid a total of $50. How many boxes of pizza did Marie order if each box costs $8.50? A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each,"
+4,1b_fp8,1,hard,0.0,1,0.0,0.0061,False,
+5,1b_fp8,1,medium,68.209,128,0.5329,0.3094,False," This list can be used as a reference for future reference.
+1. Take a break. If you are feeling overwhelmed, take a break. This can be as simple as taking a walk or going for a drive. It is important to take a break from time to time to recharge your batteries.
+2. Get enough sleep. Sleep is essential for our physical and mental health. It is important to get enough sleep each night, even if it is just 7-8 hours. Sleep deprivation can lead to a variety of health problems, including stress.
+3. Exercise. Exercise is a great way to reduce stress. It can help to release"
+6,1b_fp8,1,medium,94.921,128,0.7416,0.31,False, How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the history of the Tour de France? How did it start? What is the
+7,1b_fp8,1,medium,72.64,128,0.5675,0.3102,False," with a basement. The house has a basement with a bathroom, a kitchen, and a living room. The basement also has a laundry room and a storage room. The kitchen has a sink, a stove, and a refrigerator. The living room has a couch, a coffee table, and a TV. The bathroom has a toilet, a sink, and a shower. The laundry room has a washer and a dryer. The storage room has a shelf and a cabinet. The basement also has a door that leads to the outside. The house has a roof that is made of metal and has a chimney. The house has a front door that"
+8,1b_fp8,1,medium,68.365,128,0.5341,0.31,True,"
+The Tour de France is a cycling race that takes place every year in France. It is the most famous cycling race in the world and attracts millions of spectators. The race is 3, 500 km long and takes place over 21 stages. The race is held in different countries each year, but the main stage is held in France. The race is held in different countries each year, but the main stage is held in France.
+The Tour de France is a cycling race that takes place every year in France. It is the most famous cycling race in the world and attracts millions of spectators. The race is 3, "
+9,1b_fp8,1,easy,68.651,128,0.5363,0.3103,False, Harold was killed in the Battle of Stamford Bridge in 1066. He was killed by the Vikings. Harold was killed in the Battle of Stamford Bridge in 1066. He was killed by the Vikings. Harold was killed in the Battle of Stamford Bridge in 1066. He was killed by the Vikings. Harold was killed in the Battle of Stamford Bridge in 1066. He was killed by the Vikings. Harold was killed in the Battle of Stamford Bridge in 1066. He was killed by the Vikings. Harold was killed in the Battle of Stamford Bridge in 1066. He was killed by the Vikings. Harold was

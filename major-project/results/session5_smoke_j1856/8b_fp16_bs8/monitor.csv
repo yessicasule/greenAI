@@ -1,0 +1,2 @@
+t,gpu_util,gpu_mem_util,power_w,sm_mhz,cotenant_pids,load1,mhz_our_cpus,mhz_all_cpus
+1791882141.9,0,0,28.8,210,,3.04,3259,3143
