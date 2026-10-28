@@ -168,3 +168,39 @@ run 1784 ran all 6 conditions (8.5 min). lm-eval 0.4.13, tinyBenchmarks
 every tier, lower on tinyGSM8k at 4- and 8-bit, mixed on tinyHellaswag).
 4-bit costs ~0.04-0.06 vs 16-bit. No per-task stderr reported (IRT
 estimator); 100 items/task, so differences of a few points are within noise.
+
+## Session 5: vLLM (fp16 / FP8 / AWQ-INT4), RTX 6000 Ada
+
+vLLM 0.31.0, CUDA graphs, one configuration per process. Scripts:
+`training/scripts/session5_vllm.sh`, `vllm_energy_benchmark.py`, `session5_accuracy.sh`.
+
+### Energy trial, job 1856 (2026-10-14), 10 prompts per config. SMOKE ONLY, not citable
+Raw data: `results/session5_smoke_j1856/`. No co-tenants seen.
+
+| config | bs | J/token | tok/s | W |
+|---|---|---|---|---|
+| 1b_fp16 | 1 | 0.967 | 307 | 297 |
+| 1b_fp16 | 8 | 0.244 | 1124 | 274 |
+| 1b_fp8 | 1 | 0.597 | 412 | 246 |
+| 1b_fp8 | 8 | 0.170 | 1542 | 262 |
+| 8b_awq4 | 1 | 1.859 | 158 | 295 |
+| 8b_awq4 | 8 | 0.364 | 771 | 281 |
+
+8b_fp16 / 8b_fp8 failed: HF 403 GatedRepoError on meta-llama/Llama-3.1-8B-Instruct
+(access granted 2026-10-26). unsloth mirror rejected: safetensors SHA-256 differ
+from the meta-llama release.
+
+### Accuracy, jobs 2033 (trial) and 2062 (2026-10-27), tinyBenchmarks, 100 items/task
+Raw data: `results/session5_acc_smoke_j2033/`, `results/session5_acc_j2062/`.
+2033 (1b_fp16) reproduces 2062's 1b_fp16 exactly.
+
+| config | tinyMMLU | tinyHellaswag | tinyGSM8k |
+|---|---|---|---|
+| 1b_fp16 | 0.4332 | 0.6290 | 0.0922 |
+| 1b_fp8 | 0.3799 | 0.6241 | 0.0842 |
+| 8b_awq4 | 0.6632 | 0.8016 | 0.6054 |
+
+1b_fp8 vs 1b_fp16: tinyMMLU -5.3 pts, others < 1 pt. Base 1B (not instruct) vs
+8B-Instruct, so 1B vs 8B accuracy is not a pure size comparison.
+Pending: 8B trial 2065, energy run 1 (2066, all 5 configs, from 2026-10-28 21:00),
+8B accuracy 2067.
