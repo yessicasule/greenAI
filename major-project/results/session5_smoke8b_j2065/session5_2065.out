@@ -1,0 +1,67 @@
+SMOKE TEST: 10 prompts per config
+===== 8b_fp16  bs=1  (meta-llama/Llama-3.1-8B-Instruct, quant=none)  2026-10-27 12:46:36 =====
+Loaded 10 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=404240) WARNING 10-27 12:46:44 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=404476) WARNING 10-27 12:49:41 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.1-8B-Instruct in 212.0s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 6813.7, "tokens_out": 1280, "j_per_token": 5.3232, "tok_per_s": 56.25, "watts": 299.4}
+cotenants seen during run: none
+===== 8b_fp16  bs=8  (meta-llama/Llama-3.1-8B-Instruct, quant=none)  2026-10-27 12:50:52 =====
+Loaded 10 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=406381) WARNING 10-27 12:51:00 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=407665) WARNING 10-27 12:51:13 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.1-8B-Instruct in 30.2s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 1396.7, "tokens_out": 1280, "j_per_token": 1.0912, "tok_per_s": 277.4, "watts": 302.7}
+cotenants seen during run: none
+===== 8b_fp8  bs=1  (meta-llama/Llama-3.1-8B-Instruct, quant=fp8)  2026-10-27 12:51:49 =====
+Loaded 10 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=407977) WARNING 10-27 12:51:57 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=407977) WARNING 10-27 12:51:59 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=408124) WARNING 10-27 12:52:08 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.1-8B-Instruct in 55.5s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 4199.2, "tokens_out": 1280, "j_per_token": 3.2806, "tok_per_s": 87.5, "watts": 287.1}
+cotenants seen during run: none
+===== 8b_fp8  bs=8  (meta-llama/Llama-3.1-8B-Instruct, quant=fp8)  2026-10-27 12:53:17 =====
+Loaded 10 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=408691) WARNING 10-27 12:53:25 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=408691) WARNING 10-27 12:53:26 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=408819) WARNING 10-27 12:53:37 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.1-8B-Instruct in 26.8s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 857.9, "tokens_out": 1280, "j_per_token": 0.6702, "tok_per_s": 427.62, "watts": 286.6}
+cotenants seen during run: none
+=== run smoke8b done 2026-10-27 12:54:06; failures=0 ===
+/home/khushiwadhwa23/session5_runsmoke8b_j2065:
+8b_fp16_bs1
+8b_fp16_bs8
+8b_fp8_bs1
+8b_fp8_bs8
+git_commit.txt
+nvidia_smi.txt
+
+/home/khushiwadhwa23/session5_runsmoke8b_j2065/8b_fp16_bs1:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmoke8b_j2065/8b_fp16_bs8:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmoke8b_j2065/8b_fp8_bs1:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmoke8b_j2065/8b_fp8_bs8:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv

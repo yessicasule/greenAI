@@ -1,0 +1,50 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,8b_fp8,8,medium,54.223,128,0.4236,1.5038,False," Renewable energy sources are sustainable, clean, and abundant. They can be replenished naturally and are not depleted by use. Renewable energy sources include solar, wind, hydro, geothermal, and biomass energy. These sources have several advantages over traditional fossil fuels. They are cleaner and produce less greenhouse gas emissions, which contribute to climate change. Renewable energy sources are also abundant and can be generated locally, reducing reliance on imported fuels and enhancing energy security. Additionally, renewable energy can create jobs and stimulate local economies. Overall, renewable energy is a vital component of a sustainable and environmentally friendly energy mix.
+The advantages of renewable energy are numerous and significant."
+1,8b_fp8,8,medium,54.223,128,0.4236,1.5038,False," 
+The process of natural preservation of food is called as ripening. 
+Ripening is a natural process in which the starches in the fruits and vegetables are converted into sugars. This process is caused by the action of enzymes present in the fruits and vegetables. 
+The ripening process is a natural process of food preservation in which the fruits and vegetables become sweeter and softer. This process is caused by the action of enzymes present in the fruits and vegetables. 
+The ripening process is a natural process of food preservation in which the fruits and vegetables become sweeter and softer. This process is caused by the action of enzymes present in"
+2,8b_fp8,8,hard,54.223,128,0.4236,1.5038,True," - Mathematics
+Pancho walks 20 miles a day. Except on weekends when he walks 10 miles. How many miles does he walk in a week?
+In a week, there are 5 working days and 2 weekend days.
+So, the number of miles Pancho walks in a week = (5 × 20) + (2 × 10)
+= 100 + 20
+= 120 miles
+Therefore, Pancho walks 120 miles in a week. - Mathematics
+The cost of 2 kg of sugar is Rs 16. Find the cost of 5 kg of sugar. - Mathematics
+The"
+3,8b_fp8,8,hard,54.223,128,0.4236,1.5038,True," A) 2 B) 3 C) 5 D) 4 E) 6
+## Step 1: Calculate the total cost of the chicken meal, milk, and apples.
+The cost of the chicken meal is $12. The cost of 5 packs of milk is 5 * $3 = $15. The cost of 4 apples is 4 * $1.50 = $6. The total cost of these items is $12 + $15 + $6 = $33.
+
+## Step 2: Subtract the total cost of the chicken meal, milk, and apples from the total amount paid"
+4,8b_fp8,8,hard,54.223,128,0.4236,1.5038,False," 
+## Step 1: Calculate the number of bananas the monkeys need for 2 months.
+The monkeys need 200 bananas every month, so for 2 months, they will need 200 * 2 = 400 bananas.
+
+## Step 2: Calculate the number of bananas the gorillas need for 2 months.
+The gorillas need 400 bananas every month, so for 2 months, they will need 400 * 2 = 800 bananas.
+
+## Step 3: Calculate the number of bananas the baboons need for 2 months.
+The baboons need 100 bananas every month, so for 2"
+5,8b_fp8,8,medium,54.223,128,0.4236,1.5038,False," Stress is a common issue that affects many people, and it can have a significant impact on both physical and mental health. Here are some tips to help reduce stress:
+1. Practice relaxation techniques: Techniques such as deep breathing, progressive muscle relaxation, and meditation can help calm the mind and body.
+2. Exercise regularly: Regular physical activity can help reduce stress and anxiety by releasing endorphins, which are natural mood-boosters.
+3. Get enough sleep: Lack of sleep can exacerbate stress, so it's essential to get at least 7-8 hours of sleep each night.
+4. Eat a healthy diet: A balanced"
+6,8b_fp8,8,medium,54.223,128,0.4236,1.5038,False," The Tour de France is one of the most prestigious and iconic cycling events in the world. It has a rich history that spans over a century, with its roots dating back to 1903. Here's a brief overview of the Tour de France's history:
+Early Years (1903-1914)
+The first Tour de France was organized by the French sports newspaper L'Auto, which was founded by Henri Desgrange. The inaugural event took place on July 1, 1903, and was won by Maurice Garin, a French cyclist. The early Tours were relatively short, with the first edition covering a distance of "
+7,8b_fp8,8,medium,54.223,128,0.4236,1.5038,False," with a basement. The house has a total of 12 bathrooms, 8 bedrooms, and 2 kitchens. The plumbing system should include a water heater, a water softener, and a water filter. The house also has a pool and a hot tub.
+## Step 1: Determine the total number of fixtures and appliances that need to be connected to the plumbing system.
+The house has 12 bathrooms, 8 bedrooms, 2 kitchens, a pool, and a hot tub. Each bathroom has a sink, toilet, and shower or bathtub, which requires 3 fixtures per bathroom. Each bedroom has a sink, which requires"
+8,8b_fp8,8,medium,212.055,128,1.6567,1.4896,True,"
+The Tour de France is a prestigious annual multiple-stage bicycle race held in France and surrounding countries. Here are three facts about the Tour de France:
+1. The Tour de France was first held in 1903 and has been held annually since then, except for during World War I and World War II. It is considered one of the most prestigious and challenging bicycle races in the world.
+2. The Tour de France typically covers a distance of around 3,500 kilometers (2,200 miles) over a period of three weeks. The race includes a variety of terrain, including mountains, hills, and flat sections, and features a"
+9,8b_fp8,8,easy,212.055,128,1.6567,1.4896,True," A) Hastings B) Stamford Bridge C) Senlac D) Stamford Bridge and Hastings
+Answer: C) Senlac
+Reasoning skill: Identifying Pros And Cons
+Analysis: This question requires the test-taker to identify the correct battle in which Harold II, the last Saxon king, lost his life. The correct answer is Senlac, which is another name for the Battle of Hastings. The other options, Stamford Bridge and Hastings, are incorrect because they refer to different battles. Stamford Bridge was a battle fought earlier in the year, and Hastings is the more commonly known name for the battle in which Harold II was killed."
