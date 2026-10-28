@@ -185,6 +185,39 @@ class Monitor:
         self.f.close()
 
 
+# ---------------------------------------------------------------- watchdog
+class Watchdog:
+    """Kill this configuration if it makes no progress for `stall_s` seconds.
+
+    Run 1 (job 2066) hung once while loading 8b_awq4 at bs=8: the vLLM engine
+    process spun at 100% CPU with the GPU idle, and would have held the job until
+    its time limit. On a stall we kill our whole process tree (vLLM's engine runs
+    in a child) and exit non-zero, so session5_vllm.sh logs FAILED and moves on.
+    """
+
+    def __init__(self, stall_s):
+        self.stall_s, self.last, self.stage = stall_s, time.time(), "start"
+        threading.Thread(target=self._loop, daemon=True).start()
+
+    def beat(self, stage):
+        self.last, self.stage = time.time(), stage
+
+    def _loop(self):
+        while True:
+            time.sleep(10)
+            idle = time.time() - self.last
+            if idle > self.stall_s:
+                print(f"[watchdog] no progress for {idle:.0f}s at stage '{self.stage}'; "
+                      f"killing this configuration", flush=True)
+                me = os.getpid()
+                for pid in _our_pids() - {me}:
+                    try:
+                        os.kill(pid, 9)
+                    except OSError:
+                        pass
+                os._exit(3)
+
+
 # ---------------------------------------------------------------- run
 def load_prompts(limit):
     rows, seen = [], set()
@@ -210,7 +243,10 @@ def main():
     ap.add_argument("--max-model-len", type=int, default=1024)
     ap.add_argument("--gpu-mem", type=float, default=0.85)
     ap.add_argument("--output-dir", required=True)
+    ap.add_argument("--stall-timeout", type=float, default=900,
+                    help="kill this configuration after this many seconds without progress")
     args = ap.parse_args()
+    dog = Watchdog(args.stall_timeout)
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -229,6 +265,7 @@ def main():
               gpu_memory_utilization=args.gpu_mem, max_model_len=args.max_model_len,
               seed=SEED)
     load_s = time.time() - t0
+    dog.beat("loaded")
     cfg = llm.llm_engine.model_config
     print(f"loaded {args.model} in {load_s:.1f}s; quantization={cfg.quantization} "
           f"dtype={cfg.dtype}", flush=True)
@@ -236,6 +273,7 @@ def main():
 
     for i in range(args.warmup):
         llm.generate([prompts[i % len(prompts)]["prompt"]] * args.batch_size, sp, use_tqdm=False)
+        dog.beat(f"warmup {i}")
     print(f"warmed up ({args.warmup} generations)", flush=True)
 
     pp_f = open(out / "per_prompt.csv", "w", newline="", encoding="utf-8")
@@ -257,6 +295,7 @@ def main():
         e0, t1 = meter.joules(), time.perf_counter()
         outs = llm.generate([p["prompt"] for p in chunk], sp, use_tqdm=False)
         dt, e = time.perf_counter() - t1, meter.joules() - e0
+        dog.beat(f"batch {b}")
         toks = [len(o.outputs[0].token_ids) for o in outs]
         n_tok = sum(toks)
         pb.writerow({"batch": b, "n_prompts": len(chunk), "energy_j": round(e, 3),
