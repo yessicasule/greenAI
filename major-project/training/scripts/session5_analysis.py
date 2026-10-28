@@ -230,8 +230,12 @@ def figure_why(summary):
         for tier, g in b.groupby("tier"):
             ax.scatter(g["tok_per_s"], g["watts"], s=22, facecolors="none", edgecolors="gray", zorder=3)
             ax.annotate(f"bnb 1B {name.get(tier, tier)}", (g["tok_per_s"].median(), g["watts"].median()),
-                        fontsize=6, color="gray", xytext=(4, -8), textcoords="offset points")
+                        fontsize=6, color="gray", xytext=(6, -2), textcoords="offset points")
     ax.set_xscale("log")
+    from matplotlib.ticker import FixedLocator, ScalarFormatter
+    ax.xaxis.set_major_locator(FixedLocator([20, 50, 100, 200, 500]))
+    ax.xaxis.set_major_formatter(ScalarFormatter())
+    ax.xaxis.set_minor_locator(FixedLocator([]))
     ax.set_xlabel("throughput (tok/s, log)", fontsize=8)
     ax.set_ylabel("mean GPU power (W)", fontsize=8)
     ax.tick_params(labelsize=7)
@@ -239,6 +243,64 @@ def figure_why(summary):
     fig.tight_layout()
     fig.savefig(FIGS / "fig_s5_why.pdf")
     fig.savefig(FIGS / "fig_s5_why.png", dpi=200)
+
+
+ACC_DIRS = ["session5_acc_j2062", "session5_acc_j2067"]
+ACC_METRIC = {"tinyMMLU": "acc_norm,none", "tinyHellaswag": "acc_norm,none",
+              "tinyGSM8k": "exact_match,flexible-extract"}
+
+
+def load_accuracy():
+    """tinyBenchmarks scores per config from the Session 5 lm-eval output folders."""
+    rows = []
+    for d in ACC_DIRS:
+        for f in (ROOT / "results" / d).glob("*/*/results_*.json"):
+            res = json.loads(f.read_text())["results"]
+            rows.append({"config": f.parents[1].name,
+                         **{t: res[t][m] for t, m in ACC_METRIC.items() if t in res}})
+    return pd.DataFrame(rows)
+
+
+def figure_tradeoff(summary, bs=1):
+    """Energy saving vs accuracy change, relative to the same model's float16."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    acc = load_accuracy()
+    clean = summary[(~summary["flag_disrupted"]) & (summary["batch_size"] == bs)]
+    jpt = clean.groupby("config")["j_per_token_total"].median()
+    if acc.empty or jpt.empty:
+        return
+    acc = acc.set_index("config")
+    fig, ax = plt.subplots(figsize=(3.5, 2.5))
+    markers = {"tinyMMLU": "o", "tinyHellaswag": "s", "tinyGSM8k": "^"}
+    colors = {"FP8": ORANGE, "AWQ 4-bit": AQUA}
+    for cfg in [c for c in ORDER if c in jpt.index and not c.endswith("fp16")]:
+        base = cfg.split("_")[0] + "_fp16"
+        if base not in jpt.index or cfg not in acc.index or base not in acc.index:
+            continue
+        model, tier = LABEL[cfg]
+        saving = 100 * (1 - jpt[cfg] / jpt[base])
+        for task, mk in markers.items():
+            d = 100 * (acc.loc[cfg, task] - acc.loc[base, task])
+            ax.scatter(saving, d, marker=mk, s=26, color=colors.get(tier, YELLOW),
+                       edgecolors="black" if model == "8B" else "none", linewidths=0.5, zorder=3)
+        ax.annotate(f"{model} {tier}", (saving, 4.2), fontsize=6, va="bottom",
+                    xytext=(-3 if model == "1B" else 3, 0), textcoords="offset points",
+                    ha="right" if model == "1B" else "left")
+    ax.axhline(0, color="gray", lw=0.6)
+    ax.set_xlim(20, 80)
+    ax.set_ylim(top=6.5)
+    for task, mk in markers.items():
+        ax.scatter([], [], marker=mk, color="gray", s=20, label=task.replace("tiny", ""))
+    ax.legend(fontsize=6, frameon=False, loc="lower left")
+    ax.set_xlabel(f"energy saving vs float16 (%), batch {bs}", fontsize=8)
+    ax.set_ylabel("accuracy change (points)", fontsize=8)
+    ax.tick_params(labelsize=7)
+    ax.spines[["top", "right"]].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(FIGS / "fig_s5_tradeoff.pdf")
+    fig.savefig(FIGS / "fig_s5_tradeoff.png", dpi=200)
 
 
 def main():
@@ -270,6 +332,7 @@ def main():
     if not args.no_fig:
         figure(summary)
         figure_why(summary)
+        figure_tradeoff(summary)
         print(f"\nfigures: {FIGS / 'fig_s5_jpt.pdf'}, {FIGS / 'fig_s5_why.pdf'}")
 
 
