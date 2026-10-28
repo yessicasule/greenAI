@@ -146,10 +146,10 @@ def main():
     ap.add_argument("--pool", action="append", required=True,
                     help="comma-separated configs, e.g. 1b_fp16,8b_awq4 (repeatable)")
     ap.add_argument("--batch-size", type=int, default=1)
-    ap.add_argument("--min-util", type=float, default=50.0)
+    ap.add_argument("--max-slowdown", type=float, default=0.2)
     args = ap.parse_args()
 
-    summary, pp = summarise(args.run_dirs, args.min_util)
+    summary, pp = summarise(args.run_dirs, args.max_slowdown)
     bad = summary[summary["flag_disrupted"]]
     if not bad.empty:
         print("excluding disrupted:", bad[["run", "config", "batch_size"]].to_dict("records"))
