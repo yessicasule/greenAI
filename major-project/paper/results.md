@@ -204,3 +204,28 @@ Raw data: `results/session5_acc_smoke_j2033/`, `results/session5_acc_j2062/`.
 8B-Instruct, so 1B vs 8B accuracy is not a pure size comparison.
 Pending: 8B trial 2065, energy run 1 (2066, all 5 configs, from 2026-10-28 21:00),
 8B accuracy 2067.
+
+### 8B energy trial, job 2065 (2026-10-27), 10 prompts per config. SMOKE ONLY, not citable
+Raw data: `results/session5_smoke8b_j2065/`. No co-tenants seen.
+
+| config | bs | J/token | tok/s | W |
+|---|---|---|---|---|
+| 8b_fp16 | 1 | 5.323 | 56.3 | 299 |
+| 8b_fp16 | 8 | 1.091 | 277 | 303 |
+| 8b_fp8 | 1 | 3.281 | 87.5 | 287 |
+| 8b_fp8 | 8 | 0.670 | 428 | 287 |
+
+With 8b_awq4 from job 1856 (bs1 1.859, bs8 0.364): vs 8b_fp16, FP8 -38%/-39%,
+AWQ-INT4 -65%/-67% (bs1/bs8). Power ~constant; savings come from throughput.
+
+### 8B accuracy, job 2067 (2026-10-27), tinyBenchmarks, 100 items/task
+Raw data: `results/session5_acc_j2067/`.
+
+| config | tinyMMLU | tinyHellaswag | tinyGSM8k |
+|---|---|---|---|
+| 8b_fp16 | 0.6289 | 0.8184 | 0.7461 |
+| 8b_fp8 | 0.6399 | 0.8232 | 0.6737 |
+| 8b_awq4 (j2062) | 0.6632 | 0.8016 | 0.6054 |
+
+GSM8k drops 7.2 (FP8) and 14.1 (AWQ) pts; MMLU/Hellaswag within ~2-3 pts (noise at 100 items).
+Queued: energy runs 1/2/3 = jobs 2066/2077/2078, nights of 10-28/29/30 21:00, chained afterok.
