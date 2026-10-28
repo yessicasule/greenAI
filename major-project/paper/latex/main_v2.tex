@@ -1,6 +1,7 @@
 \documentclass[conference]{IEEEtran}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{url}
 \usepackage{xcolor}
@@ -79,11 +80,10 @@ We set out to build a router that sends each prompt to the cheapest precision ti
 Tier & tok/s & W & J/token \\
 \midrule
 float16 & 80.7--81.8 & 130--142 & 1.59--1.73 \\
-8-bit LLM.int8 & \TBD & \TBD & 3.06--3.12 \\
-4-bit NF4 & \TBD & \TBD & 1.66--1.71 \\
+8-bit LLM.int8 & 29.0--29.6 & 91 & 3.06--3.12 \\
+4-bit NF4 & 56.4--57.4 & 96--97 & 1.66--1.71 \\
 \bottomrule
 \end{tabular}
-% TODO: fill 4-/8-bit tok/s and W from paper/analysis/tier_medians.csv (runs 5-7).
 \end{table}
 
 \textbf{Stack B: quantization saves energy.} Table~\ref{tab:vllm} gives per-token energy for every vLLM configuration. \TBD[: 2--3 sentences once the full runs are in: savings vs float16 per model and batch size with 95\% paired bootstrap CIs, spread across runs.]
