@@ -1,0 +1,28 @@
+===== 8b_awq4  bs=8  (hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4, quant=none)  2026-10-29 14:17:51 =====
+Loaded 500 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(EngineCore pid=1436287) WARNING 10-29 14:18:10 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4 in 27.2s; quantization=auto_awq dtype=torch.float16
+warmed up (5 generations)
+  48/500 prompts, 1219.5 tok/s, 0.231 J/tok
+  96/500 prompts, 1207.4 tok/s, 0.235 J/tok
+  144/500 prompts, 1210.2 tok/s, 0.236 J/tok
+  192/500 prompts, 1210.4 tok/s, 0.238 J/tok
+  240/500 prompts, 1211.9 tok/s, 0.238 J/tok
+  288/500 prompts, 1211.6 tok/s, 0.239 J/tok
+  336/500 prompts, 1211.9 tok/s, 0.239 J/tok
+  384/500 prompts, 1211.2 tok/s, 0.240 J/tok
+  432/500 prompts, 1211.3 tok/s, 0.241 J/tok
+  480/500 prompts, 1211.3 tok/s, 0.240 J/tok
+{"energy_j": 15426.0, "tokens_out": 63849, "j_per_token": 0.2416, "tok_per_s": 1202.02, "watts": 290.4}
+cotenants seen during run: none
+=== run 1 done 2026-10-29 14:19:27; failures=0 ===
+/home/khushiwadhwa23/session5_run1_j2093:
+8b_awq4_bs8
+git_commit.txt
+nvidia_smi.txt
+
+/home/khushiwadhwa23/session5_run1_j2093/8b_awq4_bs8:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
