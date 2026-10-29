@@ -229,3 +229,28 @@ Raw data: `results/session5_acc_j2067/`.
 
 GSM8k drops 7.2 (FP8) and 14.1 (AWQ) pts; MMLU/Hellaswag within ~2-3 pts (noise at 100 items).
 Queued: energy runs 1/2/3 = jobs 2066/2077/2078, nights of 10-28/29/30 21:00, chained afterok.
+
+### Energy run 1, jobs 2066 (9 configs, 2026-10-28 day) + 2093 (8b_awq4 bs8 rerun, 2026-10-29)
+Raw data: `results/session5_run1_j2066/`, `results/session5_run1_j2093/`.
+2066 hung loading 8b_awq4 bs8 (engine at 100% CPU, GPU idle) until TIMEOUT; the other 9
+configs completed. Watchdog added (commit 40f4815). All 10 configs: no co-tenants,
+GPU util 93-100% during generation, host load1 ~6, CPU 3.4 GHz. session5_analysis.py:
+
+| config | bs | J/token | tok/s | W | saving vs fp16 [95% CI] |
+|---|---|---|---|---|---|
+| 1b_fp16 | 1 | 0.944 | 307 | | |
+| 1b_fp8 | 1 | 0.613 | 411 | 252 | 35% [34, 36] |
+| 8b_fp16 | 1 | 5.304 | 56.2 | 298 | |
+| 8b_fp8 | 1 | 3.299 | 86.9 | 287 | 38% [38, 38] |
+| 8b_awq4 | 1 | 1.877 | 158 | 297 | 65% [64, 65] |
+| 1b_fp16 | 8 | 0.139 | 1989 | 277 | |
+| 1b_fp8 | 8 | 0.087 | 2735 | 237 | 38% [37, 39] |
+| 8b_fp16 | 8 | 0.680 | 435 | 296 | |
+| 8b_fp8 | 8 | 0.423 | 673 | 285 | 38% [38, 38] |
+| 8b_awq4 | 8 | 0.242 | 1202 | 290 | 64% [64, 65] |
+
+Routing replay (run 1, bs1, proxy accuracy), session5_router_replay.py:
+- 8B precision pool: static AWQ 240 J/req, acc 0.350; static FP8 422, 0.372; static fp16 678,
+  0.364. Fuzzy 477 J, 0.368 = random-matched (478, 0.366). Oracle 260 J, 0.442.
+- 1B/8B pool (1b_fp16 vs 8b_awq4): fuzzy saves 19 J/req vs static 8b_awq4 but loses 2.8 pts
+  (CI -4.8 to -1.0), same as random-matched. Learned router never picks 1B. Oracle 136 J, 0.398.
