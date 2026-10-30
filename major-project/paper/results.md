@@ -254,3 +254,30 @@ Routing replay (run 1, bs1, proxy accuracy), session5_router_replay.py:
   0.364. Fuzzy 477 J, 0.368 = random-matched (478, 0.366). Oracle 260 J, 0.442.
 - 1B/8B pool (1b_fp16 vs 8b_awq4): fuzzy saves 19 J/req vs static 8b_awq4 but loses 2.8 pts
   (CI -4.8 to -1.0), same as random-matched. Learned router never picks 1B. Oracle 136 J, 0.398.
+
+### Energy runs 2 and 3, jobs 2094 / 2095 (2026-10-29, daytime, 14:23 and 15:19 IST)
+Raw data: `results/session5_run2_j2094/`, `results/session5_run3_j2095/`. All 10 configs each,
+no co-tenants, GPU util 100%, no watchdog kills. Three-run summary (session5_analysis.py,
+`paper/analysis/session5_summary.csv`, `session5_paired.csv`, `session5_table_vllm.tex`):
+
+| config | bs | J/token (median of 3) | tok/s | saving vs fp16 (per-run) |
+|---|---|---|---|---|
+| 1b_fp16 | 1 | 0.945 | 307 | |
+| 1b_fp8 | 1 | 0.604 | 413 | 35.0 / 36.1 / 37.7% |
+| 8b_fp16 | 1 | 5.311 | 56 | |
+| 8b_fp8 | 1 | 3.299 | 87 | 37.8 / 38.1 / 37.9% |
+| 8b_awq4 | 1 | 1.887 | 158 | 64.6 / 64.4 / 64.5% |
+| 1b_fp16 | 8 | 0.139 | 1989 | |
+| 1b_fp8 | 8 | 0.087 | 2743 | 37.8 / 37.5 / 37.5% |
+| 8b_fp16 | 8 | 0.679 | 435 | |
+| 8b_fp8 | 8 | 0.423 | 673 | 37.8 / 37.9 / 37.5% |
+| 8b_awq4 | 8 | 0.245 | 1196 | 64.5 / 63.9 / 63.9% |
+
+Host load1 medians: run1 6.0, run2 3.3, run3 1.6. All three runs were daytime; no night Stack B run.
+Routing replay over runs 1-3: per-policy energy within 2 J/req of run 1; accuracy identical.
+
+### Trials 2026-10-29: Qwen2.5-7B-Instruct (job 2096, 40 prompts) and bs=32 (job 2097, 64 prompts). SMOKE ONLY
+q7b J/token bs1/8/32: fp16 4.989/0.661/0.286, fp8 3.135/0.434/0.169, awq4 1.793/0.237/0.098
+(FP8 -37/-34/-41%, AWQ -64/-64/-66%). Llama bs32: 1b_fp16 0.0403, 1b_fp8 0.0300 (-26%),
+8b_fp16 0.1857, 8b_fp8 0.1128 (-39%), 8b_awq4 0.0720 (-61%). No co-tenants.
+Full runs (Qwen x3, bs32 x3, Qwen accuracy) to be queued Mon 2026-11-02.
