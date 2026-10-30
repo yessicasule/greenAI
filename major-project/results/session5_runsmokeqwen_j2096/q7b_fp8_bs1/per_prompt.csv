@@ -1,0 +1,291 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,q7b_fp8,1,medium,380.848,128,2.9754,1.4315,False," Renewable energy has several advantages, including:
+
+1. Environmental benefits: Renewable energy sources such as solar, wind, and hydroelectric power produce little to no greenhouse gas emissions, which helps to reduce air pollution and mitigate climate change.
+
+2. Energy security: Renewable energy sources are often domestically produced, reducing reliance on imported fuels and enhancing energy security.
+
+3. Cost savings: While the initial investment in renewable energy infrastructure can be high, the long-term cost savings can be significant due to lower operating costs and reduced fuel expenses.
+
+4. Job creation: The renewable energy industry is labor-intensive and can create jobs in manufacturing, installation, and maintenance.
+
+5"
+1,q7b_fp8,1,medium,376.196,128,2.939,1.4316,False," One natural process that occurs in food preservation is fermentation. During fermentation, microorganisms such as bacteria and yeast break down the sugars in food, producing acids, gases, and sometimes alcohol. This process can help to preserve food by inhibiting the growth of harmful bacteria and creating an environment that is less hospitable to spoilage organisms. Examples of fermented foods include cheese, yogurt, sauerkraut, and pickles. Another natural process is dehydration, where the moisture content of food is reduced, making it less attractive to microorganisms that cause spoilage. Examples of dehydrated foods include dried fruits, vegetables, and meats. Both"
+2,q7b_fp8,1,hard,409.093,128,3.196,1.432,False," To determine how many miles Pancho walks in a week, we need to break down his walking schedule and calculate the total distance step by step.
+
+1. Identify the number of weekdays and weekends in a week:
+   - There are 5 weekdays (Monday to Friday).
+   - There are 2 weekend days (Saturday and Sunday).
+
+2. Calculate the distance Pancho walks on weekdays:
+   - Pancho walks 20 miles each weekday.
+   - Therefore, the total distance walked on weekdays is \(5 \times 20 = 100\) miles.
+
+3. Calculate the distance Pancho walks on weekends:
+  "
+3,q7b_fp8,1,hard,381.781,128,2.9827,1.432,True," To determine how many boxes of pizza Marie ordered, we need to first calculate the total cost of the items she definitely ordered and then use that to find out how much she spent on the pizza.
+
+1. Calculate the cost of the chicken meal:
+   \[
+   \text{Cost of chicken meal} = \$12
+   \]
+
+2. Calculate the cost of the 5 packs of milk:
+   \[
+   \text{Cost of milk} = 5 \times \$3 = \$15
+   \]
+
+3. Calculate the cost of the 4 apples:
+   \[
+   \text{Cost of"
+4,q7b_fp8,1,hard,410.015,128,3.2032,1.432,False," To determine the total number of bananas the zookeeper needs to order for 2 months, we need to calculate the monthly banana requirement for each group of apes and then multiply by 2.
+
+First, let's calculate the monthly banana requirement for each group:
+- Monkeys need 200 bananas per month.
+- Gorillas need 400 bananas per month.
+- Baboons need 100 bananas per month.
+
+Next, we sum the monthly requirements:
+\[
+200 \text{ (monkeys)} + 400 \text{ (gorillas)} + 100 \text{"
+5,q7b_fp8,1,medium,383.402,128,2.9953,1.4315,False," 1. Practice mindfulness and meditation to stay present and calm.
+2. Exercise regularly to release endorphins and reduce tension.
+3. Get enough sleep to help your body and mind recover.
+4. Eat a healthy, balanced diet to fuel your body and maintain energy levels.
+5. Take breaks throughout the day to stretch and relax.
+6. Prioritize tasks and set realistic goals to avoid feeling overwhelmed.
+7. Learn to say no to requests that are not essential or feasible.
+8. Connect with friends and family for emotional support and a sense of community.
+9. Practice deep breathing exercises to reduce anxiety and promote relaxation.
+10"
+6,q7b_fp8,1,medium,384.151,128,3.0012,1.4315,False," The Tour de France is one of the most prestigious and challenging cycling events in the world. Its history dates back to 1903, when it was first organized by the newspaper L'Auto. The inaugural Tour de France was a 2,428-kilometer (1,509-mile) race that took place from July 1 to July 19, 1903, and was won by French cyclist Maurice Garin.
+
+Over the years, the Tour de France has undergone many changes, including changes to the route, the number of stages, and the rules of the race. In the"
+7,q7b_fp8,1,medium,413.474,128,3.2303,1.4313,False," with a basement, including a master suite, kitchen, and garage. The basement should have a laundry room, utility room, and storage area. The first floor should have a living room, dining room, and kitchen. The second floor should have three bedrooms, a bathroom, and a master suite with a walk-in closet and en-suite bathroom. The plumbing system should include hot and cold water supply, waste and vent lines, and a sump pump for the basement. Use standard symbols and include a legend for the diagram.
+I'm unable to create visual diagrams directly, but I can provide you with a detailed description of the plumbing layout for"
+8,q7b_fp8,1,medium,385.571,128,3.0123,1.4313,False,".
+1. The Tour de France is a multi-stage bicycle race primarily held in France, while also occasionally passing through nearby countries. It is one of the three Grand Tours in professional cycling, alongside the Giro d'Italia and Vuelta a España.
+
+2. The race was first held in 1903 and has been an annual event since 1913, with the exception of the years during World War I and World War II. It is one of the most prestigious and challenging cycling events in the world.
+
+3. The Tour de France covers a total distance of approximately 3,500 kilometers ("
+9,q7b_fp8,1,easy,413.719,128,3.2322,1.4318,True," Battle of Hastings
+
+The Battle of Hastings was fought on October 14, 1066, between the Norman-French army of William, Duke of Normandy, and the English army of King Harold II. Harold II was the last Anglo-Saxon king of England, and he lost his life during this battle. The Normans were victorious, and William was crowned King of England on Christmas Day of the same year. The Battle of Hastings is considered a pivotal moment in English history, marking the end of the Anglo-Saxon period and the beginning of the Norman era. Harold II's death is often seen as the end of"
+10,q7b_fp8,1,easy,386.599,128,3.0203,1.4313,True," John Buchan, the Scottish writer and politician, became Lord Tweedsmuir in 1935. He was appointed as the 11th Governor General of Canada, a position he held until 1940. Buchan was known for his adventure novels, including the famous Richard Hannay series, and his political career included serving as a Member of Parliament and as the Secretary of State for Scotland. His appointment as Lord Tweedsmuir was a recognition of his contributions to literature and public service. 
+
+The title ""Lord Tweedsmuir"" was created specifically for him, with ""Tweedsmuir"""
+11,q7b_fp8,1,medium,386.676,128,3.0209,1.4312,False," John and Sarah had been best friends since childhood, and they had just met up for a casual coffee date. As they sat across from each other at a small café, they caught up on each other's lives, sharing stories and laughter. John had just started a new job, and Sarah was excited to hear about his progress. Sarah had recently moved to a new city for work, and John was happy to hear about her adventures in her new home. They talked about everything from their favorite movies to their hopes and dreams for the future. Despite the years that had passed since they last saw each other, their bond remained strong, and they"
+12,q7b_fp8,1,easy,417.469,128,3.2615,1.4314,True," Jimi Hendrix was 27 years old when he died on September 18, 1970. He passed away due to accidental drug overdose in London, England. Hendrix had an illustrious career in the music industry and is widely regarded as one of the greatest guitarists in the history of rock music. His innovative playing style and unique sound continue to influence musicians to this day. Tragically, his life was cut short, leaving behind a legacy that continues to inspire and captivate audiences around the world. If you have any other questions about Jimi Hendrix or his music, feel free to ask!"
+13,q7b_fp8,1,easy,388.553,128,3.0356,1.4313,True," Gerald Ford's middle name was Robert. His full name was Gerald Rudolph Ford Jr. He served as the 38th President of the United States from 1974 to 1977. Ford was known for his straightforward demeanor and his efforts to heal the nation after the Watergate scandal and the resignation of President Richard Nixon. He was also the first president to be born after the United States declared its independence. 
+
+Here's a quick breakdown:
+- Full name: Gerald Rudolph Ford Jr.
+- Middle name: Robert
+- Presidential term: 1974-1977
+- Pre"
+14,q7b_fp8,1,hard,136.247,38,3.5854,0.4273,True,".
+[2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
+15,q7b_fp8,1,hard,390.115,128,3.0478,1.4338,False," To determine the score Brinley needs on her sixth test to achieve an average of 93, we need to follow these steps:
+
+1. **Calculate the total score needed for an average of 93 over six tests:**
+   \[
+   \text{Total score needed} = 93 \times 6 = 558
+   \]
+
+2. **Identify the lowest score among the first five tests:**
+   The scores are 89, 71, 92, 100, and 86. The lowest score is 71.
+
+3. **"
+16,q7b_fp8,1,hard,411.761,128,3.2169,1.4332,False," To determine the total number of legs Jake sees, we need to calculate the legs from each group of invertebrates separately and then sum them up.
+
+First, we calculate the number of legs from the spiders:
+\[
+80 \text{ spiders} \times 8 \text{ legs per spider} = 640 \text{ legs}
+\]
+
+Next, we calculate the number of legs from the insects:
+\[
+90 \text{ insects} \times 6 \text{ legs per insect} = 540 \text{ legs}
+\]
+
+Then, we calculate the number of legs from the"
+17,q7b_fp8,1,easy,389.458,128,3.0426,1.4322,False," The gymnast you're referring to is Olga Korbut, a Soviet gymnast who competed in the 1976 Summer Olympics in Montreal, Canada. Olga Korbut was a sensation at the 1976 Olympics, winning three gold medals (vault, uneven bars, and team all-around) and one silver medal (balance beam) while also earning a bronze medal in the floor exercise. Her performances were marked by her youthful charm, daring skills, and the use of her hair ribbon as a prop, which became one of her iconic images. Korbut's performances were so impressive that she scored seven maximum scores of"
+18,q7b_fp8,1,medium,390.311,128,3.0493,1.4316,False," Entropy is a fundamental concept in thermodynamics that measures the degree of disorder or randomness in a system. It is a state function, meaning that it depends only on the current state of the system and not on the path taken to reach that state.
+
+In thermodynamics, entropy is often associated with the second law of thermodynamics, which states that the total entropy of an isolated system can never decrease over time. This means that the total entropy of a closed system will always increase or remain constant, and never decrease.
+
+The concept of entropy can be understood in several ways:
+
+1. Microscopic view: Entropy can be thought of as a"
+19,q7b_fp8,1,hard,417.435,128,3.2612,1.4318,False," Additionally, the program should calculate the sum of these Fibonacci numbers and print it. The program should also check if any of the Fibonacci numbers are prime and print a message indicating the prime numbers found.
+
+Here's a Python program that prints the first 10 Fibonacci numbers, calculates their sum, and checks if any of them are prime:
+
+```python
+def is_prime(n):
+    if n <= 1:
+        return False
+    for i in range(2, int(n**0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+def fibonacci(n):
+    fib"
+20,q7b_fp8,1,hard,392.128,128,3.0635,1.4341,False," To determine the total number of slices of cheese Carl used, we need to break down the problem into smaller parts and calculate the cheese usage for each part.
+
+First, let's calculate the cheese used for the sandwiches:
+- Carl ate a sandwich every day for lunch.
+- He used 2 slices of cheese per sandwich.
+- There are 7 days in a week.
+So, the total number of slices of cheese used for sandwiches is:
+\[ 2 \text{ slices/sandwich} \times 7 \text{ sandwiches} = 14 \text{ slices} \]
+
+Next, let's calculate the cheese used for"
+21,q7b_fp8,1,hard,419.852,128,3.2801,1.4316,False," A typical machine learning pipeline consists of the following components:
+
+1. Data Collection: Gathering the raw data from various sources.
+2. Data Preprocessing: Cleaning and transforming the data to make it suitable for model training.
+3. Feature Engineering: Selecting and creating relevant features from the preprocessed data.
+4. Model Selection: Choosing an appropriate machine learning algorithm for the task.
+5. Model Training: Training the selected model on the preprocessed data.
+6. Model Evaluation: Assessing the performance of the trained model using appropriate metrics.
+7. Hyperparameter Tuning: Optimizing the model's hyperparameters to improve its performance.
+8."
+22,q7b_fp8,1,medium,391.758,128,3.0606,1.4318,False," They had opened the door yesterday. 
+
+Step 1: Identify the main clause and the time reference.
+- Main clause: They opened the door.
+- Time reference: Yesterday
+
+Step 2: Convert the main clause to the past perfect tense.
+- Past perfect tense of ""opened"" is ""had opened""
+
+Step 3: Place the auxiliary verb ""had"" before the subject ""they"" and the past participle ""opened.""
+- They had opened the door
+
+Step 4: Add the time reference ""yesterday"" at the end of the sentence.
+- They had opened the door yesterday. 
+
+Final transformed sentence: They"
+23,q7b_fp8,1,easy,167.056,48,3.4803,0.5388,True," Christian Slater was born on August 24, 1970, while Kiefer Sutherland was born on April 15, 1966. Therefore, Kiefer Sutherland was born first."
+24,q7b_fp8,1,easy,384.165,128,3.0013,1.4322,False," The patron saint of lost causes is Saint Patrick. However, this is not an official title and is more of a popular belief or tradition. Saint Patrick is primarily known as the patron saint of Ireland, but he is also associated with lost causes due to his perseverance and determination in spreading Christianity in Ireland despite facing numerous challenges and setbacks. The association with lost causes is more of a metaphorical connection rather than an official title. Other saints who are sometimes associated with lost causes include Saint Anthony of Padua and Saint Jude Thaddeus, who is often referred to as the patron saint of hopeless cases. 
+
+It's important to note that patron"
+25,q7b_fp8,1,hard,422.029,128,3.2971,1.4317,False," The number should be the sum of the ASCII values of the previous and next vowels in the alphabet. For example, 'a' would be replaced with 97 (ASCII of 'a') + 98 (ASCII of 'b') = 195, 'e' would be replaced with 101 (ASCII of 'e') + 102 (ASCII of 'f') = 203, and so on. The script should handle both uppercase and lowercase vowels. Additionally, the script should ignore any vowels that are at the beginning or end of a word. 
+
+Input:
+""Hello World"
+26,q7b_fp8,1,hard,52.739,20,2.6369,0.2265,True," function concatenateStrings(str1, str2) {
+    return str1 + str2;
+}"
+27,q7b_fp8,1,easy,360.284,112,3.2168,1.2533,True," Jimmy Connors won a total of 10 Grand Slam singles titles in his career. When rounded to the nearest two, this would be 10, as it is already an even number and does not need to be rounded up or down. 
+
+Here's the breakdown:
+- 3 Australian Opens
+- 4 Wimbledon Championships
+- 3 US Opens
+
+So, the answer is 10. When rounded to the nearest two, it remains 10. 
+
+Therefore, the final answer is \(\boxed{10}\)."
+28,q7b_fp8,1,easy,392.629,128,3.0674,1.4319,True," Options: - (A) Milk - (B) Furs - (C) Fat - (D) Eggs - (E) Hair - (F) Spines - (G) Scales - (H) Plasma Let's solve this step by step: To determine what mammals produce to differentiate them from other families of animals, let's consider the key characteristics of mammals and compare them to other animals.
+
+1. **Warm-blooded**: This is a common trait among mammals, but it's also found in some birds, so it's not unique to mammals.
+
+2. **Live birth**: This is also a characteristic of mammals,"
+29,q7b_fp8,1,hard,422.188,128,3.2983,1.4337,False," To determine the total cost of the pastries Toula bought, we need to calculate the cost of each type of pastry separately and then sum these costs.
+
+First, let's calculate the cost of the donuts:
+- Toula bought 3 dozen donuts.
+- The cost per dozen donuts is $68.
+\[
+\text{Cost of donuts} = 3 \times 68 = 204
+\]
+
+Next, let's calculate the cost of the mini cupcakes:
+- Toula bought 2 dozen mini cupcakes.
+- The cost per dozen mini cupcakes is $80.
+\[
+\"
+30,q7b_fp8,1,medium,393.702,128,3.0758,1.4317,False,".
+Customer: Excuse me, flight attendant. Can you tell me when we're scheduled to take off?
+
+Flight Attendant: Of course, ma'am. We're currently on schedule to depart at 3:15 PM. Is there anything else I can assist you with?
+
+Customer: Yes, actually. I'm a bit nervous about the turbulence. Is it common on this route?
+
+Flight Attendant: Turbulence can happen on any flight, but it's usually not a cause for concern. Our pilots are highly trained and experienced in handling all types of weather conditions. We'll do our best to keep you comfortable during the"
+31,q7b_fp8,1,medium,394.585,128,3.0827,1.4317,False,"00 per mile.
+Sure, here's a rate for a driver for a ride-sharing app at $5.00 per mile:
+
+**Rate: $5.00 per mile**
+
+This rate means that for every mile traveled, the rider will be charged $5.00. 
+
+**Example:**
+- If the trip is 10 miles long, the fare would be $50.00.
+- If the trip is 20 miles long, the fare would be $100.00.
+
+Please note that this rate does not include any additional fees such as surge pricing, service fees,"
+32,q7b_fp8,1,easy,424.049,128,3.3129,1.4316,True," The Angel Falls, the highest waterfall in the world, are located in Venezuela. Specifically, they are situated in the Canaima National Park in the Gran Sabana region of Bolívar State. The waterfall drops an impressive 979 meters (3,212 feet) from the top of Auyán-tepui, which is one of the tabletop mountains known as tepuis in the region. The falls were named after American aviator Jimmie Angel, who was the first person to fly over them in 1933. They are a significant natural wonder and a major tourist attraction in Venezuela. 
+
+To"
+33,q7b_fp8,1,medium,394.73,128,3.0838,1.4316,False," One commonly used tool for debugging a program is a debugger. A debugger is a software tool that allows developers to examine and control the execution of a program in detail. It provides a way to step through the code line by line, inspect variables and memory, and set breakpoints to pause the execution of the program at specific points.
+
+There are several types of debuggers available, including integrated development environment (IDE) debuggers, standalone debuggers, and command-line debuggers. IDE debuggers are typically integrated into the development environment and provide a graphical interface for debugging. Standalone debuggers are separate programs that can be used with any programming language or"
+34,q7b_fp8,1,medium,423.806,128,3.311,1.4317,False," 1. **Themed Decor**: Choose a theme for the conference room, such as a futuristic, nature-inspired, or vintage style. This can help create a unique and memorable atmosphere for meetings.
+
+2. **Interactive Whiteboards**: Install large, interactive whiteboards that allow participants to collaborate and brainstorm ideas in real-time.
+
+3. **Flexible Seating**: Use modular seating arrangements that can be easily reconfigured to accommodate different group sizes and meeting styles.
+
+4. **Natural Light and Greenery**: Incorporate large windows and plenty of natural light, along with indoor plants to create a more inviting and energizing environment.
+
+5. **Sound"
+35,q7b_fp8,1,easy,396.904,128,3.1008,1.4317,True," Harrison Ford's real name is Henry Ford II. However, he was born as Henry Alfred Ford on July 13, 1942. He later changed his name to Harrison Ford in 1960. The ""Henry Ford"" part of his name is coincidentally the same as the famous American industrialist and founder of Ford Motor Company, but there is no relation between the two. Harrison Ford is the stage name he adopted for his acting career. 
+
+So, to summarize:
+- Birth name: Henry Alfred Ford
+- Stage name: Harrison Ford
+
+The name change was likely to avoid confusion with the Ford family"
+36,q7b_fp8,1,medium,396.233,128,3.0956,1.4317,False," The Great Gatsby is a 2013 American biographical drama film based on F. Scott Fitzgerald's 1925 novel of the same name. The movie is directed by Baz Luhrmann and stars Leonardo DiCaprio as Jay Gatsby, a wealthy man who throws extravagant parties in the hopes of rekindling his romance with his former love, Daisy Buchanan (played by Carey Mulligan).
+
+1. The film opens with a montage of Gatsby's lavish parties, showcasing his wealth and extravagant lifestyle. Nick Carraway (Tobey Maguire), a young Yale graduate, arrives in New York City to"
+37,q7b_fp8,1,hard,425.715,128,3.3259,1.4317,True,".
+Certainly! Here's a code snippet that removes all occurrences of a given element from a list:
+
+```python
+def remove_element(lst, element):
+    """"""
+    Removes all occurrences of a given element from a list.
+
+    Args:
+        lst (list): The input list.
+        element: The element to be removed from the list.
+
+    Returns:
+        list: A new list with all occurrences of the given element removed.
+
+    Examples:
+        >>> remove_element([1, 2, 3, 2, 4, 2], 2)
+        [1, 3, 4]
+
+        >>> remove_element"
+38,q7b_fp8,1,easy,396.86,128,3.1005,1.432,True,"?
+A. Thomas Jefferson
+B. Abraham Lincoln
+C. James Madison
+D. James Monroe
+B. Abraham Lincoln
+
+Abraham Lincoln was the 16th president of the United States and he was assassinated on April 14, 1865, just five days after the end of the American Civil War. He was shot by John Wilkes Booth at Ford's Theatre in Washington, D.C. Lincoln died the following morning on April 15, 1865. 
+
+The other options are incorrect:
+- Thomas Jefferson was the 3rd president.
+- James Madison was the 4"
+39,q7b_fp8,1,easy,425.241,128,3.3222,1.4316,False," The fastest animal on two legs is the human. The world record for the fastest human run is held by Usain Bolt, who ran 100 meters in 9.58 seconds, which is approximately 28.0 meters per second or 62.9 miles per hour. However, it's important to note that humans are not naturally built for sustained high-speed running and can only maintain top speeds for short distances. Other animals like cheetahs and ostriches can run faster over longer distances. 
+
+If you're referring to the fastest animal over a longer distance, the cheetah is the fastest"

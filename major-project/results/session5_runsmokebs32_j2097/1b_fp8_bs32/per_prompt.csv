@@ -1,0 +1,315 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False," What are the disadvantages?
+The advantages of renewable energy are that it is clean, it is renewable, it is sustainable, it is cheap, it is efficient, it is reliable, it is safe, it is environmentally friendly, it is non-polluting, it is non-toxic, it is non-hazardous, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non-toxic, it is non"
+1,1b_fp8,32,medium,2.235,69,0.0324,0.3633,False," What is the purpose of this process?
+A. The purpose of this process is to preserve food.
+B. The purpose of this process is to prevent food from spoiling.
+C. The purpose of this process is to prevent food from rotting.
+D. The purpose of this process is to prevent food from being spoiled.
+Answer: B"
+2,1b_fp8,32,hard,0.81,25,0.0324,0.3633,False," A) 50 B) 60 C) 70 D) 80 E) 90
+Answer: C"
+3,1b_fp8,32,hard,4.146,128,0.0324,0.3633,True," A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each, 4 apples that cost $1.50 each, and some boxes of pizza. Marie paid a total of $50. How many boxes of pizza did Marie order if each box costs $8.50? A) 2 B) 3 C) 4 D) 5 E) 6
+Marie ordered one chicken meal that costs $12, 5 packs of milk that costs $3 each,"
+4,1b_fp8,32,hard,0.032,1,0.0324,0.3633,False,
+5,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False," This list can be used as a reference for future reference.
+1. Take a break. If you are feeling stressed, take a break. This can be as simple as taking a walk or going for a drive. This will help you to relax and clear your mind.
+2. Exercise. Exercise is a great way to reduce stress. It can help to release endorphins, which are natural painkillers. Exercise can also help to improve your mood and reduce stress.
+3. Eat healthy. Eating healthy foods can help to reduce stress. Eating healthy foods can help to improve your mood and reduce stress.
+4. Get enough sleep."
+6,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False," How did it start? What is the history of the Tour de France? How did it start? The Tour de France is a cycling race that has been around for over a century. It was first held in 1903 and has since become one of the most popular sporting events in the world. The Tour de France is a race that is held over a period of 21 days, with each stage lasting between 2 and 3 hours. The race is held in different countries around Europe, with the final stage being held in Paris. The Tour de France is a race that is held over a period of 21 days, with"
+7,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False," with a basement. The house has a front porch, a front door, a back door, a kitchen, a dining room, a living room, a bathroom, a bedroom, a laundry room, a basement, and a garage. The basement has a furnace, a water heater, and a refrigerator. The kitchen has a stove, a refrigerator, and a sink. The dining room has a table and chairs. The living room has a couch and a coffee table. The bathroom has a toilet, a sink, and a shower. The bedroom has a bed and a nightstand. The laundry room has a washer and dryer. The basement"
+8,1b_fp8,32,medium,4.146,128,0.0324,0.3633,True,".
+The Tour de France is a cycling race that takes place every year in France. It is the most famous cycling race in the world and is known for its long and difficult stages. The race is held over a period of 3 weeks and covers a total distance of around 3,500 km. The race is held in different cities each year and is usually held in July or August. The race is known for its difficult stages and is considered to be one of the most grueling races in the world. The race is held in different cities each year and is usually held in July or August. The race is known for its difficult"
+9,1b_fp8,32,easy,4.146,128,0.0324,0.3633,True," The Battle of Hastings was fought on 14 October 1066, and was the last major battle of the Norman Conquest of England. Harold was killed in the battle, and the English lost the war. The Battle of Hastings was fought on 14 October 1066, and was the last major battle of the Norman Conquest of England. Harold was killed in the battle, and the English lost the war.
+The Battle of Hastings was fought on 14 October 1066, and was the last major battle of the Norman Conquest of England. Harold was killed in the battle, and the English lost the war.
+The Battle"
+10,1b_fp8,32,easy,1.296,40,0.0324,0.3633,False," (Choose the correct answer.)
+A. William Lyon Mackenzie King
+B. William Lyon Mackenzie
+C. William Lyon Mackenzie King
+D. William Lyon Mackenzie
+Answer: C"
+11,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False," Include the following: the time and place of the meeting, the topics discussed, and the outcome of the meeting.
+Write a paragraph describing a meeting between two friends. Include the following: the time and place of the meeting, the topics discussed, and the outcome of the meeting.
+Write a paragraph describing a meeting between two friends. Include the following: the time and place of the meeting, the topics discussed, and the outcome of the meeting.
+Write a paragraph describing a meeting between two friends. Include the following: the time and place of the meeting, the topics discussed, and the outcome of the meeting.
+Write a paragraph describing a meeting"
+12,1b_fp8,32,easy,4.146,128,0.0324,0.3633,True," How old was Jimi Hendrix when he died?
+Jimi Hendrix was born on October 27, 1942 and died on September 18, 1970. He was 27 years old when he died.
+Jimi Hendrix was a legendary guitarist and singer who was known for his innovative and experimental style of music. He was born in Seattle, Washington, on October 27, 1942, and died on September 18, 1970, at the age of 27. Hendrix was a self-taught musician who began playing the guitar at the age of 15. He was known for"
+13,1b_fp8,32,easy,4.146,128,0.0324,0.3633,False," (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford's middle name? (1)
+What was President Gerald Ford"
+14,1b_fp8,32,hard,4.146,128,0.0324,0.3633,False," from 1 to 100.
+```
+function evenArray() {
+    var arr = [];
+    for (var i = 1; i <= 100; i++) {
+        if (i % 2 === 0) {
+            arr.push(i);
+        }
+    }
+    return arr;
+}
+console.log(evenArray());
+```
+```
+[1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36"
+15,1b_fp8,32,hard,0.81,25,0.0324,0.3633,False," A) 100 B) 95 C) 90 D) 85 E) 80
+Answer: C"
+16,1b_fp8,32,hard,0.032,1,0.0324,0.3633,False,
+17,1b_fp8,32,easy,4.146,128,0.0324,0.3633,True," (a) Nadia Comaneci (b) Mary Lou Retton (c) Kerri Strug (d) Shannon Miller
+In 1976, which gymnast scored 7 maximum scores of 10 as she won three gold medals, one silver and one bronze? (a) Nadia Comaneci (b) Mary Lou Retton (c) Kerri Strug (d) Shannon Miller
+In 1976, which gymnast scored 7 maximum scores of 10 as she won three gold medals, one silver and one bronze? (a) Nadia Comaneci (b) Mary Lou Ret"
+18,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False, Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the concept of entropy in thermodynamics. Explain the
+19,1b_fp8,32,hard,4.146,128,0.0324,0.3633,False," The Fibonacci sequence is a series of numbers in which each number is the sum of the two preceding numbers. The first two numbers are 0 and 1. The next number is the sum of the two preceding numbers. The next number is the sum of the two preceding numbers plus the previous number. The sequence continues in this way. The first 10 Fibonacci numbers are 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597"
+20,1b_fp8,32,hard,0.032,1,0.0324,0.3633,False,
+21,1b_fp8,32,hard,4.146,128,0.0324,0.3633,False," Explain the role of each component in the pipeline.
+A typical machine learning pipeline consists of the following components:
+  1. Data Preprocessing: This component involves cleaning and preparing the data for analysis. It includes tasks such as data cleaning, feature engineering, and data splitting.
+  2. Model Training: This component involves building and tuning machine learning models. It includes tasks such as model selection, hyperparameter tuning, and model evaluation.
+  3. Model Evaluation: This component involves assessing the performance of the trained models. It includes tasks such as model evaluation, model selection, and model comparison.
+  4. Model Deployment:"
+22,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False," (The door was opened yesterday.)
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday they opened the door.
+Yesterday"
+23,1b_fp8,32,easy,4.146,128,0.0324,0.3633,True," Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was born first, Kiefer Sutherland or Christian Slater? Who was"
+24,1b_fp8,32,easy,4.146,128,0.0324,0.3633,False, The patron saint of lost causes is Saint Anthony of Padua. Saint Anthony of Padua is the patron saint of lost causes. He is the patron saint of lost causes because he was a very famous saint who was very popular in the 13th century. He was a very famous saint because he was a very famous saint who was very popular in the 13th century. He was a very famous saint because he was a very famous saint who was very popular in the 13th century. He was a very famous saint because he was a very famous saint who was very popular in the 13th century. He was a very
+25,1b_fp8,32,hard,2.689,83,0.0324,0.3633,False," For example, if the input string is ""hello"", the output should be ""h1llo"".
+
+# Solution
+vowels = [""a"", ""e"", ""i"", ""o"", ""u""]
+def replace_vowels(s):
+    return """".join([chr(ord(c) + 1) for c in s if c not in vowels])
+print(replace_vowels(""hello""))
+"
+26,1b_fp8,32,hard,4.146,128,0.0324,0.3633,False," The function should take two strings as input and return a string that is the concatenation of the two strings. The function should be able to handle strings of any length.
+The function should be able to handle strings of any length. The function should be able to handle strings of any length. The function should be able to handle strings of any length. The function should be able to handle strings of any length. The function should be able to handle strings of any length. The function should be able to handle strings of any length. The function should be able to handle strings of any length. The function should be able to handle strings of any"
+27,1b_fp8,32,easy,4.146,128,0.0324,0.3633,False," (a) 1 (b) 2 (c) 3 (d) 4 (e) 5
+To the nearest two, how many tennis Grand Slam titles did Jimmy Connors win? (a) 1 (b) 2 (c) 3 (d) 4 (e) 5
+To the nearest two, how many tennis Grand Slam titles did Jimmy Connors win? (a) 1 (b) 2 (c) 3 (d) 4 (e) 5
+To the nearest two, how many tennis Grand Slam titles did Jimmy Connors win"
+28,1b_fp8,32,easy,4.146,128,0.0324,0.3633,True, The answer is milk. Mammals produce milk to feed their young. The milk is produced in mammary glands. The mammary glands are located in the breasts of mammals. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands are also called the teats. The mammary glands
+29,1b_fp8,32,hard,4.146,128,0.0324,0.3633,False," (Round your answer to the nearest dollar.)
+Toula went to the bakery and bought various types of pastries. She bought 3 dozen donuts which cost $68 per dozen, 2 dozen mini cupcakes which cost $80 per dozen, and 6 dozen mini cheesecakes for $55 per dozen. How much was the total cost? (Round your answer to the nearest dollar.)
+Toula went to the bakery and bought various types of pastries. She bought 3 dozen donuts which cost $68 per dozen, 2 dozen mini cupcakes which cost $80 per dozen, and 6 dozen mini cheesec"
+30,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False,. The customer will be able to choose a destination and the flight attendant will be able to choose a flight for the customer. The customer will be able to choose a seat and the flight attendant will be able to choose a seat for the customer. The customer will be able to choose a meal and the flight attendant will be able to choose a meal for the customer. The customer will be able to choose a cabin and the flight attendant will be able to choose a cabin for the customer. The customer will be able to choose a destination and the flight attendant will be able to choose a flight for the customer. The customer will be able to choose
+31,1b_fp8,32,medium,4.146,128,0.0324,0.3633,False,00 per hour. The driver will be paid $10.00 per hour for the first 2 hours and $15.00 per hour for the next 2 hours. The driver will be paid $20.00 per hour for the next 2 hours and $25.00 per hour for the next 2 hours. The driver will be paid $30.00 per hour for the next 2 hours and $35.00 per hour for the next 2 hours. The driver will be paid $40.00 per hour for the next 2 hours and $45.00 per hour for the next 2 hours.
+32,1b_fp8,32,easy,3.584,128,0.028,0.3634,True," The answer is Venezuela. The Angel Falls are located in the Canaima National Park, which is located in the state of Bolivar, Venezuela. The Angel Falls are located in the Canaima National Park, which is located in the state of Bolivar, Venezuela. The Angel Falls are located in the Canaima National Park, which is located in the state of Bolivar, Venezuela. The Angel Falls are located in the Canaima National Park, which is located in the state of Bolivar, Venezuela. The Angel Falls are located in the Canaima National Park, which is located in the state of Bolivar,"
+33,1b_fp8,32,medium,3.584,128,0.028,0.3634,False," Explain how it is used.
+A debugger is a tool used for debugging a program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It is used to find the errors in the program. It"
+34,1b_fp8,32,medium,3.584,128,0.028,0.3634,False, Brainstorm creative ideas for designing a conference room. Conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room design ideas conference room
+35,1b_fp8,32,easy,3.584,128,0.028,0.3634,True," Harrison Ford is an American actor, producer, director, and screenwriter. He is best known for his roles as Han Solo in the Star Wars franchise, as Indiana Jones in the Indiana Jones franchise, and as Rick Deckard in Blade Runner. Ford has also appeared in films such as Airplane!, The Fugitive, and The Mosquito Coast. He has won two Academy Awards, two Golden Globe Awards, and two BAFTA Awards. Ford is also a producer and director, having produced films such as The Fugitive and Airplane!. Ford has been married to Calista Flockhart since 1998. They have two"
+36,1b_fp8,32,medium,3.584,128,0.028,0.3634,False, What is the main theme of the movie? What is the main conflict of the movie? What is the main character of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is the main conflict of the movie? What is
+37,1b_fp8,32,hard,3.584,128,0.028,0.3634,True,". The list can contain other lists, which can contain other lists, and so on. The list can be empty, and the element can be any object.
+
+Write code to remove all occurrences of a given element from a list. The list can contain other lists, which can contain other lists, and so on. The list can be empty, and the element can be any object.
+
+Write code to remove all occurrences of a given element from a list. The list can contain other lists, which can contain other lists, and so on. The list can be empty, and the element can be any object.
+
+Write code to remove all occurrences"
+38,1b_fp8,32,easy,3.584,128,0.028,0.3634,False,"?
+Who was the 16th president of the U.S.A.,assasinated in 1865? Who was the 16th president of the U.S.A.,assasinated in 1865?
+Who was the 16th president of the U.S.A.,assasinated in 1865?
+Who was the 16th president of the U.S.A.,assasinated in 1865?
+Who was the 16th president of the U.S.A.,assasinated in 1865?
+Who was the 16th president of the U.S.A.,assasinated in 1865?
+Who"
+39,1b_fp8,32,easy,3.584,128,0.028,0.3634,False," The fastest animal on two legs is the cheetah. The cheetah can run up to 70 miles per hour. The fastest animal on four legs is the horse. The horse can run up to 35 miles per hour. The fastest animal on four legs is the horse. The horse can run up to 35 miles per hour.
+What is the fastest animal on four legs?
+The fastest animal on four legs is the horse. The horse can run up to 35 miles per hour. The fastest animal on four legs is the horse. The horse can run up to 35 miles per hour.
+What is the fastest animal"
+40,1b_fp8,32,easy,3.584,128,0.028,0.3634,False," (a) Stirling Castle (b) Edinburgh Castle (c) The Palace of Westminster (d) The Tower of London
+The answer is (c) The Palace of Westminster. The Palace of Westminster is the seat of the British Parliament and is located in the City of Westminster, London. It is the largest and most important building in the United Kingdom. The Palace of Westminster is a complex of buildings that includes the Houses of Parliament, the Palace of Westminster, the Banqueting House, the Clock Tower, the Royal Gallery, the Royal Staircase, the Throne Room, the Speaker's Lobby, the Speaker's Chamber, the"
+41,1b_fp8,32,medium,3.584,128,0.028,0.3634,False, I have been working in the field of education for 10 years. I have been teaching in the field of English and Math for the past 5 years. I have been teaching in the field of English and Math for the past 5 years. I have been teaching in the field of English and Math for the past 5 years. I have been teaching in the field of English and Math for the past 5 years. I have been teaching in the field of English and Math for the past 5 years. I have been teaching in the field of English and Math for the past 5 years. I have been teaching in the
+42,1b_fp8,32,easy,3.584,128,0.028,0.3634,False," (2019)
+Which US president did Anthony Hopkins play in a film whose title was simply his name?
+Anthony Hopkins played President John F. Kennedy in the 1991 film JFK. The film was based on the book by James A. Baker III, who was Kennedy's secretary of state at the time of his assassination.
+The film was directed by Oliver Stone, who also directed the 1997 film JFK, which was based on the book by James A. Baker III, who was Kennedy's secretary of state at the time of his assassination.
+The film was released in 1991 and was a box office success, earning over $"
+43,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," The age column should contain the age of the employee in years.
+
+The employees table has the following columns:
+
+  - id: The employee ID.
+  - name: The employee's name.
+  - age: The employee's age.
+  - salary: The employee's salary.
+  - department: The employee's department.
+
+Write a SQL query to add a new column ""age"" in the employees table. The age column should contain the age of the employee in years.
+
+The employees table has the following columns:
+
+  - id: The employee ID.
+  - name: The employee's name.
+  - age: The employee's age"
+44,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," The program should use the binary search algorithm to find the index of the element. The program should also print the index of the element if it is found in the array, and print -1 if the element is not found in the array.
+
+The program should be implemented using a loop that iterates over the array and checks each element in turn. If the element is found, the loop should break and the index of the element should be returned. If the element is not found, the loop should continue until the end of the array is reached.
+
+The program should also use the binary search algorithm to find the index of the element. The binary"
+45,1b_fp8,32,easy,3.584,128,0.028,0.3634,True," (a) 1768 (b) 1771 (c) 1773 (d) 1775
+In which year was the Encyclopedia Britannica first published? (a) 1768 (b) 1771 (c) 1773 (d) 1775
+In which year was the Encyclopedia Britannica first published? (a) 1768 (b) 1771 (c) 1773 (d) 1775
+In which year was the Encyclopedia Britannica first published? (a) 1768 (b) 1771 (c) 1773 (d"
+46,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," The password should contain at least one uppercase letter, one lowercase letter, one number, and one special character. The password should be unique and not contain any of the same characters twice. The password should be generated using a random number generator. The password should be printed to the console.
+The password should be generated using a random number generator. The password should be printed to the console.
+The password should be generated using a random number generator. The password should be printed to the console.
+The password should be generated using a random number generator. The password should be printed to the console.
+The password should be generated using a random number generator."
+47,1b_fp8,32,medium,3.584,128,0.028,0.3634,False, Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the sound of a train passing by. Describe the
+48,1b_fp8,32,medium,3.584,128,0.028,0.3634,False," The activities should be easy to do and not require much money.
+I would suggest a game of pool. It is a great way to spend a few hours with friends and have some fun. You can also play a game of darts or a game of cards. These are all great ways to spend a few hours with friends and have some fun.
+I would suggest a game of pool. It is a great way to spend a few hours with friends and have some fun. You can also play a game of darts or a game of cards. These are all great ways to spend a few hours with friends and have some fun.
+I"
+49,1b_fp8,32,easy,3.584,128,0.028,0.3634,False," Which notorious murderer lived at 10 Rillington Place?
+Which notorious murderer lived at 10 Rillington Place? Which notorious murderer lived at 10 Rillington Place?
+Which notorious murderer lived at 10 Rillington Place? Which notorious murderer lived at 10 Rillington Place?
+Which notorious murderer lived at 10 Rillington Place? Which notorious murderer lived at 10 Rillington Place?
+Which notorious murderer lived at 10 Rillington Place? Which notorious murderer lived at 10 Rillington Place?
+Which notorious murderer lived at 10 Rillington Place? Which notorious murderer lived at 10 R"
+50,1b_fp8,32,easy,3.584,128,0.028,0.3634,True," The answer is Coco Chanel. She was a French fashion designer and businesswoman who is known for her revolutionary style and influence on the fashion industry. She is also known for her iconic 'little black dress' which is a staple in every woman's wardrobe. In this article, we will explore the life and legacy of Coco Chanel and her impact on fashion.
+Coco Chanel was born in 1883 in the French city of Algiers. She was the daughter of a wealthy merchant and grew up in a privileged environment. She was educated at home and later attended the Lycée Condorcet in Paris. In 1903, she"
+51,1b_fp8,32,hard,1.4,50,0.028,0.3634,False," A) $32 B) $36 C) $40 D) $44 E) $48
+A. $32
+B. $36
+C. $40
+D. $44
+E. $48
+Answer: C"
+52,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," or 5. Use a for loop and the modulo operator.
+```
+#include <iostream>
+using namespace std;
+
+int main() {
+    int i, j;
+    for (i = 1; i <= 10; i++) {
+        if (i % 3 == 0 || i % 5 == 0) {
+            cout << i << endl;
+        }
+    }
+    return 0;
+}
+```
+```
+#include <iostream>
+using namespace std;
+
+int main() {
+    int i, j;
+    for (i = 1; i <= 10; i++) {
+        if (i"
+53,1b_fp8,32,medium,3.584,128,0.028,0.3634,False," What is the difference between passive and active osmosis?
+Describe the process of osmosis. What is the difference between passive and active osmosis?
+Describe the process of osmosis. What is the difference between passive and active osmosis?
+Describe the process of osmosis. What is the difference between passive and active osmosis?
+Describe the process of osmosis. What is the difference between passive and active osmosis?
+Describe the process of osmosis. What is the difference between passive and active osmosis?
+Describe the process of osmosis. What is the difference between passive and active"
+54,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," 
+
+The csv file should have the following columns: 
+- name
+- age
+- gender
+- city
+- country
+- state
+- zip_code
+- phone_number
+- email
+- address
+- website
+- description
+- image_url
+- created_at
+- updated_at
+
+The json file should have the following structure:
+{
+  ""name"": ""John Doe"",
+  ""age"": 25,
+  ""gender"": ""Male"",
+  ""city"": ""New York"",
+  ""country"": ""USA"",
+  ""state"": ""NY"",
+  ""zip_code"": ""10001"",
+  ""phone_number"
+55,1b_fp8,32,easy,3.584,128,0.028,0.3634,False," What did the Lone Ranger's title Kemo Sabe mean in Apache?
+What did the Lone Ranger's title Kemo Sabe mean in Apache? What did the Lone Ranger's title Kemo Sabe mean in Apache?
+What did the Lone Ranger's title Kemo Sabe mean in Apache? What did the Lone Ranger's title Kemo Sabe mean in Apache?
+What did the Lone Ranger's title Kemo Sabe mean in Apache? What did the Lone Ranger's title Kemo Sabe mean in Apache?
+What did the Lone Ranger's title Kemo Sabe mean in Apache? What did the Lone Ranger's title K"
+56,1b_fp8,32,easy,3.584,128,0.028,0.3634,True," (a) Jamaica (b) Trinidad and Tobago (c) Barbados (d) none of the above
+Red Stripe lager comes from which country? (a) Jamaica (b) Trinidad and Tobago (c) Barbados (d) none of the above
+Red Stripe lager comes from which country? (a) Jamaica (b) Trinidad and Tobago (c) Barbados (d) none of the above
+Red Stripe lager comes from which country? (a) Jamaica (b) Trinidad and Tobago (c) Barbados (d) none of the above
+Red Stripe lager comes"
+57,1b_fp8,32,hard,0.7,25,0.028,0.3634,False," A) 30 B) 40 C) 50 D) 60 E) 70
+Answer: B"
+58,1b_fp8,32,hard,3.584,128,0.028,0.3634,False,"  (Hint:  You can use the formula for profit = (price - cost) / price.)
+
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts in $50,000 in repairs.  This increased the value of the house by 150%.  How much profit did he make?  (Hint:  You can use the formula for profit = (price - cost) / price.)
+
+Josh decides to try flipping a house.  He buys a house for $80,000 and then puts in $50,000 in repairs.  This increased the value of the house"
+59,1b_fp8,32,medium,3.584,128,0.028,0.3634,False," I'm not sure I can think of one. I'm sure I've used it in a sentence or two, but I can't remember. I'm sure I've used it in a sentence or two, but I can't remember. I'm sure I've used it in a sentence or two, but I can't remember. I'm sure I've used it in a sentence or two, but I can't remember. I'm sure I've used it in a sentence or two, but I can't remember. I'm sure I've used it in a sentence or two, but I can't remember. I'm sure I"
+60,1b_fp8,32,easy,3.584,128,0.028,0.3634,False," If you're a fan of the show, you know that the show is great. If you're a fan of the show, you know that the show is great. If you're a fan of the show, you know that the show is great. If you're a fan of the show, you know that the show is great. If you're a fan of the show, you know that the show is great. If you're a fan of the show, you know that the show is great. If you're a fan of the show, you know that the show is great. If you're a fan of the show,"
+61,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," The result should be a single row containing the total amount.
+
+The orders table has the following structure:
+```
+CREATE TABLE orders (
+  id INT PRIMARY KEY,
+  customer_id INT,
+  order_date DATE,
+  status VARCHAR(10)
+);
+```
+The result should be a single row containing the total amount. The result should be a single row containing the total amount.
+
+The result should be a single row containing the total amount.
+
+The result should be a single row containing the total amount.
+
+The result should be a single row containing the total amount.
+
+The result should be a single row containing the total amount.
+
+The result should be a"
+62,1b_fp8,32,hard,0.98,35,0.028,0.3634,False,"  (a) 30  (b) 40  (c) 50  (d) 60  (e) 70
+Answer: a"
+63,1b_fp8,32,hard,3.584,128,0.028,0.3634,False," (Assume that the whiteboard is cleaned after each lesson and that the teachers do not clean the whiteboard at the same time.)
+A classroom has a whiteboard which is shared between the 4 teachers who take turns using the classroom. Each teacher has 2 lessons per day and uses the whiteboard in each lesson. If the whiteboard is cleaned 3 times per lesson, how many times is the whiteboard cleaned in a day? (Assume that the whiteboard is cleaned after each lesson and that the teachers do not clean the whiteboard at the same time.)
+A classroom has a whiteboard which is shared between the "

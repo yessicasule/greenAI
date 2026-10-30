@@ -1,0 +1,38 @@
+{
+  "gpu": "NVIDIA RTX 6000 Ada Generation",
+  "driver": "610.57.04",
+  "nvml_index": 0,
+  "gpu_uuid": "GPU-c53791fb-b98b-4aee-128e-5c75e0fe7bc3",
+  "cuda_visible_devices": "0",
+  "timestamp_utc": "2026-10-29T11:06:29.863668+00:00",
+  "slurm_job_id": "2097",
+  "tier": "8b_awq4",
+  "model": "hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4",
+  "quantization_arg": null,
+  "quantization_resolved": "auto_awq",
+  "dtype": "torch.float16",
+  "batch_size": 32,
+  "n_prompts": 64,
+  "max_new_tokens": 128,
+  "seed": 42,
+  "load_s": 25.5,
+  "vllm": "0.31.0",
+  "cpus": [
+    7,
+    8,
+    64,
+    65,
+    119,
+    120,
+    176,
+    177
+  ],
+  "cotenant_pids_seen_during_run": [],
+  "summary": {
+    "energy_j": 589.8,
+    "tokens_out": 8192,
+    "j_per_token": 0.072,
+    "tok_per_s": 4050.55,
+    "watts": 291.6
+  }
+}

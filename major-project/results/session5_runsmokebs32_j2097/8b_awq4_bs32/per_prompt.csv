@@ -1,0 +1,433 @@
+prompt_id,tier,batch_size,difficulty,energy_j,tokens_out,j_per_token,latency_s,correct,response
+0,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False," Renewable energy sources are sustainable, clean, and abundant. They produce little to no greenhouse gas emissions, contributing to a cleaner environment and a healthier climate. Renewable energy can be harnessed from various sources, including solar, wind, hydro, geothermal, and biomass. These sources are becoming increasingly cost-competitive with fossil fuels, making them a viable alternative for meeting energy demands. Renewable energy can also create jobs and stimulate local economies, particularly in rural areas where renewable energy projects are often located. Furthermore, renewable energy can improve energy security by reducing dependence on imported fuels and enhancing energy self-sufficiency. Overall, the advantages of renewable energy"
+1,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False," 
+The natural process which occurs in food preservation is Dehydration. 
+Dehydration is a natural process in which the water content of food is reduced. This is done to prevent the growth of microorganisms and to extend the shelf life of food. Dehydration is a common method of food preservation used for fruits, vegetables, and meats. 
+Other natural processes used in food preservation include:
+1. Fermentation: This process involves the action of microorganisms that break down the food and produce lactic acid, which acts as a natural preservative.
+2. Smoking: This process involves exposing food to smoke, which acts as a natural preservative"
+2,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," - ProProfs
+## Step 1: Calculate the number of miles Pancho walks on weekdays.
+Pancho walks 20 miles a day on weekdays, and there are 5 weekdays in a week. So, the total miles walked on weekdays is 20 * 5 = 100 miles.
+
+## Step 2: Calculate the number of miles Pancho walks on weekends.
+Pancho walks 10 miles a day on weekends, and there are 2 weekend days in a week. So, the total miles walked on weekends is 10 * 2 = 20 miles.
+
+## Step 3: Calculate the total number of"
+3,8b_awq4,32,hard,9.12,128,0.0713,1.0121,True," 
+Step 1: Calculate the total cost of the chicken meal, 5 packs of milk, and 4 apples.
+The cost of the chicken meal is $12. The cost of 5 packs of milk is 5 x $3 = $15. The cost of 4 apples is 4 x $1.50 = $6. The total cost of these items is $12 + $15 + $6 = $33.
+
+Step 2: Subtract the total cost of the chicken meal, 5 packs of milk, and 4 apples from the total amount Marie paid to find the total cost of the boxes of"
+4,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," 
+Step 1: Calculate the total number of bananas needed for the monkeys for 2 months.
+The monkeys need 200 bananas every month, so for 2 months, they need 200 * 2 = 400 bananas.
+
+Step 2: Calculate the total number of bananas needed for the gorillas for 2 months.
+The gorillas need 400 bananas every month, so for 2 months, they need 400 * 2 = 800 bananas.
+
+Step 3: Calculate the total number of bananas needed for the baboons for 2 months.
+The baboons need 100 bananas every month, so for "
+5,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False," Stress is a common issue that affects many people, and it can have a significant impact on both physical and mental health. Here are some tips to help reduce stress:
+1. Practice Deep Breathing: Deep breathing is a simple yet effective way to reduce stress. It involves taking slow, deep breaths in through the nose and out through the mouth, focusing on the sensation of the breath in the body. This can help calm the nervous system and reduce feelings of anxiety.
+2. Exercise Regularly: Regular exercise can help reduce stress by releasing endorphins, which are natural mood-boosters. Exercise can also help improve sleep quality,"
+6,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False," The Tour de France is a prestigious annual multiple-stage bicycle race that covers approximately 3,500 kilometers (2,200 miles) of French terrain. The first Tour de France took place in 1903 and was organized by the French sports newspaper L'Auto. The race was created to boost the circulation of the newspaper and to promote the sport of cycling in France. The first Tour de France was won by Maurice Garin, a French cyclist who completed the race in 94 hours and 33 minutes.
+The early years of the Tour de France were marked by controversy and scandal, including doping and cheating. However, the race gained popularity"
+7,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False," with a basement. The house has a total of 4 bedrooms, 2 bathrooms, 1 kitchen, 1 laundry room, and 1 living room. The basement has a 1/2 bath and a utility room. The house has a total of 7 water closets, 3 sinks, 2 showers, 2 bathtubs, and 1 laundry tub. The house has a total of 5 faucets, 2 dishwashers, 1 garbage disposal, 1 washing machine, and 1 dryer. The house has a total of 2 sump pumps, 1 water heater, and"
+8,8b_awq4,32,medium,9.12,128,0.0713,1.0121,True,"
+The Tour de France is a prestigious annual multiple-stage bicycle race that covers approximately 3,500 kilometers (2,200 miles) of French terrain. Here are three facts about the Tour de France:
+1. The Tour de France was first held in 1903 and was created by the French sports newspaper L'Auto. The first winner was Maurice Garin, who completed the race in 95 hours and 33 minutes.
+2. The Tour de France is considered one of the most challenging and prestigious cycling events in the world. The race typically takes place over three weeks in July, covering a variety of terrain, including mountains,"
+9,8b_awq4,32,easy,9.12,128,0.0713,1.0121,True," A) Hastings B) Stamford Bridge C) Senlac D) Stamford Bridge and Hastings
+Answer: D) Stamford Bridge and Hastings
+The best answer is D. The Saxon army, led by King Harold II, was defeated by the Normans at the Battle of Hastings in 1066. However, before that, the Saxons had defeated the Norwegians at the Battle of Stamford Bridge in September 1066. King Harold II was killed in the Battle of Hastings. Therefore, the correct answer is D) Stamford Bridge and Hastings. The other options are incorrect because Harold II was killed in the Battle of Hastings, not Stamford"
+10,8b_awq4,32,easy,9.12,128,0.0713,1.0121,True," John Buchan
+Answer: John Buchan
+Explanation: John Buchan was a writer and politician who became the 15th Governor General of Canada, and was known as Lord Tweedsmuir. He was a Scottish novelist, playwright, and politician who was best known for his adventure novels, particularly the Richard Hannay series. Buchan was a member of Parliament and served as the Governor General of Canada from 1935 until his death in 1940. He was created Baron Tweedsmuir in 1935. Buchan's writing career spanned many genres, including historical fiction, mystery, and science fiction. He"
+11,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False," They are discussing a recent trip to the beach. The paragraph should include the following details: the friends are sitting on a couch, the conversation is relaxed, and the mention of a specific beach, ""Cape Cod.""
+As they sat on the couch, sipping their coffee, Sarah and Emily settled into a comfortable conversation about their recent trip to the beach. The relaxed atmosphere of the morning allowed them to reminisce about the warm sand and cool ocean breeze of Cape Cod, where they had spent a week soaking up the sun and enjoying each other's company. With a contented sigh, Emily leaned back into the cushions, her eyes drifting"
+12,8b_awq4,32,easy,9.12,128,0.0713,1.0121,True," Jimi Hendrix died on September 18, 1970, at the age of 27. He was found dead in his apartment in London, England, from an accidental overdose of barbiturates. His death was a shock to the music world and cemented his legend as a rock icon.
+Jimi Hendrix was a legendary American rock guitarist, singer, and songwriter. He is widely regarded as one of the most influential musicians of all time, known for his innovative and experimental style, which combined elements of rock, blues, psychedelia, and funk. Hendrix's music often featured complex and intricate guitar playing, as"
+13,8b_awq4,32,easy,9.12,128,0.0713,1.0121,True,"?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name?
+Gerald Rudolph Ford Jr.
+What was President Gerald Ford's middle name"
+14,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False,"
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first 10 even numbers
+Create an array with the first"
+15,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," (Assume that the average is calculated by adding up all the scores and dividing by the number of tests.)
+## Step 1: Calculate the total score Brinley needs to have an average of 93
+To find the total score Brinley needs to have an average of 93, we multiply the desired average by the number of tests. The desired average is 93 and the number of tests is 6. So, the total score Brinley needs is 93 * 6 = 558.
+
+## Step 2: Calculate the total score Brinley has so far
+We add up the scores of the"
+16,8b_awq4,32,hard,9.12,128,0.0713,1.0121,True," 80 spiders have 80 x 8 = 640 legs. 90 insects have 90 x 6 = 540 legs. 3 mutant invertebrates have 3 x 10 = 30 legs. So, the total number of legs Jake sees is 640 + 540 + 30 = 1210 legs.
+Jake is walking through the Museum of Entomology. He sees 80 spiders with 8 legs each, 90 insects with 6 legs each, and 3 rare mutant invertebrates with 10 legs each. How many legs does Jake see total?
+## Step 1: Calculate"
+17,8b_awq4,32,easy,9.12,128,0.0713,1.0121,False," The answer is Nadia Comăneci.
+Nadia Comăneci was a Romanian gymnast who became the first person to score a perfect 10 in Olympic competition. She was just 14 years old when she achieved this feat at the 1976 Montreal Olympics. Comăneci's perfect 10s were scored on the uneven bars, balance beam, and floor exercise. She won three gold medals, one silver, and one bronze medal at the 1976 Olympics.
+Comăneci's achievement was a historic moment in the world of gymnastics, and it helped to popularize the sport. She went on to compete in the"
+18,8b_awq4,32,medium,9.12,128,0.0713,1.0121,True," What is the second law of thermodynamics?
+Entropy is a measure of the disorder or randomness of a system. It is a fundamental concept in thermodynamics and is used to describe the direction of spontaneous processes. The second law of thermodynamics states that the total entropy of an isolated system will always increase over time, except in reversible processes.
+Entropy is a measure of the disorder or randomness of a system. It is a fundamental concept in thermodynamics and is used to describe the direction of spontaneous processes. The second law of thermodynamics states that the total entropy of an isolated system will always increase over time, except in reversible processes.
+Entropy is a"
+19,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," The Fibonacci sequence is a series of numbers where a number is the addition of the two numbers before it. Starting with 0 and 1, the sequence goes 0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, and so on.
+
+## Step 1: Define the Fibonacci sequence
+The Fibonacci sequence is a series of numbers where a number is the addition of the two numbers before it. It starts with 0 and 1.
+
+## Step 2: Determine the first 10 numbers in the"
+20,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," 1. 24 2. 7 3. 28 4. 32 5. 40
+## Step 1: Calculate the total number of slices used for sandwiches.
+Carl ate a sandwich every day for lunch and used 2 slices of cheese on each sandwich. Since there are 7 days in a week, he used 7 * 2 = 14 slices of cheese for sandwiches.
+
+## Step 2: Calculate the total number of slices used for omelets.
+Carl ate cheese and egg omelets for breakfast 3 days in the week using one more slice per omelet than"
+21,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," Describe the role of each component in the pipeline.
+A typical machine learning pipeline consists of several components that work together to transform raw data into a predictive model. The components of a machine learning pipeline are:
+1. Data Ingestion: This component is responsible for collecting and storing raw data from various sources, such as databases, files, or APIs. The data is typically in a raw, unprocessed format and may be in a variety of formats, such as CSV, JSON, or XML.
+2. Data Cleaning: This component is responsible for cleaning and preprocessing the raw data to make it suitable for modeling. This includes tasks such as handling"
+22,8b_awq4,32,medium,9.12,128,0.0713,1.0121,True," (They had been waiting for 2 hours before they opened the door.)
+Yesterday they had opened the door.
+The sentence is in the simple past tense. The past perfect tense is used to describe an action that occurred before another action in the past. The correct sentence should be:
+Yesterday they had opened the door.
+The correct answer is: Yesterday they had opened the door. (They had been waiting for 2 hours before they opened the door.) The sentence is in the simple past tense. The past perfect tense is used to describe an action that occurred before another action in the past. The correct sentence should be: Yesterday they had opened"
+23,8b_awq4,32,easy,9.12,128,0.0713,1.0121,True," Kiefer Sutherland was born on December 21, 1966, and Christian Slater was born on August 18, 1969. Therefore, Kiefer Sutherland was born first. Kiefer Sutherland was born on December 21, 1966, and Christian Slater was born on August 18, 1969. Therefore, Kiefer Sutherland was born first. Kiefer Sutherland was born on December 21, 1966, and Christian Slater was born on August 18, 1969. Therefore, Kiefer Sutherland was born first. Kiefer Sutherland"
+24,8b_awq4,32,easy,9.12,128,0.0713,1.0121,False," Saint Jude is often referred to as the patron saint of lost causes. He is the patron saint of those who are in desperate need of help and are often considered to be at the end of their rope. Saint Jude is often invoked in prayer by those who feel that their situation is hopeless and that all other avenues of help have been exhausted.
+Saint Jude is often depicted in art as a bearded man wearing a red cloak and holding a staff. He is often shown with a flame or a torch, which symbolizes the light of faith that he brings to those who are in darkness. He is also often depicted with a picture of a flame"
+25,8b_awq4,32,hard,9.12,128,0.0713,1.0121,True," 'a' with 1, 'e' with 2, 'i' with 3, 'o' with 4, 'u' with 5, 'A' with 1, 'E' with 2, 'I' with 3, 'O' with 4, 'U' with 5. 
+
+```shell
+#!/bin/bash
+
+replace_vowels_with_numbers() {
+  local s=$1
+  local vowels=""aeiouAEIOU""
+  local result=""""
+
+  for ((i=0; i<${#s}; i++)); do
+    char=${"
+26,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," This function should take two string parameters, concatenate them, and return the result.
+
+### Code
+```javascript
+/**
+ * Concatenates two strings.
+ *
+ * @param {string} str1 - The first string to concatenate.
+ * @param {string} str2 - The second string to concatenate.
+ * @returns {string} The concatenated string.
+ */
+function concatStrings(str1, str2) {
+  // Check if both inputs are strings
+  if (typeof str1 !== 'string' || typeof str2 !== 'string') {
+    throw new Error('Both inputs must be strings');
+  }
+
+  // Concatenate the"
+27,8b_awq4,32,easy,9.12,128,0.0713,1.0121,False," 8
+Jimmy Connors won 8 Grand Slam singles titles. He won the US Open 5 times and Wimbledon 2 times. He also won the Australian Open and the French Open once each. Connors was a dominant player in the 1970s and early 1980s, and is considered one of the greatest tennis players of all time. He was inducted into the International Tennis Hall of Fame in 1998. Connors is known for his powerful serve and volley, as well as his strong all-around game. He was a key figure in the development of the modern tennis game, and his playing style has"
+28,8b_awq4,32,easy,9.12,128,0.0713,1.0121,False," A) Eggs B) Scales C) Feathers D) Hair
+## Step 1: Identify the key characteristics of mammals.
+Mammals are a group of warm-blooded animals that give birth to live young.
+
+## Step 2: Consider the options provided in the question.
+The options include eggs, scales, feathers, and hair.
+
+## Step 3: Analyze each option in relation to mammals.
+- Eggs are produced by birds and reptiles, not mammals.
+- Scales are characteristic of fish and some reptiles, not mammals.
+- Feathers are found in birds, not mammals.
+- Hair is a characteristic"
+29,8b_awq4,32,hard,9.12,128,0.0713,1.0121,False," 
+
+## Step 1: Calculate the cost of the donuts
+First, we need to calculate the cost of the donuts. Since Toula bought 3 dozen donuts and each dozen costs $68, we multiply 3 by $68 to get the total cost of the donuts.
+
+## Step 2: Calculate the cost of the mini cupcakes
+Next, we calculate the cost of the mini cupcakes. Toula bought 2 dozen mini cupcakes and each dozen costs $80, so we multiply 2 by $80 to get the total cost of the mini cupcakes.
+
+## Step 3: Calculate the cost of the mini"
+30,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False,".
+Customer: Hi, I'm so excited to be on this flight! I've never been to Europe before.
+Flight Attendant: Welcome aboard! I'm glad to have you on our flight. Where are you headed?
+Customer: I'm going to Paris for a week. I've always wanted to see the Eiffel Tower and try some French cuisine.
+Flight Attendant: Ah, wonderful choice! Paris is a beautiful city. We'll be serving a meal on this flight, and I think you'll really enjoy it. We have a special menu for our international flights.
+Customer: That sounds great! What's on the menu"
+31,8b_awq4,32,medium,9.12,128,0.0713,1.0121,False,"00 per mile, $2.00 per minute, and a base fare of $10.00. The rate should be calculated based on the distance and time of the ride.
+## Step 1: Define the variables
+Let's define the variables for the problem:
+- Distance (d) in miles
+- Time (t) in minutes
+- Base fare (b) = $10.00
+- Rate per mile (r_m) = $5.00
+- Rate per minute (r_t) = $2.00
+
+## Step 2: Calculate the total fare
+The total fare (F) can be"
+32,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," Venezuela
+What is the name of the highest waterfall in the world? Angel Falls
+What is the height of the Angel Falls? 979 meters
+What is the name of the river on which the Angel Falls is located? Kerep and Churún rivers
+What is the name of the mountain on which the Angel Falls is located? Auyán-tepui
+What is the name of the country in which the Angel Falls is located? Venezuela
+What is the name of the state in which the Angel Falls is located? Bolivar
+What is the name of the city closest to the Angel Falls? Canaima
+"
+33,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," (5 points)
+A debugger is a tool used for debugging a program. It is a software application that allows developers to identify and fix errors in their code. A debugger can be used to step through the code line by line, examine the values of variables, and identify where the program is crashing or behaving unexpectedly. It can also be used to set breakpoints, which allow the developer to pause the program at a specific point and examine the code and variables at that time. Debuggers can be integrated into the development environment, such as an integrated development environment (IDE), or they can be run as a separate application. They are an essential tool"
+34,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," Here are some ideas to get you started:
+1.  Use a neutral color palette to create a calm and focused environment. Consider a combination of white, gray, and beige to promote clear thinking and productivity.
+2.  Incorporate natural elements, such as plants, wood accents, and stone features, to bring a sense of warmth and coziness to the space.
+3.  Use lighting to create a dynamic atmosphere. Consider installing floor lamps, table lamps, or overhead lighting to create pools of light and add visual interest.
+4.  Incorporate technology to enhance the conference room experience. Consider installing a"
+35,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," Harrison Ford's real name is William Henry Harrison Ford.
+What is Harrison Ford's birthdate? Harrison Ford was born on July 13, 1942.
+What is Harrison Ford's birthplace? Harrison Ford was born in Chicago, Illinois, USA.
+What is Harrison Ford's occupation? Harrison Ford is an American actor and film producer.
+What is Harrison Ford's claim to fame? Harrison Ford is best known for his roles as Indiana Jones in the Indiana Jones film series and as Han Solo in the Star Wars film series.
+What is Harrison Ford's net worth? Harrison Ford's net worth is estimated to be around $300 million.
+What"
+36,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," The movie is based on the novel by F. Scott Fitzgerald. The story is set in the 1920s in New York City and Long Island. The movie follows the lives of Jay Gatsby and his obsession with winning back his lost love, Daisy Buchanan. Gatsby, a self-made millionaire, throws extravagant parties in the hopes of attracting Daisy's attention. He is successful in getting her to attend one of his parties, and they rekindle their romance. However, their love is threatened by the fact that Daisy is married to the wealthy and brutish Tom Buchanan. As the story unfolds, Gatsby's past is revealed,"
+37,8b_awq4,32,hard,9.311,128,0.0727,1.0104,True,"
+Write code to remove all occurrences of a given element from a list
+Here is a simple Python function that removes all occurrences of a given element from a list:
+```
+def remove_element(lst, elem):
+    return [x for x in lst if x != elem]
+
+# Example usage:
+my_list = [1, 2, 2, 3, 2, 4, 2, 5]
+print(remove_element(my_list, 2))  # Output: [1, 3, 4, 5]
+```
+This function uses a list comprehension to create a new list that includes only the"
+38,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True,"?
+A) Abraham Lincoln
+B) Ulysses S. Grant
+C) James Buchanan
+D) Andrew Johnson
+Answer: A
+Reasoning Skill: Identifying Pros And Cons
+In this question, the student needs to identify the correct president who was assassinated in 1865. The student needs to weigh the pros and cons of each option, considering the historical context and the characteristics of each president. For example, Abraham Lincoln was known for his leadership during the Civil War and his assassination in 1865, while Ulysses S. Grant was a military leader who became president after Lincoln's death. James"
+39,8b_awq4,32,easy,9.311,128,0.0727,1.0104,False," The ostrich is the fastest animal on two legs, reaching speeds of up to 45 miles per hour (72 kilometers per hour). Ostriches are large, flightless birds native to Africa.
+What is the fastest animal on land?
+The cheetah is the fastest land animal, reaching speeds of up to 70 miles per hour (113 kilometers per hour). Cheetahs are native to Africa and are known for their speed and agility.
+What is the fastest animal on four legs?
+The cheetah is also the fastest animal on four legs, reaching speeds of up to 70 miles per hour (113 kilometers per"
+40,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," Rosslyn Chapel?
+A. Rosslyn Chapel
+B. None of the above
+C. Rosslyn Chapel
+D. Rosslyn Chapel
+
+Answer: A
+Answer Rationale: The question asks for the building in Scotland said to house the Holy Grail and features prominently at the end of The Da Vinci Code. The correct answer is Rosslyn Chapel. The other options are incorrect because they repeat the correct answer, and ""None of the above"" is incorrect because Rosslyn Chapel is indeed the correct answer. The question requires the reader to recall information from the book, specifically the location of the Holy Grail in Scotland. The correct"
+41,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," Show that you have done your homework and are genuinely interested in the company and its mission.
+This is a great opportunity to show your passion for the company and its mission. Be specific about what you like about the company and how your skills and experience align with its goals. This is also a chance to show that you have done your research and are not just applying for any job.
+Here are some tips to help you write a great answer:
+1. Start by researching the company: Before you write your answer, make sure you have a good understanding of the company's mission, values, and goals. Look at their website, social media,"
+42,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," 2008
+The answer is Nixon.
+Anthony Hopkins played Richard Nixon in the 1995 film ""Nixon"".  The film was directed by Oliver Stone and also starred Robert Duvall, Powers Boothe, and Ed Harris.  The film was a critical and commercial success, and Hopkins won the Academy Award for Best Actor for his portrayal of Nixon.  The film's title was simply ""Nixon"", which is the answer to the question.  The year 2008 is not relevant to the question.  The film was released in 1995, and the question is asking which US president Hopkins played in a film"
+43,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False," The age column should be calculated based on the current date and the date of birth of each employee. The date of birth is stored in the ""dob"" column of the employees table.
+
+```sql
+-- Create the employees table
+CREATE TABLE employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(255),
+    dob DATE,
+    salary DECIMAL(10, 2)
+);
+
+-- Insert some data into the employees table
+INSERT INTO employees (id, name, dob, salary)
+VALUES
+(1, 'John Doe', '1990-01-01', 50000.00),
+(2, 'Jane Doe',"
+44,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False," The element can be present in the array or not. If the element is present, return the index of the element. If the element is not present, return -1.
+
+### Problem Statement
+Given a sorted array of integers, find the index of a given element. If the element is present in the array, return its index. If the element is not present, return -1.
+
+### Example
+Input: arr = [1, 2, 3, 4, 5], target = 4
+Output: 3
+
+### Solution
+```java
+public class Main {
+    public static int findIndex(int[]"
+45,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," 1768
+In which year was the Encyclopedia Britannica first published?
+Answer: 1768
+Explanation: The Encyclopedia Britannica was first published in 1768. It was a comprehensive reference work that covered a wide range of topics, including history, science, and culture. The first edition was published in three volumes and was written by a team of contributors. Over the years, the Encyclopedia Britannica has undergone many revisions and updates, and it remains a respected and authoritative source of information to this day. [Not Found] is not a valid answer because it is not a year. 1768 is the correct answer because it"
+46,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False," The password should contain at least one uppercase letter, one lowercase letter, one digit, and one special character. The password should not contain any whitespace or any of the characters that are used in the password name.
+
+The password name is a string that is provided as input to the function. The password name can contain any characters, but it should not be used in the password.
+
+The algorithm should ensure that the password is as random as possible. It should use a cryptographically secure pseudo-random number generator (CSPRNG) to generate the password.
+
+Here is an possible implementation in Python:
+
+```python
+import secrets
+import string
+
+def"
+47,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," The sound of a train passing by is a unique and distinctive sound that can be described as a series of loud, repetitive, and rhythmic noises. The sound is often compared to a loud, sustained ""toot-toot-toot"" or a series of sharp, piercing whistles. The sound of the train's wheels on the tracks creates a rhythmic ""clickety-clack"" or ""clack-clack-clack"" sound, which is often accompanied by the sound of the train's horn blowing a loud, piercing ""TOOT!"" The sound of the train passing by is often described as a loud, attention-grabbing"
+48,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," 
+Weekends are the perfect time to unwind and have fun with friends. Here are four entertaining activities you can do with your friends on a weekend:
+1. Outdoor Picnic or BBQ: Plan a picnic or BBQ in a nearby park or at your home. Pack some delicious food, drinks, and games, and enjoy the beautiful outdoors with your friends. You can play games like frisbee, soccer, or volleyball, or simply relax and enjoy each other's company.
+2. Movie Night: Host a movie night at home or rent a projector and screen to set up an outdoor movie night. Choose a theme or let each person pick"
+49,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True,"?
+John Christie
+John Reginald Halliday Christie, commonly known as John Christie, was a British serial killer who murdered at least 8 women, and possibly as many as 14, between 1943 and 1953. He was known for his brutal and sadistic methods, and his crimes shocked the nation. Christie was arrested in 1953, and was subsequently convicted of murder. He was hanged in 1953 for his crimes.
+Christie lived at 10 Rillington Place in Notting Hill, London, with his wife Ethel and their two children. The house was a small, unassuming"
+50,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," Coco Chanel
+Coco Chanel was a French fashion designer who revolutionized women's fashion in the early 20th century. She is famous for popularising the 'little black dress' in the 1920s, which became a timeless and versatile fashion staple. Chanel's designs were known for their simplicity, comfort, and practicality, and she is often credited with liberating women from corsets and other restrictive clothing. Her influence on fashion is still felt today, and she remains one of the most iconic and influential fashion designers of all time. Chanel's legacy extends beyond her designs, as she also played a significant role in popularizing"
+51,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False," 
+Step 1: Calculate the number of guests who will actually attend the party.
+Since 1/4 of the guests won't show up, we need to find 3/4 of the total number of guests.
+3/4 * 16 = 12
+
+Step 2: Calculate the number of gift bags needed.
+Since 0.75 gift bags are needed per guest, we multiply the number of guests who will attend by 0.75.
+12 * 0.75 = 9
+
+Step 3: Calculate the total cost of the gift bags.
+Since each gift bag costs $2, we multiply the"
+52,8b_awq4,32,hard,9.311,128,0.0727,1.0104,True,".
+Create a list of all the numbers from 1 to 10 which are divisible by 3.
+The numbers from 1 to 10 which are divisible by 3 are 3, 6 and 9.
+The following Python program creates a list of all the numbers from 1 to 10 which are divisible by 3.
+# Create a list of all the numbers from 1 to 10 which are divisible by 3.
+# The numbers from 1 to 10 which are divisible by 3 are 3, 6 and 9.
+# The following Python program creates a list of all the numbers from"
+53,8b_awq4,32,medium,9.311,128,0.0727,1.0104,False," Osmosis is the movement of water molecules from an area of high concentration to an area of low concentration through a partially permeable membrane. This process is essential for the survival of living organisms, as it helps to regulate the balance of fluids within cells and tissues. The process of osmosis involves the following steps: 1. Water molecules move from an area of high concentration to an area of low concentration through the partially permeable membrane. 2. The water molecules pass through the membrane, which allows them to move from the area of high concentration to the area of low concentration. 3. As the water molecules move through the"
+54,8b_awq4,32,hard,9.311,128,0.0727,1.0104,True," 
+
+Here is a simple code snippet in python to convert a csv file to json file.
+
+```python
+import csv
+import json
+
+def csv_to_json(csv_file, json_file):
+    """"""
+    This function converts a csv file to a json file.
+    
+    Parameters:
+    csv_file (str): The path to the csv file.
+    json_file (str): The path to the json file.
+    
+    Returns:
+    None
+    """"""
+    
+    # Open the csv file
+    with open(csv_file, 'r') as file:
+        # Create a csv reader
+        reader = csv.DictReader(file)
+        
+        #"
+55,8b_awq4,32,easy,9.311,128,0.0727,1.0104,False,"?
+The Lone Ranger's title ""Kemo Sabe"" is often translated as ""faithful friend"" or ""true friend"" in Apache. However, the actual meaning is a bit more nuanced. In the Apache language, ""Kemo"" means ""my friend"" or ""my brother,"" and ""Sabe"" is a term of endearment that roughly translates to ""trusty"" or ""faithful."" So, when the Lone Ranger's sidekick Tonto calls him ""Kemo Sabe,"" he's essentially saying ""my trusty friend"" or ""my faithful brother."" This nickname has become an iconic part of the"
+56,8b_awq4,32,easy,9.311,128,0.0727,1.0104,True," Jamaica
+What is the name of the largest city in Jamaica? Kingston
+What is the name of the highest mountain in Jamaica? Blue Mountain
+What is the name of the second largest city in Jamaica? Montego Bay
+What is the name of the island that is part of Jamaica? Hispaniola
+What is the name of the river that flows through Jamaica? Black River
+What is the name of the highest peak in Jamaica? Blue Mountain Peak
+What is the name of the island that is part of Jamaica? Cuba
+What is the name of the river that flows through Jamaica? YS Falls River
+What is the name of"
+57,8b_awq4,32,hard,9.311,128,0.0727,1.0104,True," (Assume that no water was wasted during the collection of rainwater.)
+## Step 1: Calculate the amount of water left in the tank after Celine used 90 liters.
+The initial amount of water in the tank was 120 liters. After Celine used 90 liters, the amount of water left is 120 - 90 = 30 liters.
+
+## Step 2: Calculate the amount of rainwater collected.
+The amount of rainwater collected is twice as much as what was left in the tank. Since 30 liters were left, the amount of rainwater collected is 2 * 30 = 60 liters"
+58,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False,"  What percentage of the original price of the house is the profit?
+## Step 1: Calculate the increased value of the house
+The value of the house increased by 150% of the original price, which is 1.5 times the original price. The original price of the house is $80,000. Therefore, the increased value of the house is 1.5 * $80,000 = $120,000.
+
+## Step 2: Calculate the total cost of the house
+The total cost of the house is the original price plus the cost of repairs. The original price is $80,000 and the"
+59,8b_awq4,32,medium,9.311,128,0.0727,1.0104,True," I'll give you a synonym for the word 'hate'.
+I'll start with 'adore'.
+Now it's your turn. Give me a synonym for 'hate'.
+How about 'detest'?
+Now it's my turn again. I'll give you a synonym for 'love'. How about 'cherish'?
+Now it's your turn. Give me a synonym for 'hate'.
+How about 'abhor'?
+Now it's my turn again. I'll give you a synonym for 'love'. How about 'affection'?
+Now it's your turn. Give me a synonym for 'hate'.
+"
+60,8b_awq4,32,easy,9.311,128,0.0727,1.0104,False," A product, a service, or a person?
+If you heard the catchphrase ""They're great"" you would expect to be advertised a product.
+The answer is a product because the word ""They're"" is a pronoun that refers to a product, and the word ""great"" is an adjective that describes the product. The phrase ""They're great"" is a common advertising slogan for a product, such as a food item or a household cleaning product. The phrase is often used to emphasize the quality and effectiveness of the product. Therefore, the correct answer is a product. 
+Note: The question is testing your ability to analyze"
+61,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False," 
+```sql
+SELECT SUM(amount) 
+FROM orders 
+WHERE status = 'complete';
+```
+This SQL query will return the total amount from all orders where the status is ""complete"". 
+
+### Example Use Case
+Suppose we have an orders table with the following data:
+| id | customer_id | status | amount |
+|----|-------------|--------|--------|
+| 1  | 1           | complete | 100.00 |
+| 2  | 2           | complete | 200.00 |
+| 3  | 1           | pending  | 50.00  |
+| 4"
+62,8b_awq4,32,hard,9.311,128,0.0727,1.0104,False,"  Please show your work.
+## Step 1: Calculate the net change in the number of trees Tom plants and chops down each year.
+Tom plants 10 trees a year and chops down 2 trees a year, so the net change is 10 - 2 = 8 trees per year.
+
+## Step 2: Calculate the total number of trees Tom has after 10 years.
+Tom starts with 50 trees and has a net gain of 8 trees per year. After 10 years, he will have 50 + (8 * 10) = 50 + 80 = 130 trees.
+
+## Step "
+63,8b_awq4,32,hard,9.311,128,0.0727,1.0104,True," 
+A) 12
+B) 4
+C) 2
+D) 8
+E) 16
+F) 24
+G) 32
+H) 48
+
+## Step 1: Calculate the number of lessons per day for all teachers.
+Each teacher has 2 lessons per day. Since there are 4 teachers, the total number of lessons per day is 4 teachers * 2 lessons/teacher = 8 lessons/day.
+
+## Step 2: Calculate the total number of times the whiteboard is cleaned per day.
+The whiteboard is cleaned 3 times per lesson. Since there"

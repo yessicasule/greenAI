@@ -1,0 +1,143 @@
+SMOKE TEST: 40 prompts per config
+===== q7b_fp16  bs=1  (Qwen/Qwen2.5-7B-Instruct, quant=none)  2026-10-29 16:11:56 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1476091) WARNING 10-29 16:12:13 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=1476376) WARNING 10-29 16:20:40 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct in 547.7s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 24192.3, "tokens_out": 4849, "j_per_token": 4.9891, "tok_per_s": 59.67, "watts": 297.7}
+cotenants seen during run: none
+===== q7b_fp16  bs=8  (Qwen/Qwen2.5-7B-Instruct, quant=none)  2026-10-29 16:22:46 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1478994) WARNING 10-29 16:22:54 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=1479062) WARNING 10-29 16:23:04 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct in 26.1s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 3201.7, "tokens_out": 4844, "j_per_token": 0.661, "tok_per_s": 442.52, "watts": 292.5}
+cotenants seen during run: none
+===== q7b_fp16  bs=32  (Qwen/Qwen2.5-7B-Instruct, quant=none)  2026-10-29 16:23:45 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1479319) WARNING 10-29 16:23:53 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=1479387) WARNING 10-29 16:24:04 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct in 27.4s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+  32/40 prompts, 1556.0 tok/s, 0.192 J/tok
+  40/40 prompts, 1044.8 tok/s, 0.286 J/tok
+{"energy_j": 1383.7, "tokens_out": 4844, "j_per_token": 0.2856, "tok_per_s": 1044.77, "watts": 298.4}
+cotenants seen during run: none
+===== q7b_fp8  bs=1  (Qwen/Qwen2.5-7B-Instruct, quant=fp8)  2026-10-29 16:24:40 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1479635) WARNING 10-29 16:24:48 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=1479635) WARNING 10-29 16:24:49 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=1479727) WARNING 10-29 16:24:55 [layerwise.py:207] Allocating 0.0 MB of device memory to buffers to load ['QKVParallelLinear', 'QKVParallelLinear'] layers. This extra memory usage can be avoided by ordering weights by their parent layer when reloading.
+(EngineCore pid=1479727) WARNING 10-29 16:24:59 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct in 51.5s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 15129.5, "tokens_out": 4826, "j_per_token": 3.135, "tok_per_s": 89.38, "watts": 280.2}
+cotenants seen during run: none
+===== q7b_fp8  bs=8  (Qwen/Qwen2.5-7B-Instruct, quant=fp8)  2026-10-29 16:26:45 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1480431) WARNING 10-29 16:26:53 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=1480431) WARNING 10-29 16:26:54 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=1480530) WARNING 10-29 16:27:00 [layerwise.py:207] Allocating 0.0 MB of device memory to buffers to load ['QKVParallelLinear', 'QKVParallelLinear'] layers. This extra memory usage can be avoided by ordering weights by their parent layer when reloading.
+(EngineCore pid=1480530) WARNING 10-29 16:27:04 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct in 24.5s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 2035.1, "tokens_out": 4692, "j_per_token": 0.4337, "tok_per_s": 646.65, "watts": 280.5}
+cotenants seen during run: none
+===== q7b_fp8  bs=32  (Qwen/Qwen2.5-7B-Instruct, quant=fp8)  2026-10-29 16:27:35 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1480724) WARNING 10-29 16:27:43 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=1480724) WARNING 10-29 16:27:44 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=1480815) WARNING 10-29 16:27:50 [layerwise.py:207] Allocating 0.0 MB of device memory to buffers to load ['QKVParallelLinear', 'QKVParallelLinear'] layers. This extra memory usage can be avoided by ordering weights by their parent layer when reloading.
+(EngineCore pid=1480815) WARNING 10-29 16:27:53 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct in 24.3s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+  32/40 prompts, 2502.4 tok/s, 0.112 J/tok
+  40/40 prompts, 1633.6 tok/s, 0.169 J/tok
+{"energy_j": 826.9, "tokens_out": 4891, "j_per_token": 0.1691, "tok_per_s": 1633.63, "watts": 276.2}
+cotenants seen during run: none
+===== q7b_awq4  bs=1  (Qwen/Qwen2.5-7B-Instruct-AWQ, quant=none)  2026-10-29 16:28:21 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(EngineCore pid=1481140) WARNING 10-29 16:30:14 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct-AWQ in 138.2s; quantization=auto_awq dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 9018.8, "tokens_out": 5031, "j_per_token": 1.7927, "tok_per_s": 164.68, "watts": 295.2}
+cotenants seen during run: none
+===== q7b_awq4  bs=8  (Qwen/Qwen2.5-7B-Instruct-AWQ, quant=none)  2026-10-29 16:31:24 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(EngineCore pid=1482172) WARNING 10-29 16:31:41 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct-AWQ in 23.9s; quantization=auto_awq dtype=torch.float16
+warmed up (5 generations)
+{"energy_j": 1192.5, "tokens_out": 5031, "j_per_token": 0.237, "tok_per_s": 1247.14, "watts": 295.6}
+cotenants seen during run: none
+===== q7b_awq4  bs=32  (Qwen/Qwen2.5-7B-Instruct-AWQ, quant=none)  2026-10-29 16:32:07 =====
+Loaded 40 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(EngineCore pid=1482434) WARNING 10-29 16:32:25 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded Qwen/Qwen2.5-7B-Instruct-AWQ in 24.5s; quantization=auto_awq dtype=torch.float16
+warmed up (5 generations)
+  32/40 prompts, 4253.2 tok/s, 0.066 J/tok
+  40/40 prompts, 2875.7 tok/s, 0.098 J/tok
+{"energy_j": 495.1, "tokens_out": 5031, "j_per_token": 0.0984, "tok_per_s": 2875.66, "watts": 283.0}
+cotenants seen during run: none
+=== run smokeqwen done 2026-10-29 16:32:48; failures=0 ===
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096:
+git_commit.txt
+nvidia_smi.txt
+q7b_awq4_bs1
+q7b_awq4_bs32
+q7b_awq4_bs8
+q7b_fp16_bs1
+q7b_fp16_bs32
+q7b_fp16_bs8
+q7b_fp8_bs1
+q7b_fp8_bs32
+q7b_fp8_bs8
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_awq4_bs1:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_awq4_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_awq4_bs8:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_fp16_bs1:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_fp16_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_fp16_bs8:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_fp8_bs1:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokeqwen_j2096/q7b_fp8_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv

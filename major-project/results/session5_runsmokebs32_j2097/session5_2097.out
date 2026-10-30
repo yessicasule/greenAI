@@ -1,0 +1,91 @@
+SMOKE TEST: 64 prompts per config
+===== 1b_fp16  bs=32  (meta-llama/Llama-3.2-1B, quant=none)  2026-10-29 16:32:50 =====
+Loaded 64 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1482896) WARNING 10-29 16:32:58 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=1483154) WARNING 10-29 16:33:07 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.2-1B in 22.7s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+  32/64 prompts, 6965.1 tok/s, 0.043 J/tok
+  64/64 prompts, 7275.3 tok/s, 0.040 J/tok
+{"energy_j": 287.1, "tokens_out": 7120, "j_per_token": 0.0403, "tok_per_s": 7275.31, "watts": 293.4}
+cotenants seen during run: none
+===== 1b_fp8  bs=32  (meta-llama/Llama-3.2-1B, quant=fp8)  2026-10-29 16:33:26 =====
+Loaded 64 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1483339) WARNING 10-29 16:33:34 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=1483339) WARNING 10-29 16:33:35 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=1483430) WARNING 10-29 16:33:43 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.2-1B in 22.5s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+  32/64 prompts, 9129.1 tok/s, 0.032 J/tok
+  64/64 prompts, 9823.6 tok/s, 0.030 J/tok
+{"energy_j": 214.5, "tokens_out": 7139, "j_per_token": 0.03, "tok_per_s": 9823.61, "watts": 295.1}
+cotenants seen during run: none
+===== 8b_fp16  bs=32  (meta-llama/Llama-3.1-8B-Instruct, quant=none)  2026-10-29 16:34:02 =====
+Loaded 64 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1483586) WARNING 10-29 16:34:10 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(EngineCore pid=1483652) WARNING 10-29 16:34:20 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.1-8B-Instruct in 28.4s; quantization=None dtype=torch.float16
+warmed up (5 generations)
+  32/64 prompts, 1576.3 tok/s, 0.185 J/tok
+  64/64 prompts, 1584.1 tok/s, 0.186 J/tok
+{"energy_j": 1521.0, "tokens_out": 8192, "j_per_token": 0.1857, "tok_per_s": 1584.1, "watts": 294.1}
+cotenants seen during run: none
+===== 8b_fp8  bs=32  (meta-llama/Llama-3.1-8B-Instruct, quant=fp8)  2026-10-29 16:34:58 =====
+Loaded 64 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(MainProcess pid=1483866) WARNING 10-29 16:35:06 [model.py:2442] Casting torch.bfloat16 to torch.float16.
+(MainProcess pid=1483866) WARNING 10-29 16:35:07 [weight_utils.py:343] --quantization fp8 is deprecated for online quantization; use --quantization fp8_per_tensor instead.
+(EngineCore pid=1484268) WARNING 10-29 16:35:18 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded meta-llama/Llama-3.1-8B-Instruct in 27.8s; quantization=fp8 dtype=torch.float16
+warmed up (5 generations)
+  32/64 prompts, 2555.2 tok/s, 0.113 J/tok
+  64/64 prompts, 2556.5 tok/s, 0.113 J/tok
+{"energy_j": 923.8, "tokens_out": 8192, "j_per_token": 0.1128, "tok_per_s": 2556.55, "watts": 288.3}
+cotenants seen during run: none
+===== 8b_awq4  bs=32  (hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4, quant=none)  2026-10-29 16:35:49 =====
+Loaded 64 prompts from /home/khushiwadhwa23/greenAI/major-project/backend/src/green_weight/data/eval_prompts.jsonl
+(EngineCore pid=1484546) WARNING 10-29 16:36:07 [torch_utils.py:274] OMP_NUM_THREADS=8 is set; leaving Torch threads at 8 for serving. Multi-threaded torch CPU ops during serving can degrade performance through spin-wait contention and cgroup CPU-quota throttling.
+loaded hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4 in 25.5s; quantization=auto_awq dtype=torch.float16
+warmed up (5 generations)
+  32/64 prompts, 4047.2 tok/s, 0.071 J/tok
+  64/64 prompts, 4050.6 tok/s, 0.072 J/tok
+{"energy_j": 589.8, "tokens_out": 8192, "j_per_token": 0.072, "tok_per_s": 4050.55, "watts": 291.6}
+cotenants seen during run: none
+=== run smokebs32 done 2026-10-29 16:36:32; failures=0 ===
+/home/khushiwadhwa23/session5_runsmokebs32_j2097:
+1b_fp16_bs32
+1b_fp8_bs32
+8b_awq4_bs32
+8b_fp16_bs32
+8b_fp8_bs32
+git_commit.txt
+nvidia_smi.txt
+
+/home/khushiwadhwa23/session5_runsmokebs32_j2097/1b_fp16_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokebs32_j2097/1b_fp8_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokebs32_j2097/8b_awq4_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokebs32_j2097/8b_fp16_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
+
+/home/khushiwadhwa23/session5_runsmokebs32_j2097/8b_fp8_bs32:
+info.json
+monitor.csv
+per_batch.csv
+per_prompt.csv
