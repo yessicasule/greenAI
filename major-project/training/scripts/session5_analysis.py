@@ -225,17 +225,22 @@ def figure_why(summary):
         model, tier = LABEL.get(cfg, (cfg, cfg))
         ax.scatter(g["tok_per_s"], g["watts"], s=22, color=colors.get(tier, YELLOW),
                    marker=MARKER.get(model, "o"), zorder=3)
+        # labels below the 1B points so they don't collide with the 8B row at ~300 W
+        dy = -10 if model == "1B" else 5
         ax.annotate(f"{model} {tier}", (g["tok_per_s"].median(), g["watts"].median()),
-                    fontsize=6, xytext=(4, 3), textcoords="offset points")
+                    fontsize=6, xytext=(0, dy), textcoords="offset points", ha="center")
     b = bnb_points()
     if not b.empty:
         name = {"16bit": "float16", "8bit": "int8", "4bit": "NF4"}
         for tier, g in b.groupby("tier"):
             ax.scatter(g["tok_per_s"], g["watts"], s=22, facecolors="none", edgecolors="gray", zorder=3)
             ax.annotate(f"bnb 1B {name.get(tier, tier)}", (g["tok_per_s"].median(), g["watts"].median()),
-                        fontsize=6, color="gray", xytext=(6, -2), textcoords="offset points")
+                        fontsize=6, color="gray", xytext=(0, -10), textcoords="offset points",
+                        ha="center")
     ax.set_xscale("log")
     from matplotlib.ticker import FixedLocator, ScalarFormatter
+    ax.set_xlim(20, 600)
+    ax.set_ylim(70, 320)
     ax.xaxis.set_major_locator(FixedLocator([20, 50, 100, 200, 500]))
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.xaxis.set_minor_locator(FixedLocator([]))

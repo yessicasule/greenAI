@@ -74,8 +74,6 @@ def fig_disruption(runs):
     ax.set_xlabel("Prompt (execution order)")
     ax.set_ylabel("16-bit throughput (tokens/s)")
     ax.set_ylim(0, None)
-    ax.set_title("Same model, same GPU: 16-bit throughput in a disrupted vs. clean run",
-                 loc="left", fontsize=9.5, color=INK)
     save(fig, "fig1_16bit_disruption")
 
 
