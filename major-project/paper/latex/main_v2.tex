@@ -11,7 +11,7 @@
 
 \begin{document}
 
-\title{Fewer Bits Save Energy Only With the Right Kernels:\\Measuring Precision and Energy in LLM Inference on a Shared GPU Cluster}
+\title{Fewer Bits Save Energy Only With the Right Kernels: Measuring Precision and Energy in LLM Inference on a Shared GPU Cluster}
 
 % TODO: add author names (check the venue's review policy first).
 \author{\IEEEauthorblockA{Sardar Patel Institute of Technology, Mumbai, India}}
@@ -208,9 +208,9 @@ Runs 5--7 (night) & 80.7--81.8 & 130--142 & 1.59--1.73 \\
  & \multicolumn{2}{c|}{8B precisions} & \multicolumn{2}{c}{1B vs.\ 8B AWQ} \\
 Policy & J/req & Acc. & J/req & Acc. \\
 \midrule
-Always cheapest (8B AWQ\,|\,1B) & 240 & 0.350 & 104 & 0.164 \\
+Always cheapest (8B AWQ / 1B) & 240 & 0.350 & 104 & 0.164 \\
 Always 8B FP8 & 422 & 0.372 & -- & -- \\
-Always largest (8B fp16\,|\,8B AWQ) & 678 & 0.364 & 240 & 0.350 \\
+Always largest (8B fp16 / 8B AWQ) & 678 & 0.364 & 240 & 0.350 \\
 Fuzzy router & 477 & 0.368 & 221 & 0.322 \\
 Random, matched mix & 478 & 0.366 & 219 & 0.321 \\
 Learned (cross-fitted) & -- & -- & 240 & 0.350 \\
