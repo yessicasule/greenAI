@@ -80,10 +80,10 @@ float16 & 80.7--81.8 & 130--142 & 1.59--1.73 \\
 \end{tabular}
 \end{table}
 
-\textbf{Stack B: quantization saves energy.} Table~\ref{tab:vllm} gives per-token energy for every vLLM configuration. At 8B, FP8 saves 38\% and AWQ 4-bit 64\% relative to float16, at both batch sizes, with 95\% paired bootstrap intervals of about $\pm$1 point. At 1B, FP8 saves 35--38\% at batch 1 (median 36\%) and 37--38\% at batch 8. The running throughput of each configuration stayed within 2\% from the first progress report to the end of the run.
+\textbf{Stack B: quantization saves energy.} Table~\ref{tab:vllm} gives per-token energy for every vLLM configuration. At 8B, FP8 saves 38\% and AWQ 4-bit 64\% relative to float16, at both batch sizes, with 95\% paired bootstrap intervals of about $\pm$1 point. Mean power was 284--299\,W for every 8B configuration. At 1B, FP8 saves 35--38\% at batch 1 (median 36\%) and 37--38\% at batch 8. The running throughput of each configuration stayed within 2\% from the first progress report to the end of the run.
 
 \begin{table}[t]
-\caption{Stack B (vLLM): energy per output token, throughput and power, median over three runs. Saving is relative to the same model's float16 at the same batch size: median of per-run ratios, with the widest 95\% paired bootstrap interval over runs in brackets.}
+\caption{Stack B (vLLM): energy per output token and throughput, median over three runs. Saving is relative to the same model's float16 at the same batch size: median of per-run ratios, with the widest 95\% paired bootstrap interval over runs in brackets.}
 \label{tab:vllm}
 \centering\small
 \setlength{\tabcolsep}{3pt}
@@ -153,7 +153,7 @@ Model & Tier & bs & J/tok & tok/s & Saving \\
 \label{fig:tradeoff}
 \end{figure}
 
-Table~\ref{tab:acc} and Fig.~\ref{fig:tradeoff}. At 8B, FP8 and AWQ 4-bit stay within 3 points of float16 on tinyMMLU and tinyHellaswag, in both directions, which is within the noise of 100-item tasks. On tinyGSM8k, which requires multi-step arithmetic, FP8 loses 7.2 points and AWQ 4-bit 14.1. At 1B, FP8 loses 5.3 points on tinyMMLU and under 1 point elsewhere; GSM8k is near the floor for a 1B base model. Stack A's LoRA adapters lower tinyMMLU at every tier and do not help elsewhere. Note that our 1B model is the base model and our 8B model is instruction-tuned, so 1B vs.\ 8B accuracy is not a pure size comparison.
+Table~\ref{tab:acc} and Fig.~\ref{fig:tradeoff}. At 8B, FP8 and AWQ 4-bit stay within 3.5 points of float16 on tinyMMLU and tinyHellaswag, in both directions, which is within the noise of 100-item tasks. On tinyGSM8k, which requires multi-step arithmetic, FP8 loses 7.2 points and AWQ 4-bit 14.1. At 1B, FP8 loses 5.3 points on tinyMMLU and under 1 point elsewhere; GSM8k is near the floor for a 1B base model. Stack A's LoRA adapters lower tinyMMLU at every tier and do not help elsewhere. Note that our 1B model is the base model and our 8B model is instruction-tuned, so 1B vs.\ 8B accuracy is not a pure size comparison.
 
 \section{Measurement Pitfall on a Shared Cluster}
 \label{sec:pitfall}
@@ -210,9 +210,9 @@ Runs 5--7 (night) & 80.7--81.8 & 130--142 & 1.59--1.73 \\
  & \multicolumn{2}{c|}{8B precisions} & \multicolumn{2}{c}{1B vs.\ 8B AWQ} \\
 Policy & J/req & Acc. & J/req & Acc. \\
 \midrule
-Static cheapest & 240 & 0.350 & 104 & 0.164 \\
-Static FP8 & 422 & 0.372 & -- & -- \\
-Static float16 / 8B AWQ & 678 & 0.364 & 240 & 0.350 \\
+Always cheapest (8B AWQ\,|\,1B) & 240 & 0.350 & 104 & 0.164 \\
+Always 8B FP8 & 422 & 0.372 & -- & -- \\
+Always largest (8B fp16\,|\,8B AWQ) & 678 & 0.364 & 240 & 0.350 \\
 Fuzzy router & 477 & 0.368 & 221 & 0.322 \\
 Random, matched mix & 478 & 0.366 & 219 & 0.321 \\
 Learned (cross-fitted) & -- & -- & 240 & 0.350 \\
@@ -226,7 +226,7 @@ Oracle & 260 & 0.442 & 136 & 0.398 \\
 \textbf{Headroom.} An oracle would cut energy a further 43\% below always-8B-AWQ while gaining 4.8 points, so model routing is worthwhile in principle. Realising it needs a predictor of answer correctness, not of surface complexity.
 
 \section{Threats to Validity}
-One GPU model and one node. Two model families would strengthen generality; ours are both Llama. Static batches of 1 and 8, not continuous batching under load. GPU-board energy only, excluding CPU, DRAM and the router. The 1B model is a base model and the 8B is instruction-tuned. tinyBenchmarks tasks have 100 items each, so differences of a few points are within noise; the routing proxy metric is coarse. The host mechanism behind the Stack~A disruption is not isolated. One Stack~B configuration hung once while loading (the vLLM engine spun with the GPU idle); a watchdog now kills and the runner repeats such a configuration.
+One GPU model and one node. Two model families would strengthen generality; ours are both Llama. Static batches of 1 and 8, not continuous batching under load. GPU-board energy only, excluding CPU, DRAM and the router. The 1B model is a base model and the 8B is instruction-tuned. tinyBenchmarks tasks have 100 items each, so differences of a few points are within noise; the routing proxy metric is coarse. The host mechanism behind the Stack~A disruption is not isolated. One Stack~B configuration hung once while loading (the vLLM engine spun with the GPU idle) until the job's time limit; we reran that configuration alone, and added a watchdog that kills a configuration after 15 minutes without progress.
 
 \section{Conclusion}
 Whether fewer bits save energy in LLM inference depends on the kernel, not the bit-width. bitsandbytes 4-bit saves memory but not energy, and 8-bit costs 1.8$\times$ more than float16, because both compute in 16-bit after dequantizing. vLLM's FP8 and AWQ 4-bit kernels compute on the compressed weights and save 38\% and 64\% energy per token at 8B, at the cost of 7 and 14 points on grade-school maths. Measuring this on a shared cluster required monitoring the host, not just the GPU: a daytime slowdown inflated float16 energy up to 7.7$\times$ and passed every end-of-run safeguard. Routing on prompt-complexity features adds nothing over always serving the 4-bit model; a correctness predictor is what would unlock the large oracle headroom.
