@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 ANALYSIS = ROOT / "paper" / "analysis"
 FIGS = ROOT / "paper" / "figures"
 BLUE, ORANGE, AQUA, YELLOW = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"
-ORDER = ["1b_fp16", "1b_fp8", "8b_fp16", "8b_fp8", "8b_awq4"]
+ORDER = ["1b_fp16", "1b_fp8", "8b_fp16", "8b_fp8", "8b_awq4", "q7b_fp16", "q7b_fp8", "q7b_awq4"]
 RNG = np.random.default_rng(42)
 
 
@@ -151,7 +151,10 @@ def figure(summary):
 
 
 LABEL = {"1b_fp16": ("1B", "float16"), "1b_fp8": ("1B", "FP8"), "8b_fp16": ("8B", "float16"),
-         "8b_fp8": ("8B", "FP8"), "8b_awq4": ("8B", "AWQ 4-bit")}
+         "8b_fp8": ("8B", "FP8"), "8b_awq4": ("8B", "AWQ 4-bit"),
+         "q7b_fp16": ("Qwen-7B", "float16"), "q7b_fp8": ("Qwen-7B", "FP8"),
+         "q7b_awq4": ("Qwen-7B", "AWQ 4-bit")}
+MARKER = {"1B": "s", "8B": "o", "Qwen-7B": "D"}
 
 
 def latex_table(summary, pairs):
@@ -221,7 +224,7 @@ def figure_why(summary):
     for cfg, g in clean.groupby("config"):
         model, tier = LABEL.get(cfg, (cfg, cfg))
         ax.scatter(g["tok_per_s"], g["watts"], s=22, color=colors.get(tier, YELLOW),
-                   marker="o" if model == "8B" else "s", zorder=3)
+                   marker=MARKER.get(model, "o"), zorder=3)
         ax.annotate(f"{model} {tier}", (g["tok_per_s"].median(), g["watts"].median()),
                     fontsize=6, xytext=(4, 3), textcoords="offset points")
     b = bnb_points()
@@ -284,7 +287,7 @@ def figure_tradeoff(summary, bs=1):
         for task, mk in markers.items():
             d = 100 * (acc.loc[cfg, task] - acc.loc[base, task])
             ax.scatter(saving, d, marker=mk, s=26, color=colors.get(tier, YELLOW),
-                       edgecolors="black" if model == "8B" else "none", linewidths=0.5, zorder=3)
+                       edgecolors="none" if model == "1B" else "black", linewidths=0.5, zorder=3)
         ax.annotate(f"{model} {tier}", (saving, 4.2), fontsize=6, va="bottom",
                     xytext=(-3 if model == "1B" else 3, 0), textcoords="offset points",
                     ha="right" if model == "1B" else "left")
