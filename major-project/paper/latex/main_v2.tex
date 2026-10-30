@@ -146,7 +146,14 @@ Model & Tier & bs & J/tok & tok/s & Saving \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:acc}. At 8B, FP8 and AWQ 4-bit stay within 3 points of float16 on tinyMMLU and tinyHellaswag, in both directions, which is within the noise of 100-item tasks. On tinyGSM8k, which requires multi-step arithmetic, FP8 loses 7.2 points and AWQ 4-bit 14.1. At 1B, FP8 loses 5.3 points on tinyMMLU and under 1 point elsewhere; GSM8k is near the floor for a 1B base model. Stack A's LoRA adapters lower tinyMMLU at every tier and do not help elsewhere. Note that our 1B model is the base model and our 8B model is instruction-tuned, so 1B vs.\ 8B accuracy is not a pure size comparison.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig_s5_tradeoff.pdf}
+\caption{Energy saving vs.\ accuracy change relative to the same model's float16 (Stack B, batch 1, median of three runs). Black-edged markers: 8B; plain: 1B.}
+\label{fig:tradeoff}
+\end{figure}
+
+Table~\ref{tab:acc} and Fig.~\ref{fig:tradeoff}. At 8B, FP8 and AWQ 4-bit stay within 3 points of float16 on tinyMMLU and tinyHellaswag, in both directions, which is within the noise of 100-item tasks. On tinyGSM8k, which requires multi-step arithmetic, FP8 loses 7.2 points and AWQ 4-bit 14.1. At 1B, FP8 loses 5.3 points on tinyMMLU and under 1 point elsewhere; GSM8k is near the floor for a 1B base model. Stack A's LoRA adapters lower tinyMMLU at every tier and do not help elsewhere. Note that our 1B model is the base model and our 8B model is instruction-tuned, so 1B vs.\ 8B accuracy is not a pure size comparison.
 
 \section{Measurement Pitfall on a Shared Cluster}
 \label{sec:pitfall}
