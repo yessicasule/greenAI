@@ -14,6 +14,8 @@
 \usepackage{xcolor}
 \usepackage{cite}
 \usepackage{needspace}
+\usepackage{etoolbox}
+\pretocmd{\section}{\needspace{10\baselineskip}}{}{}
 \usepackage[a4paper,width=150mm,top=25mm,bottom=25mm]{geometry}
 \usepackage[hidelinks]{hyperref}
 \setlength{\LTcapwidth}{\linewidth}

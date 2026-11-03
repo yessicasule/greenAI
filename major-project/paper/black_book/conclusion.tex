@@ -8,7 +8,7 @@ Measurement validity was a problem in its own right: inflated float16 readings p
 Green-Weight's fuzzy router performed no better than a random router with its tier mix at any tested cut, and on the 8B pool it cost about twice as much energy per request as static AWQ. Its features predicted sensitivity to quantization at about chance level. The oracle shows headroom in principle, but this work does not show that any predictor available before generation can capture it.
 
 \section{Future work}
-\begin{enumerate}
+\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
 \item \textbf{Measure Stack A without adapters.} Run all three tiers in one clean overnight session. This is required to complete RQ1.
 \item \textbf{Resolve the unit and time confound.} Run the diagnostic on both GPU units, by day and by night, with the UUID recorded.
 \item \textbf{Resolve the accuracy question.} Evaluate full GSM8K at 8B, retaining per-item outputs for paired testing.
