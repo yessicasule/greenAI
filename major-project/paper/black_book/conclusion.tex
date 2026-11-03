@@ -1,7 +1,9 @@
 \chapter{Conclusion and Future Work}
-Whether fewer bits save energy in LLM inference depends on the implementation and not on bit-width alone. With bitsandbytes and attached adapters, 4-bit matched float16 per token and 8-bit cost about 1.8 to 1.9 times as much. With vLLM, FP8 and AWQ 4-bit saved 38\% and 64\% per token at 8B, and these savings were stable across runs and batch sizes.
+Whether fewer bits saved energy depended, in our measurements, on the serving configuration. With bitsandbytes and attached adapters, 4-bit was within about 7\% of float16 per token and 8-bit cost about 1.8 to 1.9 times as much. With vLLM, FP8 and AWQ 4-bit saved 38\% and 64\% per token at 8B, and these savings were stable across runs and batch sizes.
 
-The accuracy cost of these savings is not yet established. Apparent losses on tinyGSM8k depend on the scoring rule and were not reproduced on separate prompts. Measurement validity proved to be a substantive issue: inflated float16 readings passed three safeguards, and throughput with mean power exposed them. The cause was not isolated, and time of day remains confounded with GPU unit.
+We have not yet established the accuracy cost of these savings. tinyGSM8k fell under both scoring rules, by amounts that depend on the rule, and the fall was not reproduced on separate prompts using a coarser measure.
+
+Measurement validity was a problem in its own right: inflated float16 readings passed three safeguards, and throughput with mean power exposed them. We did not isolate the cause, and time of day remains confounded with GPU unit.
 
 Green-Weight's fuzzy router performed no better than a random router with its tier mix at any tested cut, and on the 8B pool it cost about twice as much energy per request as static AWQ. Its features predicted sensitivity to quantization at about chance level. The oracle shows headroom in principle, but this work does not show that any predictor available before generation can capture it.
 

@@ -9,16 +9,18 @@ All reported energy runs used NVIDIA RTX 6000 Ada GPUs on one shared SLURM node 
 \textbf{Component} & \textbf{Specification} & \textbf{Reason and contribution} & \textbf{Evidence} \\
 \midrule
 \endhead
-GPU & NVIDIA RTX 6000 Ada Generation, 49,140 MiB, 300 W cap & The college cluster replaced Kaggle after a Kaggle session hung until its 12-hour limit. The GPU exposes the NVML energy counter, and vLLM lists FP8 support on Ada~\cite{b45}. & nvidia-smi logs; NEW.md \\
-GPU units & Two on the node: GPU-c53791fb (bus 01:00) and GPU-da9c4cd1 (bus 61:00) & Assigned by the scheduler, not chosen. Recorded because the unit is confounded with time of day (section 5.5). & Run info files \\
-CPU & 2 x AMD EPYC 9554, reported as 56 cores per socket, 2 threads per core, 224 logical CPUs & Part of the shared node. Its load is relevant to the host-side slowdown. & lm-eval environment record \\
-Memory & 250 GB RAM & Part of the shared node. & CLUSTER\_\allowbreak{}MANUAL.md \\
-Job allocation & 1 GPU, 8 CPUs; 32 GB (Stack A), 64 GB (Stack B) & Values not documented, beyond limiting thread pools to the granted CPUs. & sbatch scripts \\
-Adapter training & Kaggle, Tesla T4 & The platform available when the adapters were trained. & Notebook output \\
-\bottomrule
+GPU & NVIDIA RTX 6000 Ada Generation, 49,140 MiB, 300 W cap & The college cluster replaced Kaggle after a Kaggle session hung until its 12-hour limit. The GPU exposes the NVML energy counter, and vLLM lists FP8 support on Ada~\cite{b45}. & nvidia-smi logs; NEW.md \\*
+GPU units & Two on the node: GPU-c53791fb (bus 01:00) and GPU-da9c4cd1 (bus 61:00) & Assigned by the scheduler, not chosen. Recorded because the unit is confounded with time of day (section 5.5). & Run info files \\*
+CPU & 2 x AMD EPYC 9554, reported as 56 cores per socket, 2 threads per core, 224 logical CPUs & Part of the shared node. Its load is relevant to the host-side slowdown. & lm-eval environment record \\*
+Memory & 250 GB RAM & Part of the shared node. & CLUSTER\_\allowbreak{}MANUAL.md \\*
+Job allocation & 1 GPU, 8 CPUs; 32 GB (Stack A), 64 GB (Stack B) & Values not documented, beyond limiting thread pools to the granted CPUs. & sbatch scripts \\*
+Adapter training & Kaggle, Tesla T4 & The platform available when the adapters were trained. & Notebook output \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
+\needspace{12\baselineskip}
 \section{Software}
 
 \begingroup\footnotesize\setlength{\tabcolsep}{4pt}
@@ -27,7 +29,7 @@ Adapter training & Kaggle, Tesla T4 & The platform available when the adapters w
 \textbf{Software} & \textbf{Stack A} & \textbf{Stack B} & \textbf{Reason and contribution} \\
 \midrule
 \endhead
-Operating system & Rocky Linux 9.8 (same node) & Rocky Linux 9.8 & Cluster default \\
+Operating system & Rocky Linux 9.8 (same node) & Rocky Linux 9.8 & Cluster default \\*
 NVIDIA driver & 610.43.02 & 610.57.04 & Cluster-managed; the change between stacks is a stated limitation \\
 PyTorch, CUDA & 2.13.0+cu130, CUDA 13.0 & 2.13.0+cu130, CUDA 13.0 & Execution framework for both stacks \\
 Python & 3.11 & 3.11.14 & Virtual environments built with uv \\
@@ -36,14 +38,15 @@ bitsandbytes & Not recorded & Not used for the tiers & Provides the NF4 and LLM.
 vLLM & Not used & 0.31.0, CUDA graphs on & Native FP8 and Marlin AWQ kernels, used to test whether the Stack A result depends on implementation \\
 lm-eval-harness & 0.4.13 & 0.4.13 & Community-standard, versioned benchmarks \\
 PEFT & 0.19.1, recorded by the adapters & Not used & Loads LoRA adapters \\
-NVML bindings & pynvml, version not recorded & nvidia-ml-py, version not recorded & Reads the energy counter directly \\
-Router libraries & scikit-fuzzy, textstat, spaCy en\_\allowbreak{}core\_\allowbreak{}web\_\allowbreak{}sm; versions not recorded & Same modules, replayed offline & Mamdani inference, readability grade and dependency depth \\
-Analysis libraries & pandas, NumPy, SciPy, scikit-learn, Matplotlib; cluster versions not recorded & Same & Bootstrap, replay, correlation and figures \\
-\bottomrule
+NVML bindings & pynvml, version not recorded & nvidia-ml-py, version not recorded & Reads the energy counter directly \\*
+Router libraries & scikit-fuzzy, textstat, spaCy en\_\allowbreak{}core\_\allowbreak{}web\_\allowbreak{}sm; versions not recorded & Same modules, replayed offline & Mamdani inference, readability grade and dependency depth \\*
+Analysis libraries & pandas, NumPy, SciPy, scikit-learn, Matplotlib; cluster versions not recorded & Same & Bootstrap, replay, correlation and figures \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
-Versions marked ``not recorded'' were not captured at the time of the runs. The file requirements.txt predates these runs and does not describe them.
+The file requirements.txt predates these runs and does not describe them.
 
 \section{Models and configurations}
 
@@ -53,16 +56,17 @@ Versions marked ``not recorded'' were not captured at the time of the runs. The 
 \textbf{Configuration} & \textbf{Model} & \textbf{Quantization} & \textbf{Adapter} & \textbf{Reason} \\
 \midrule
 \endhead
-Stack A float16 & Llama-3.2-1B~\cite{b36} & None & r=4 attached & Reference tier. The model matches the adapters and fit the earlier T4 target. \\
-Stack A 8-bit & Llama-3.2-1B & LLM.int8() & r=8 attached & Common drop-in 8-bit path; computes in 16-bit~\cite{b6} \\
-Stack A 4-bit & Llama-3.2-1B & NF4, double quantization, float16 compute & r=16 attached & Common drop-in 4-bit path. Double quantization: not documented. \\
-Stack B 1B float16 & Llama-3.2-1B & None & None & Continuity with Stack A \\
-Stack B 1B FP8 & Llama-3.2-1B & fp8 & None & Native FP8 on the same model \\
-Stack B 8B float16 & Llama-3.1-8B-Instruct~\cite{b36} & None & None & A larger model, expected to be more memory-bound in decoding \\
-Stack B 8B FP8 & Llama-3.1-8B-Instruct & fp8 & None & Same comparison at 8B \\
-Stack B 8B AWQ & hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4 & AWQ, resolved as auto\_\allowbreak{}awq & None & Public 4-bit checkpoint with Marlin kernels \\
-\bottomrule
+Stack A float16 & Llama-3.2-1B~\cite{b36} & None & r=4 attached & Reference tier. The model matches the adapters and fit the earlier T4 target. \\*
+Stack A 8-bit & Llama-3.2-1B & LLM.int8() & r=8 attached & Common drop-in 8-bit path; computes in 16-bit~\cite{b6} \\*
+Stack A 4-bit & Llama-3.2-1B & NF4, double quantization, float16 compute & r=16 attached & Common drop-in 4-bit path. Double quantization: not documented. \\*
+Stack B 1B float16 & Llama-3.2-1B & None & None & Continuity with Stack A \\*
+Stack B 1B FP8 & Llama-3.2-1B & fp8 & None & Native FP8 on the same model \\*
+Stack B 8B float16 & Llama-3.1-8B-Instruct~\cite{b36} & None & None & A larger model, expected to be more memory-bound in decoding \\*
+Stack B 8B FP8 & Llama-3.1-8B-Instruct & fp8 & None & Same comparison at 8B \\*
+Stack B 8B AWQ & hugging-quants/Meta-Llama-3.1-8B-Instruct-AWQ-INT4 & AWQ, resolved as auto\_\allowbreak{}awq & None & Public 4-bit checkpoint with Marlin kernels \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 The 1B model is a base model and the 8B model is instruction-tuned, so 1B versus 8B accuracy is not a pure comparison of size. No 1B AWQ configuration was run.
@@ -75,7 +79,7 @@ The 1B model is a base model and the 8B model is instruction-tuned, so 1B versus
 \textbf{Parameter} & \textbf{Value} & \textbf{Reason and contribution} \\
 \midrule
 \endhead
-Decoding & Greedy (do\_\allowbreak{}sample false; temperature 0) & Determinism allows one grid to serve all policies \\
+Decoding & Greedy (do\_\allowbreak{}sample false; temperature 0) & Determinism allows one grid to serve all policies \\*
 Maximum new tokens & 128 & Fixed cap across configurations; the value is not documented \\
 Warm-up & 5 discarded generations & Excludes start-up effects; the count is not documented \\
 Batch size & 1 (Stack A); 1 and 8, static batches of consecutive prompts (Stack B) & Batch 1 represents single-request decoding; batch 8 tests whether savings persist \\
@@ -85,11 +89,12 @@ Stack B engine & dtype float16, gpu\_\allowbreak{}memory\_\allowbreak{}utilizati
 Monitor interval & 2 s & Continuous sampling replaces the failed end-of-run snapshot; the interval is not documented \\
 Watchdog & 900 s with no progress & Added after one configuration hung while loading \\
 Disruption flag & Any co-tenant, or throughput over 20\% below the configuration's median across runs & Targets the observed signature; the 20\% value is a judgement, not derived \\
-Stack A thread pools & OMP, MKL, OpenBLAS and NumExpr limited to 8 & Prevents oversubscription against the granted CPUs \\
-Tier cuts & 33 and 66 on a 0 to 100 score & Equal division of the scale; tested in section 5.6 \\
-Bootstrap & 2,000 resamples & Interval estimation without a normality assumption \\
-\bottomrule
+Stack A thread pools & OMP, MKL, OpenBLAS and NumExpr limited to 8 & Prevents oversubscription against the granted CPUs \\*
+Tier cuts & 33 and 66 on a 0 to 100 score & Equal division of the scale; tested in section 5.6 \\*
+Bootstrap & 2,000 resamples & Interval estimation without a normality assumption \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 
@@ -99,13 +104,14 @@ Bootstrap & 2,000 resamples & Interval estimation without a normality assumption
 \textbf{LoRA hyperparameter} & \textbf{Value} & \textbf{Reason} \\
 \midrule
 \endhead
-Rank, alpha & 16/32 (4-bit tier), 8/16 (8-bit tier), 4/8 (16-bit tier) & Lower precision receives more capacity; constant alpha/r of 2 \\
-Target modules & q\_\allowbreak{}proj, v\_\allowbreak{}proj & Not documented \\
-Dropout & 0.05 & Not documented \\
-Training data & Up to 2,000 samples per complexity class, maximum length 256 & Not documented \\
-Training & 1 epoch, batch size 4, learning rate 2e-4, paged\_\allowbreak{}adamw\_\allowbreak{}8bit, seed 42 & Not documented \\
-\bottomrule
+Rank, alpha & 16/32 (4-bit tier), 8/16 (8-bit tier), 4/8 (16-bit tier) & Lower precision receives more capacity; constant alpha/r of 2 \\*
+Target modules & q\_\allowbreak{}proj, v\_\allowbreak{}proj & Not documented \\*
+Dropout & 0.05 & Not documented \\*
+Training data & Up to 2,000 samples per complexity class, maximum length 256 & Not documented \\*
+Training & 1 epoch, batch size 4, learning rate 2e-4, paged\_\allowbreak{}adamw\_\allowbreak{}8bit, seed 42 & Not documented \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 \section{Datasets}
@@ -118,12 +124,13 @@ The evaluation set has 500 unique prompts, built by prepare\_\allowbreak{}eval\_
 \textbf{Label} & \textbf{Prompts} & \textbf{Source} & \textbf{Reference answer} & \textbf{Reason} \\
 \midrule
 \endhead
-Easy & 200 & TriviaQA, rc.nocontext, validation~\cite{b38} & Short factual answer & Unambiguous answers \\
-Medium & 150 & Alpaca, instructions with no input~\cite{b42} & Reference output & Explanation and description tasks \\
-Hard & 75 & GSM8K, test split~\cite{b39} & Final numeric answer & Multi-step arithmetic \\
-Hard & 75 & CodeAlpaca-20k~\cite{b46} & Reference output & Coding tasks \\
-\bottomrule
+Easy & 200 & TriviaQA, rc.nocontext, validation~\cite{b38} & Short factual answer & Unambiguous answers \\*
+Medium & 150 & Alpaca, instructions with no input~\cite{b42} & Reference output & Explanation and description tasks \\*
+Hard & 75 & GSM8K, test split~\cite{b39} & Final numeric answer & Multi-step arithmetic \\*
+Hard & 75 & CodeAlpaca-20k~\cite{b46} & Reference output & Coding tasks \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 Benchmark accuracy uses tinyBenchmarks~\cite{b37}, with 100 curated items each from MMLU~\cite{b40}, HellaSwag~\cite{b41} and GSM8K~\cite{b39}, selected to reduce GPU time. Scores are IRT-estimated, and lm-eval reports no standard error for them. The adapter training data, combined\_\allowbreak{}cleaned.csv, is not included in the repository.
@@ -138,7 +145,8 @@ Times are IST start times.
 \textbf{Session} & \textbf{Job} & \textbf{Date and time} & \textbf{GPU unit} & \textbf{Adapters} & \textbf{Use in this thesis} \\
 \midrule
 \endhead
-1, energy & Not in log & 4 Sep 2026 & Not recorded & No & Pitfall evidence; 16-bit value withdrawn \\
+1, energy & Not in log & 4 Sep 2026 & Not recorded & No & Pitfall evidence; 16-bit value withdrawn \\*
+3, adapter load check & None (CPU) & 22 Aug 2026 & None & Yes & Confirmed the adapters load; no energy data \\
 4, run 1 & 1505 & 5 Sep & c53791fb & Yes & Before router fix; contended \\
 4, run 2, interleaved & 1507 & 5 Sep & c53791fb & Yes & Before router fix; contended \\
 4, run 3 & 1529 & 9 Sep & c53791fb & Yes & Contended; not used for results \\
@@ -148,14 +156,15 @@ Diagnostic, day & 1706 & 30 Sep, 13:50 & Not recorded & No & Host-side evidence 
 4, run 6 & 1707 & 1 Oct, 00:58 & da9c4cd1 & Yes & Clean \\
 Diagnostic, night & 1732 & 3 Oct, 00:55 & Not recorded & No & Host-side evidence \\
 4, run 7 & 1733 & 3 Oct, 00:57 & da9c4cd1 & Yes & Clean \\
-2, Stack A accuracy & 1784 & 7 Oct & Not read & With and without & Accuracy per tier \\
-5, 1B and AWQ accuracy & 2062 & 27 Oct & Not read & No & Stack B accuracy \\
-5, 8B accuracy & 2067 & 27 Oct & Not read & No & Stack B accuracy \\
-5, run 1 & 2066, 2093 & 28 Oct, 11:02; AWQ batch 8 rerun 29 Oct & c53791fb & No & Clean \\
-5, run 2 & 2094 & 29 Oct, 14:23 & c53791fb & No & Clean \\
-5, run 3 & 2095 & 29 Oct, 15:19 & c53791fb & No & Clean \\
-\bottomrule
+2, Stack A accuracy & 1784 & 7 Oct & Not extracted from logs & With and without & Accuracy per tier \\
+5, 1B and AWQ accuracy & 2062 & 27 Oct & Not extracted from logs & No & Stack B accuracy \\
+5, 8B accuracy & 2067 & 27 Oct & Not extracted from logs & No & Stack B accuracy \\
+5, run 1 & 2066, 2093 & 28 Oct, 11:02; AWQ batch 8 rerun 29 Oct & c53791fb & No & Clean \\*
+5, run 2 & 2094 & 29 Oct, 14:23 & c53791fb & No & Clean \\*
+5, run 3 & 2095 & 29 Oct, 15:19 & c53791fb & No & Clean \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 \section{Evaluation metrics}
@@ -166,21 +175,21 @@ Diagnostic, night & 1732 & 3 Oct, 00:55 & Not recorded & No & Host-side evidence
 \textbf{Metric} & \textbf{Unit} & \textbf{Purpose} \\
 \midrule
 \endhead
-Energy per token & J/token & Main efficiency measure, defined per stack in section 3.4 \\
-Energy per request & J/request & Cost of serving a prompt, used for routing \\
-Energy per correct answer & J & Combines cost and proxy accuracy; descriptive only \\
-Throughput & tokens/s & Explains energy and detects disruption \\
-Mean power & W & Separates working from waiting \\
-Benchmark accuracy & 0 to 1 & tinyMMLU, tinyHellaswag acc\_\allowbreak{}norm; tinyGSM8k flexible and strict \\
-Proxy correctness & 0 to 1 & Reference match on the 500 prompts, for paired comparison only \\
-Same-answer share & \% & Share of prompts answered identically to float16 \\
-Cross-validated AUC & 0 to 1 & Whether the features predict a target; 0.5 is chance \\
-\bottomrule
+Energy per token & J/token & Main efficiency measure, defined per stack in section 3.4 \\*
+Energy per request & J/request & Cost of serving a prompt, used for routing \\*
+Throughput & tokens/s & Explains energy and detects disruption \\*
+Mean power & W & Separates working from waiting \\*
+Benchmark accuracy & 0 to 1 & tinyMMLU, tinyHellaswag acc\_\allowbreak{}norm; tinyGSM8k flexible and strict \\*
+Proxy correctness & 0 to 1 & Reference match on the 500 prompts, for paired comparison only \\*
+Same-answer share & \% & Share of prompts answered identically to float16 \\*
+Cross-validated AUC & 0 to 1 & Whether the features predict a target; 0.5 is chance \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 \section{Testing conditions and deviations from plan}
-Stack A checked co-tenants with one end-of-run snapshot, and Stack B sampled them continuously. All clean Stack A runs were overnight, and all Stack B runs were in daytime. Energy is GPU-board energy only.
+Stack A checked co-tenants with one end-of-run snapshot, whereas Stack B sampled them continuously. All clean Stack A runs were overnight, and all Stack B runs were in daytime. Energy is GPU-board energy only.
 
 
 \begingroup\footnotesize\setlength{\tabcolsep}{4pt}
@@ -189,26 +198,27 @@ Stack A checked co-tenants with one end-of-run snapshot, and Stack B sampled the
 \textbf{Plan} & \textbf{What happened} & \textbf{Consequence} \\
 \midrule
 \endhead
-Kaggle T4 for all sessions & Moved to the college cluster after a Kaggle hang & Earlier T4 assumptions do not apply \\
-Stack B on three nights & All three runs were in daytime on 28-29 October; the reason is not recorded & No night comparison; confound remains \\
-Feature ablation study & Not run & Feature importance is inferred from correlations only \\
-Tier-preference router trained on Session 4 data & Not built & A simple logistic baseline was used instead \\
-FrugalGPT-style cascade & Optional; not built beyond a stub & Excluded from results \\
-APGR and CPT routing metrics & Not reported & Random-matched and oracle comparisons used instead \\
-\bottomrule
+Kaggle T4 for all sessions & Moved to the college cluster after a Kaggle hang & Earlier T4 assumptions do not apply \\*
+Stack B on three nights & All three runs were in daytime on 28-29 October; the reason is not recorded & No night comparison; confound remains \\*
+Feature ablation study & Not run & Feature importance is inferred from correlations only \\*
+Tier-preference router trained on Session 4 data & Not built & A simple logistic baseline was used instead \\*
+FrugalGPT-style cascade & Optional; not built beyond a stub & Excluded from results \\*
+APGR and CPT routing metrics & Not reported & Random-matched and oracle comparisons used instead \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
+\addtocounter{table}{-1}
 \endgroup
 
 \section{Reproducibility}
 From the major-project directory, on a cluster with the same SLURM partition:
 
 \begin{enumerate}
-\item Build the prompt set: python training/scripts/prepare\_\allowbreak{}eval\_\allowbreak{}dataset.py --num-prompts 500 --seed 42 --output backend/src/green\_\allowbreak{}weight/data/eval\_\allowbreak{}prompts.jsonl.
-\item Run Stack A on separate days: sbatch --export=ALL,RUN\_\allowbreak{}ID=\textless{}n\textgreater{} training/scripts/session4\_\allowbreak{}full\_\allowbreak{}run.sh. Copy each run's output files to routing\_\allowbreak{}run\textless{}n\textgreater{}\_\allowbreak{}* in major-project, because the analysis expects those names.
+\item Build the prompt set: python training/scripts/prepare\_\allowbreak{}eval\_\allowbreak{}dataset.py -{}-num-prompts 500 -{}-seed 42 -{}-output backend/src/green\_\allowbreak{}weight/data/eval\_\allowbreak{}prompts.jsonl.
+\item Run Stack A on separate days: sbatch -{}-export=ALL,RUN\_\allowbreak{}ID=\textless{}n\textgreater{} training/scripts/session4\_\allowbreak{}full\_\allowbreak{}run.sh. Copy each run's output files to routing\_\allowbreak{}run\textless{}n\textgreater{}\_\allowbreak{}* in major-project, because the analysis expects those names.
 \item Run Stack A accuracy: sbatch training/scripts/session2\_\allowbreak{}accuracy.sh.
-\item Set up Stack B with bash training/scripts/setup\_\allowbreak{}vllm\_\allowbreak{}env.sh, pinning vLLM to 0.31.0 because the script installs the latest version. Then run sbatch --export=ALL,RUN\_\allowbreak{}ID=\textless{}n\textgreater{} training/scripts/session5\_\allowbreak{}vllm.sh.
+\item Set up Stack B with bash training/scripts/setup\_\allowbreak{}vllm\_\allowbreak{}env.sh, pinning vLLM to 0.31.0 because the script installs the latest version. Then run sbatch -{}-export=ALL,RUN\_\allowbreak{}ID=\textless{}n\textgreater{} training/scripts/session5\_\allowbreak{}vllm.sh.
 \item Run Stack B accuracy: sbatch training/scripts/session5\_\allowbreak{}accuracy.sh.
-\item Analyse Stack A with python training/scripts/paper\_\allowbreak{}a\_\allowbreak{}analysis.py --clean-runs 5 6 7. Analyse Stack B by passing the run directories to session5\_\allowbreak{}analysis.py, and to session5\_\allowbreak{}router\_\allowbreak{}replay.py with --pool 1b\_\allowbreak{}fp16,8b\_\allowbreak{}awq4 --pool 8b\_\allowbreak{}awq4,8b\_\allowbreak{}fp8,8b\_\allowbreak{}fp16 --batch-size 1.
+\item Analyse Stack A with python training/scripts/paper\_\allowbreak{}a\_\allowbreak{}analysis.py -{}-clean-runs 5 6 7. Analyse Stack B by passing the run directories to session5\_\allowbreak{}analysis.py, and to session5\_\allowbreak{}router\_\allowbreak{}replay.py with -{}-pool 1b\_\allowbreak{}fp16,8b\_\allowbreak{}awq4 -{}-pool 8b\_\allowbreak{}awq4,8b\_\allowbreak{}fp8,8b\_\allowbreak{}fp16 -{}-batch-size 1.
 \item Run python training/scripts/thesis\_\allowbreak{}extra\_\allowbreak{}analysis.py.
 \end{enumerate}
 The scripts source \textasciitilde{}/greenweight\_\allowbreak{}env.sh and \textasciitilde{}/vllm\_\allowbreak{}env.sh, which are not in the repository, and the Llama models are gated. A Hugging Face token must be supplied through the environment and must not be stored in the repository.

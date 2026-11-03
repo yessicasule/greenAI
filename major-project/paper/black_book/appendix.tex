@@ -1,6 +1,6 @@
 \appendix
 \chapter{Number traceability}
-Every number in Chapter 5 traces to a file in the repository. Figures derived during thesis preparation are identified as such.
+The numbers in Chapter 5 trace to files in the repository. Checks added in the final revision (minimum-token sensitivity, repeated AUC splits, batch resampling, oracle agreement and router recalculation) come from training/scripts/thesis\_\allowbreak{}review\_\allowbreak{}checks.py and router\_\allowbreak{}truth\_\allowbreak{}check.py, and are exploratory. Figures derived during thesis preparation are identified as such.
 
 
 \begingroup\footnotesize\setlength{\tabcolsep}{4pt}
@@ -9,21 +9,21 @@ Every number in Chapter 5 traces to a file in the repository. Figures derived du
 \textbf{Results in this thesis} & \textbf{Source} & \textbf{Validator or log status} \\
 \midrule
 \endhead
-Table 5.1 and clean rows of Table 5.9 & routing\_\allowbreak{}run\{5,6,7\}\_\allowbreak{}per\_\allowbreak{}prompt.csv; paper/results.md. Recomputed from raw CSVs. & Log: runs 5-6 PASS with 1 WARN; run 7 clean by throughput check. No committed validator output for runs 4-7 \\
+Table 5.1 and clean rows of Table 5.9 & routing\_\allowbreak{}run\{5,6,7\}\_\allowbreak{}per\_\allowbreak{}prompt.csv; paper/results.md. Recomputed from raw CSVs. & Log: runs 5-6 PASS with 1 WARN; run 7 clean by throughput check. No committed validator output for runs 4-7 \\*
 Table 5.2 & paper/analysis/tier\_\allowbreak{}medians.csv; routing\_\allowbreak{}run\{5,6,7\}\_\allowbreak{}per\_\allowbreak{}prompt.csv & Session 1 passed the validator, but its 16-bit value is withdrawn \\
 Table 5.3 & routing\_\allowbreak{}run\{5,6,7\}\_\allowbreak{}per\_\allowbreak{}prompt.csv and conditions CSVs. Derived for this thesis. & As Table 5.1 \\
 Table 5.4, Figures 5.1 and 5.2 & paper/analysis/session5\_\allowbreak{}summary.csv, session5\_\allowbreak{}paired.csv; results/session5\_\allowbreak{}run\{1,2,3\}\_\allowbreak{}* & verify\_\allowbreak{}results.py does not cover these; session5\_\allowbreak{}analysis.py flagged none \\
 Table 5.6, Figure 5.3 & results/session2\_\allowbreak{}j1784; results/session5\_\allowbreak{}acc\_\allowbreak{}j2062, j2067 & No verdict row \\
-Tables 5.7, 5.8, 5.12, 5.13, 5.14 & paper/analysis/thesis\_\allowbreak{}*.csv from training/scripts/thesis\_\allowbreak{}extra\_\allowbreak{}analysis.py. Derived for this thesis; exploratory. & Not validated by verify\_\allowbreak{}results.py \\
+Tables 5.7, 5.8, 5.12, 5.13 & paper/analysis/thesis\_\allowbreak{}*.csv from training/scripts/thesis\_\allowbreak{}extra\_\allowbreak{}analysis.py. Derived for this thesis; exploratory. & Not validated by verify\_\allowbreak{}results.py \\
 Earlier rows of Table 5.9, Figure 5.4 & paper/results.md; routing\_\allowbreak{}run4\_\allowbreak{}per\_\allowbreak{}prompt.csv; results/energy\_\allowbreak{}per\_\allowbreak{}inference.csv & Log: run 4 passed, with its 16-bit phase disrupted \\
 GPU units & routing\_\allowbreak{}run\{1-7\}\_\allowbreak{}info.json; run\{4,5,6\}\_\allowbreak{}nvidia\_\allowbreak{}smi.txt. & Not applicable \\
 Diagnostics & micro\_\allowbreak{}1706.out, micro\_\allowbreak{}1732.out; results.md & Not applicable \\
-Table 5.10, Figure 5.5 & routing\_\allowbreak{}run\{5,6,7\}\_\allowbreak{}conditions.csv; paper/analysis/routing\_\allowbreak{}run*\_\allowbreak{}conditions\_\allowbreak{}ci.csv, *\_\allowbreak{}paired.csv, *\_\allowbreak{}agreement.csv, *\_\allowbreak{}by\_\allowbreak{}difficulty.csv & Fuzzy-vs-random WARN is reported as a finding \\
-Table 5.11 & paper/analysis/session5\_\allowbreak{}routing\_\allowbreak{}*.csv; results.md & Not covered by verify\_\allowbreak{}results.py \\
-Same-answer share & paper/analysis/session5\_\allowbreak{}paired.csv & Not covered by verify\_\allowbreak{}results.py \\
-\bottomrule
+Table 5.10 & routing\_\allowbreak{}run\{5,6,7\}\_\allowbreak{}conditions.csv; paper/analysis/routing\_\allowbreak{}run*\_\allowbreak{}conditions\_\allowbreak{}ci.csv, *\_\allowbreak{}paired.csv, *\_\allowbreak{}agreement.csv, *\_\allowbreak{}by\_\allowbreak{}difficulty.csv & Fuzzy-vs-random WARN is reported as a finding \\*
+Table 5.11 & paper/analysis/session5\_\allowbreak{}routing\_\allowbreak{}*.csv; results.md & Not covered by verify\_\allowbreak{}results.py \\*
+Same-answer share & paper/analysis/session5\_\allowbreak{}paired.csv & Not covered by verify\_\allowbreak{}results.py \\*
+\bottomrule\noalign{\nobreak}
 \end{longtable}
 \endgroup
 
-The figures ``\textasciitilde{}40\% energy savings'' and ``\textless{}1\% accuracy loss'' from early project documents are unverified, came from an assumed linear model, and must not appear in the thesis or the presentation as results. The 40- and 64-prompt Qwen and batch-32 trials and the 10-prompt smoke tests are excluded from the results.
+The figures ``\textasciitilde{}40\% energy savings'' and ``\textless{}1\% accuracy loss'' from early project documents are unverified, came from an assumed linear model, and are not results of this work. The 40- and 64-prompt Qwen and batch-32 trials and the 10-prompt smoke tests are excluded from the results.
 
