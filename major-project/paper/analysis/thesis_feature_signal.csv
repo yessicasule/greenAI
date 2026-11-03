@@ -1,0 +1,6 @@
+target,positives,rho_flesch_kincaid,p_flesch_kincaid,rho_token_length,p_token_length,rho_entropy,p_entropy,rho_syntax_depth,p_syntax_depth,rho_has_code_or_math,p_has_code_or_math,cv_auc
+"A: float16 right, 4-bit wrong",44,-0.0698,0.1192,0.0458,0.3066,-0.0256,0.5675,-0.052,0.2454,-0.0515,0.2503,0.5147
+A: float16 correct,81,-0.0334,0.4562,0.0,0.9993,-0.0391,0.3831,-0.0433,0.3337,-0.0695,0.1206,0.5171
+"B 8B: float16 right, AWQ wrong",34,-0.0157,0.7269,0.091,0.0419,0.0749,0.0943,0.0442,0.3243,-0.0116,0.7957,0.4327
+B 8B: float16 correct,182,-0.0308,0.4916,0.0239,0.5932,0.1601,0.0003,-0.048,0.2842,-0.1836,0.0,0.6508
+B: 1B float16 correct,82,-0.0531,0.2359,0.0217,0.6282,0.0485,0.2787,-0.0266,0.5526,-0.122,0.0063,0.582

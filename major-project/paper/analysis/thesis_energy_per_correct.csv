@@ -1,0 +1,64 @@
+stack,run,pool,policy,j_per_request,acc,j_per_correct
+A,run5,1B tiers,static_4bit,130.083,0.11,1182.575
+A,run5,1B tiers,static_8bit,323.214,0.186,1737.711
+A,run5,1B tiers,static_16bit,166.282,0.162,1026.43
+A,run5,1B tiers,fuzzy_router,238.012,0.156,1525.715
+A,run5,1B tiers,oracle,140.068,0.258,542.898
+A,run5,1B tiers,random_matched,241.318,0.166,1456.352
+A,run5,1B tiers,threshold_router,184.9,0.12,1540.833
+A,run6,1B tiers,static_4bit,130.246,0.11,1184.057
+A,run6,1B tiers,static_8bit,320.246,0.186,1721.755
+A,run6,1B tiers,static_16bit,173.902,0.162,1073.467
+A,run6,1B tiers,fuzzy_router,239.338,0.156,1534.221
+A,run6,1B tiers,oracle,141.018,0.258,546.583
+A,run6,1B tiers,random_matched,242.168,0.166,1461.482
+A,run6,1B tiers,threshold_router,184.24,0.12,1535.333
+A,run7,1B tiers,static_4bit,128.519,0.11,1168.353
+A,run7,1B tiers,static_8bit,316.844,0.186,1703.462
+A,run7,1B tiers,static_16bit,155.426,0.162,959.417
+A,run7,1B tiers,fuzzy_router,231.784,0.156,1485.796
+A,run7,1B tiers,oracle,134.086,0.258,519.711
+A,run7,1B tiers,random_matched,234.168,0.166,1413.205
+A,run7,1B tiers,threshold_router,181.91,0.12,1515.917
+B,run1,8B precisions,static:8b_awq4,239.69,0.35,684.829
+B,run1,8B precisions,static:8b_fp8,422.01,0.372,1134.435
+B,run1,8B precisions,static:8b_fp16,678.08,0.364,1862.857
+B,run1,8B precisions,fuzzy,477.27,0.368,1296.929
+B,run1,8B precisions,oracle,260.48,0.442,589.321
+B,run1,8B precisions,random_matched,477.68,0.366,1305.85
+B,run2,8B precisions,static:8b_awq4,241.45,0.35,689.857
+B,run2,8B precisions,static:8b_fp8,420.55,0.372,1130.511
+B,run2,8B precisions,static:8b_fp16,678.98,0.364,1865.33
+B,run2,8B precisions,fuzzy,477.41,0.368,1297.31
+B,run2,8B precisions,oracle,261.7,0.442,592.081
+B,run2,8B precisions,random_matched,477.26,0.366,1304.345
+B,run3,8B precisions,static:8b_awq4,240.95,0.35,688.429
+B,run3,8B precisions,static:8b_fp8,422.23,0.372,1135.027
+B,run3,8B precisions,static:8b_fp16,679.11,0.364,1865.687
+B,run3,8B precisions,fuzzy,477.68,0.368,1298.043
+B,run3,8B precisions,oracle,261.38,0.442,591.357
+B,run3,8B precisions,random_matched,478.1,0.366,1307.713
+B,run1,1B vs 8B AWQ,static:1b_fp16,104.38,0.164,636.463
+B,run1,1B vs 8B AWQ,static:8b_awq4,239.69,0.35,684.829
+B,run1,1B vs 8B AWQ,fuzzy,220.72,0.322,685.466
+B,run1,1B vs 8B AWQ,oracle,135.82,0.398,341.256
+B,run1,1B vs 8B AWQ,learned@0.5,239.69,0.35,684.829
+B,run1,1B vs 8B AWQ,learned@0.7,239.69,0.35,684.829
+B,run1,1B vs 8B AWQ,learned@0.9,239.69,0.35,684.829
+B,run1,1B vs 8B AWQ,random_matched,218.57,0.321,680.479
+B,run2,1B vs 8B AWQ,static:1b_fp16,104.56,0.164,637.561
+B,run2,1B vs 8B AWQ,static:8b_awq4,241.45,0.35,689.857
+B,run2,1B vs 8B AWQ,fuzzy,222.0,0.322,689.441
+B,run2,1B vs 8B AWQ,oracle,136.09,0.398,341.935
+B,run2,1B vs 8B AWQ,learned@0.5,241.45,0.35,689.857
+B,run2,1B vs 8B AWQ,learned@0.7,241.45,0.35,689.857
+B,run2,1B vs 8B AWQ,learned@0.9,241.45,0.35,689.857
+B,run2,1B vs 8B AWQ,random_matched,220.15,0.321,685.612
+B,run3,1B vs 8B AWQ,static:1b_fp16,104.56,0.164,637.561
+B,run3,1B vs 8B AWQ,static:8b_awq4,240.95,0.35,688.429
+B,run3,1B vs 8B AWQ,fuzzy,222.27,0.322,690.28
+B,run3,1B vs 8B AWQ,oracle,135.97,0.398,341.633
+B,run3,1B vs 8B AWQ,learned@0.5,240.95,0.35,688.429
+B,run3,1B vs 8B AWQ,learned@0.7,240.95,0.35,688.429
+B,run3,1B vs 8B AWQ,learned@0.9,240.95,0.35,688.429
+B,run3,1B vs 8B AWQ,random_matched,219.71,0.321,684.882

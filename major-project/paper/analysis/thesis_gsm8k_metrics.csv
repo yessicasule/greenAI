@@ -1,0 +1,12 @@
+stack,config,strict,flexible
+A,16bit_base,0.0616,0.0616
+A,16bit_qat_adapter,0.0609,0.0609
+A,4bit_base,0.0441,0.0633
+A,4bit_qat_adapter,0.0187,0.0411
+A,8bit_base,0.1037,0.1037
+A,8bit_qat_adapter,0.0754,0.0754
+B,1b_fp16,0.0663,0.0922
+B,1b_fp8,0.0842,0.0842
+B,8b_awq4,0.5769,0.6054
+B,8b_fp16,0.6342,0.7461
+B,8b_fp8,0.5684,0.6737
