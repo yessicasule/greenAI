@@ -1,0 +1,87 @@
+\chapter{Literature Survey and Research Gap}
+Existing work establishes that quantization and the choice of serving engine can each change inference energy, and that energy-aware routing between models can be effective. The reviewed work leaves open three narrower questions, on paired comparison of quantization implementations, on the validity of energy measurement under host interference, and on prompt-level precision routing evaluated in joules.
+
+\section{Review method}
+Sources were located through arXiv, ACL Anthology, USENIX, Crossref and targeted web searches, in November 2026. Search terms combined LLM inference energy, quantization, FP8, AWQ, bitsandbytes, vLLM, precision routing and energy-aware routing. Papers were retained if they measured or modelled inference energy, implemented low-precision execution, or routed queries using cost or quality signals. The search was targeted, not a systematic review, so the absence of a work from this chapter does not establish that none exists.
+
+\section{Evolution of the problem}
+Early work established the cost of training and argued for efficiency as an evaluation criterion~\cite{b1,b2,b3,b4}. Those studies relied largely on estimation and concern training, so they say little about the per-token cost of serving. Samsi et al. moved attention to inference, benchmarking LLaMA on V100 and A100 GPUs at multi-GPU scale~\cite{b5}.
+
+Later studies decomposed that cost. Vellaisamy et al. model a request as a fixed cost plus a marginal per-token cost, and show on H100 and H200 that token energy can fall while request energy rises~\cite{b8}. Wilkins et al. fit workload-based energy models for offline scheduling~\cite{b9}. Stojkovic et al. and DynamoLLM adjust cluster-level settings such as instance count, parallelism and GPU frequency, with DynamoLLM reporting 53\% energy savings at service level~\cite{b10,b11}, and POLCA addresses power oversubscription~\cite{b12}. These systems treat the model's numeric precision as fixed or peripheral, which leaves precision as a separate question.
+
+\section{Energy of quantized inference}
+The published findings appear to disagree, and the differences in baseline and workload account for much of that disagreement.
+
+Poddar et al. report that bitsandbytes 8-bit and 4-bit raise energy to almost 2 times at equal batch size, because computation still runs in 16-bit, and that savings arise from the larger batches quantization permits~\cite{b6}. Their software tools, CodeCarbon and Carbontracker, sampled every 10 s in the main runs, which suits long workloads better than individual generations.
+
+Basta evaluates ten weight-only strategies in Transformers on four GPUs, measuring GPU energy with Zeus, and reports that bitsandbytes int8 and EETQ int8 save up to 4 times against FP32 on short generation~\cite{b47}. This does not contradict Poddar et al. directly. The baseline is FP32 rather than a 16-bit format, the cited case is prefill-heavy (1,000 input tokens and 1 output token), and dequantization overhead is explained as amortized during prefill. Basta deliberately avoids vLLM and TensorRT-LLM to isolate quantization, so that study does not test engine-level kernels, and it lists separating memory-access from compute energy as future work.
+
+TokenPowerBench reports that FP8 cuts energy per token by about 30\% on Llama 3 405B, and that vLLM and TensorRT-LLM reduce energy per token by 25-40\% against Transformers~\cite{b7}. It treats quantization and engine as separate sensitivity studies at a scale far above a single-GPU deployment, and reports neither repeat-run variance nor sensor validation.
+
+These studies suggest that the answer depends on baseline, workload phase and implementation. They do not provide, in the works reviewed, a paired comparison of bitsandbytes and native vLLM tiers against float16 of the same model on one GPU in a decode-heavy workload.
+
+\section{Validity of energy measurement}
+The instruments themselves have limits. Yang et al. tested NVIDIA's on-board sensor on over 70 GPUs against an external meter and found that only 25\% of runtime is sampled for power on A100 and H100~\cite{b17}. Zeus, LLMCarbon, Carbontracker and Henderson et al. made measurement and reporting practical~\cite{b13,b14,b15,b16}, but ease of measurement does not establish that a given run is undisturbed.
+
+Isolation practices vary. Basta verifies an otherwise idle GPU with nvidia-smi~\cite{b47}. Vellaisamy et al. work on a shared research cluster, use warm-up runs and accept replay windows only within 5\% variation, but do not describe co-tenant detection~\cite{b8}. Both approaches focus on the GPU. Neither addresses a case in which the GPU is unshared and yet the workload is slowed from the host side. The systems literature has long warned that innocuous setup differences can bias conclusions~\cite{b18} and has set rules for reporting performance~\cite{b19}, but these warnings have not been applied, in the works reviewed, to joules per token on shared nodes.
+
+\section{Dynamic precision}
+LLM.int8() and NF4 made low-bit weights accessible~\cite{b20,b21}, and GPTQ, AWQ and SmoothQuant improved post-training accuracy~\cite{b22,b23,b24}. Each selects one static precision.
+
+Recent work varies precision at run time. Any-Precision LLM overlays several bit-widths in one memory footprint, but reports latency, throughput and memory, and does not specify a selection policy~\cite{b25}. DP-LLM assigns precision per layer, on the observation that layer sensitivity changes across decoding steps~\cite{b50}. FlexQuant switches precision during token generation using entropy and KL divergence, reporting a 1.3 times speedup~\cite{b51}. MoBiQuant uses a token-aware router, reporting throughput gains of up to 1.34 times~\cite{b52}.
+
+Two limits matter here. These methods need custom kernels or engines and judge success by speed, not joules. Their signals are also internal to the model and act at layer or token level. Their shared premise, that sensitivity varies within a generation, offers a possible explanation for why a single decision made from the prompt text might be too coarse. This thesis tests the prompt-level decision directly.
+
+\section{Query routing}
+A recent survey classifies routers by when they decide, what information they use and how they compute the decision, and lists text length and syntactic complexity among heuristic difficulty signals~\cite{b53}. It presents these as lightweight options and provides no systematic empirical comparison with learned routers.
+
+FrugalGPT cascades across paid APIs~\cite{b28}. RouteLLM learns from preference data, and its results caution against assuming a router works: Arena-only routers perform at or near random on MMLU and below random on GSM8K, and they beat random only with augmented data~\cite{b29}. Hybrid LLM trains a BERT-style encoder on the quality gap between a small and a large model, and measures cost as the share of queries sent to the small model~\cite{b30}. AutoMix verifies a small model's output and routes with a POMDP~\cite{b31}. RouterBench provides an evaluation benchmark~\cite{b32}. These routers target price or call share, and each estimates quality in some form, not surface complexity alone.
+
+Energy-aware routing also exists. GreenServ routes among 16 models using a contextual bandit, measuring energy with Zeus and reporting 31\% less energy than a random baseline with higher accuracy~\cite{b48}. In its ablation, task type gave the largest reduction in regret, while the text complexity feature slightly increased regret. Siddiqui et al. train a language-model router on queries profiled offline, polling NVML at 200 ms on A100 GPUs, and report about 23\% less energy than UniRoute at nearly the same accuracy~\cite{b49}. Both route among different models, and neither lists quantized variants in its pool. Its Random baseline is not described as matched to the router's mix, so routing intelligence cannot be separated from a shift in model mix.
+
+Fuzzy logic~\cite{b33,b34} has an established rationale for interpretable control. Its readability inputs, such as the Flesch-Kincaid grade~\cite{b35}, were designed for human readers and not for predicting quantization sensitivity, so that link requires empirical testing.
+
+\section{Comparison of existing approaches}
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{30.1mm}>{\raggedright\arraybackslash}p{24.8mm}>{\raggedright\arraybackslash}p{26.5mm}>{\raggedright\arraybackslash}p{23.6mm}>{\raggedright\arraybackslash}p{31.0mm}}
+\toprule
+\textbf{Work} & \textbf{Variable studied} & \textbf{Energy evidence} & \textbf{Limitation for this thesis's question} & \textbf{Relationship to this thesis} \\
+\midrule
+\endhead
+Poddar et al.~\cite{b6} & bitsandbytes, batch size, tasks & CodeCarbon, Carbontracker; about 10 s sampling & Single quantization path; software tools & Stack A tests a similar path at batch 1 with a counter \\
+Basta~\cite{b47} & Ten libraries, four GPUs & Zeus; GPU only & FP32 baseline; no serving engine & Different baseline and workload; complementary \\
+TokenPowerBench~\cite{b7} & Models, engines, FP8 & NVML/DCGM, RAPL, IPMI & FP8 at 405B only; validity checks not stated & Stack B finds comparable direction at 1B and 8B \\
+Vellaisamy et al.~\cite{b8} & Request vs token energy & NVML cumulative counter & BFloat16 only; co-tenant control not described & Same instrument; supplies the per-request caution \\
+Yang et al.~\cite{b17} & Sensor accuracy & External meter comparison & Sensor, not host interference & Basis for a stated threat to validity \\
+Any-Precision LLM~\cite{b25} & Overlaid bit-widths & Not measured & No selection policy & Same idea of tiers; this thesis adds joules \\
+DP-LLM, FlexQuant, MoBiQuant~\cite{b50,b51,b52} & Layer or token precision & Not the reported metric & Custom execution; speed-based evaluation & Finer granularity; motivates the coarseness hypothesis \\
+RouteLLM, Hybrid LLM~\cite{b29,b30} & Router between two models & Not measured & Cost as calls or price & Provides random baseline and quality-prediction ideas \\
+GreenServ, Siddiqui et al.~\cite{b48,b49} & Energy-aware routing among models & Zeus; NVML polled at 200 ms & Different models, not precision tiers & Closest routing work; agrees that text complexity is weak \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Research gap}
+The following gaps are claimed for the works reviewed.
+
+\begin{itemize}
+\item \textbf{G1, paired implementation comparison.} Quantization energy has been studied within Transformers~\cite{b6,b47} and, separately, at very large scale across engines~\cite{b7}. No reviewed work compares bitsandbytes and native vLLM tiers against float16 of the same model, on one GPU, in a decode-heavy workload at batch sizes 1 and 8, while also reporting the accuracy trade-off.
+\item \textbf{G2, validity under host interference.} Existing checks focus on the sensor~\cite{b17} or on GPU occupancy~\cite{b47}. No reviewed work shows that repeat-run agreement, a co-tenancy check and an automated validator can together accept an energy reading inflated several times by a slowdown not visible at those checks.
+\item \textbf{G3, prompt-level precision routing in joules.} Dynamic-precision work reports speed at layer or token level~\cite{b25,b50,b51,b52}, and energy-aware routing selects among different models~\cite{b48,b49}. No reviewed work evaluates routing between precision tiers using measured energy and a random baseline matched to the router's mix, or tests surface features as direct predictors of sensitivity to quantization.
+\end{itemize}
+\section{How this thesis addresses the gap}
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{12.6mm}>{\raggedright\arraybackslash}p{65.1mm}>{\raggedright\arraybackslash}p{63.9mm}}
+\toprule
+\textbf{Gap} & \textbf{Approach} & \textbf{What distinguishes it} \\
+\midrule
+\endhead
+G1 & Stack A and Stack B against float16 of the same model, with the same 500 prompts & Paired savings with bootstrap intervals, and throughput and power reported alongside energy \\
+G2 & Documents the failure of three safeguards, then applies 2 s monitoring on Stack B & Reports the project's own withdrawn baseline and an unresolved confound \\
+G3 & Replay on a prompt-by-configuration grid of measured energy & Matched random baseline, threshold sweep and direct feature tests, with a negative result reported \\
+\bottomrule
+\end{longtable}
+\endgroup
+

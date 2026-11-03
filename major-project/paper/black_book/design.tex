@@ -1,0 +1,233 @@
+\chapter{Methodology}
+The method measures one fixed prompt set on every configuration, then evaluates every router by lookup on that measured grid. Decoding is greedy, so each configuration's answer to a prompt does not depend on the routing policy. A policy's energy and correctness are therefore exact functions of measured data.
+
+\section{System architecture}
+The system has four layers: a shared workload, two inference stacks, one measurement layer and an offline analysis layer. Stack A uses bitsandbytes quantization~\cite{b20,b21}, and Stack B uses vLLM~\cite{b27}, with FP8 support and Marlin kernels for AWQ~\cite{b44,b45}. Figure 3.1 shows how the layers connect.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_architecture.png}
+\caption[System architecture]{System architecture \textperiodcentered{} drawn from the repository's scripts}
+\end{figure}
+Holding the workload and meter fixed makes the inference stack the variable under test.
+
+\section{Experimental workflow}
+Each configuration follows a fixed order: warm-up, measurement, logging, then checks. A run enters the analysis only if it passes the disruption check, which was added after the pitfall in section 5.5 was found.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_workflow.png}
+\caption[Measurement workflow]{Measurement workflow \textperiodcentered{} from session scripts and session5\_\allowbreak{}analysis.py}
+\end{figure}
+Stack B applies this check through its monitor and analysis script. Stack A's clean runs were identified after the fact from throughput and power, because the check did not yet exist when they were planned.
+
+\section{Modules}
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{32.6mm}>{\raggedright\arraybackslash}p{53.7mm}>{\raggedright\arraybackslash}p{55.3mm}}
+\toprule
+\textbf{Module} & \textbf{Purpose} & \textbf{Implementation} \\
+\midrule
+\endhead
+Evaluation set builder & Builds 500 unique, stratified prompts; fails rather than pads with duplicates & prepare\_\allowbreak{}eval\_\allowbreak{}dataset.py \\
+Stack A runner & Measures bitsandbytes tiers at batch 1 and computes routing conditions & kaggle\_\allowbreak{}routing\_\allowbreak{}experiment.py \\
+Stack B runner & Measures vLLM configurations at batch 1 and 8, with a stall watchdog & vllm\_\allowbreak{}energy\_\allowbreak{}benchmark.py, session5\_\allowbreak{}vllm.sh \\
+Energy meter & Reads the GPU's cumulative counter around each generation call & GpuEnergyMeter class (Stack A); Meter class (Stack B) \\
+Host monitor & Samples GPU, co-tenant, load and CPU clock data every 2 s (Stack B) & Monitor thread in vllm\_\allowbreak{}energy\_\allowbreak{}benchmark.py \\
+Complexity sensor & Computes five normalized prompt features & router/complexity\_\allowbreak{}scorer.py \\
+Fuzzy controller & Maps features to a complexity score and a tier & router/fuzzy\_\allowbreak{}controller.py, routellm\_\allowbreak{}bridge.py \\
+LoRA adapters & Tier adapters tested for accuracy recovery on Stack A & adapters/, adapter-training.ipynb \\
+Accuracy evaluation & Runs standard benchmarks per configuration & kaggle\_\allowbreak{}accuracy\_\allowbreak{}eval.py, session5\_\allowbreak{}accuracy.sh \\
+Analysis & Bootstrap intervals, routing replay, figures & paper\_\allowbreak{}a\_\allowbreak{}analysis.py, session5\_\allowbreak{}analysis.py, session5\_\allowbreak{}router\_\allowbreak{}replay.py \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+The module routellm\_\allowbreak{}bridge.py is a documented threshold pass-through. It does not load or call a RouteLLM model, because RouteLLM's checkpoints are trained on battles between named models and carry no signal for precision tiers.
+
+\section{Energy measurement}
+Energy for a generation call is the change in the GPU's cumulative hardware counter across that call, where C is the NVML reading~\cite{b43} in joules.
+
+\begin{equation}
+E_i = C(t_{\mathrm{end}}) - C(t_{\mathrm{start}})
+\end{equation}
+Throughput and mean power are derived from the same logs. They form the basis of the disruption check.
+
+\begin{equation}
+T_i = \frac{n_i}{t_i} \qquad\qquad P_i = \frac{E_i}{t_i}
+\end{equation}
+The two stacks report energy per token differently. Stack A logs each prompt separately, so it uses a median over prompts with at least 16 generated tokens. Very short generations are excluded because the counter often does not advance during them. Stack B divides total energy by total output tokens, which short generations cannot distort.
+
+\begin{equation}
+\text{Stack A: } e = \operatorname{median}_{i:\, n_i \geq 16} \frac{E_i}{n_i}\qquad\qquad \text{Stack B: } e = \frac{\sum_i E_i}{\sum_i n_i}
+\end{equation}
+In a batched call, energy is attributed to prompts in proportion to their output tokens.
+
+\begin{equation}
+E_i = E_b \cdot \frac{n_i}{\sum_{j \in b} n_j}
+\end{equation}
+Saving is reported against the same model's float16 at the same batch size. Its interval comes from a paired bootstrap over prompts with 2,000 resamples, where the ratio is recomputed on each resample.
+
+\begin{equation}
+\text{saving} = 1 - \frac{e_{\mathrm{config}}}{e_{\mathrm{float16}}}
+\end{equation}
+\textbf{Algorithm 2: measure one configuration}
+
+\begin{enumerate}
+\item Load the configuration, so that it is the only one resident in GPU memory, and record the GPU UUID and driver.
+\item Run 5 warm-up generations and discard them.
+\item For each prompt or batch, read the counter, generate with greedy decoding up to 128 new tokens, wait for the GPU to finish, and read the counter again. Stack A synchronizes explicitly with torch.cuda.synchronize().
+\item Log energy, output tokens, latency, response and correctness for each prompt.
+\item On Stack B, sample GPU utilisation, power, clocks, co-tenant processes, host load and CPU clock every 2 s throughout, and stop a configuration after 900 s with no progress.
+\item Compute energy per token, throughput and mean power, and apply the checks in section 3.2.
+\end{enumerate}
+\section{Complexity sensor}
+The sensor converts a prompt into five features in the range 0 to 1. Continuous features are normalized against fixed ranges calibrated on the 500-prompt set.
+
+\begin{equation}
+\hat{x} = \min\!\left(1,\ \max\!\left(0,\ \frac{x - x_{\min}}{x_{\max} - x_{\min}}\right)\right)
+\end{equation}
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{36.7mm}>{\raggedright\arraybackslash}p{49.4mm}>{\raggedright\arraybackslash}p{18.3mm}>{\raggedright\arraybackslash}p{34.4mm}}
+\toprule
+\textbf{Feature} & \textbf{Definition} & \textbf{Range} & \textbf{LOW/MEDIUM and MEDIUM/HIGH edges} \\
+\midrule
+\endhead
+Flesch-Kincaid grade & Readability grade from textstat & 0 to 18 & 5.0, 7.7 \\
+Token length & Characters divided by 4, an approximation & 0 to 154 & 0.086, 0.125 (normalized) \\
+Entropy & Character-level Shannon entropy, in bits & 3.3 to 5.0 & 3.98, 4.16 \\
+Syntax depth & Maximum spaCy dependency-tree depth & 2 to 14 & 4, 5 \\
+Code or maths & 1 for code, LaTeX or maths symbols; code-request words; or two or more numbers with a quantity cue & 0 or 1 & Binary \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+The grade and entropy are computed as follows, where w, s and y count words, sentences and syllables, and p\_\allowbreak{}c is the share of character c.
+
+\begin{equation}
+\mathrm{FK} = 0.39\,\frac{w}{s} + 11.8\,\frac{y}{w} - 15.59\qquad\qquad H = -\sum_c p_c \log_2 p_c
+\end{equation}
+The edges are empirical terciles of each feature on the evaluation set, computed by calibrate\_\allowbreak{}breakpoints.py from the feature values alone, never from difficulty labels. The ranges and edges were therefore tuned on the same prompts used for evaluation, which is a limitation noted in section 5.8.
+
+\section{Fuzzy controller}
+The controller is a Mamdani system built with scikit-fuzzy. MEDIUM is a triangle peaking at the midpoint of the two edges. LOW and HIGH are saturating trapezoidal shoulders, so a term reaches full membership before the end of the range.
+
+The rule base has 15 rules. Nine form a complete grid over the two features that separated difficulty best on this set:
+
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{52.7mm}>{\raggedright\arraybackslash}p{28.5mm}>{\raggedright\arraybackslash}p{29.0mm}>{\raggedright\arraybackslash}p{28.5mm}}
+\toprule
+\textbf{Flesch-Kincaid \textbackslash{} Syntax depth} & \textbf{Low} & \textbf{Medium} & \textbf{High} \\
+\midrule
+\endhead
+Low & LOW & LOW & MEDIUM \\
+Medium & MEDIUM & MEDIUM & HIGH \\
+High & MEDIUM & HIGH & HIGH \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+Six modifier rules add the other features:
+
+\begin{itemize}
+\item Code or maths present gives HIGH.
+\item Long length with high readability grade gives HIGH.
+\item Long length with medium or low grade gives MEDIUM (two rules).
+\item High entropy with high grade gives HIGH.
+\item Low grade, short length, low depth and no code gives LOW.
+\end{itemize}
+Rule strengths use minimum for AND and maximum for aggregation. The output y runs from 0 to 100 with three triangular terms, and centroid defuzzification gives the score. The score y* selects the tier.
+
+\begin{equation}
+y^{*} = \frac{\int y\,\mu(y)\,dy}{\int \mu(y)\,dy}
+\end{equation}
+\begin{equation}
+\text{tier} = \text{low if } y^{*} < 33;\quad \text{middle if } 33 \leq y^{*} \leq 66;\quad \text{high if } y^{*} > 66
+\end{equation}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figs/fig_router.png}
+\caption[Router pipeline]{Router pipeline \textperiodcentered{} from fuzzy\_\allowbreak{}controller.py and session5\_\allowbreak{}router\_\allowbreak{}replay.py}
+\end{figure}
+In the two-option 1B/8B pool, the middle and high tiers both map to the larger option.
+
+\textbf{Algorithm 1: route one prompt}
+
+\begin{enumerate}
+\item Compute the five raw features of the prompt.
+\item Normalize each continuous feature against its fixed range.
+\item Fuzzify the features and evaluate all 15 rules.
+\item Aggregate the fired output terms and take the centroid y*.
+\item Set w = y* / 100, and return the low tier if w \textless{} 0.33, the high tier if w \textgreater{} 0.66, and the middle tier otherwise.
+\end{enumerate}
+This design came from two rounds of diagnosis. An earlier bridge escalated every score of exactly 50 to 16-bit, and 47\% of prompts scored exactly 50 because no rule discriminated. Fixing both left 32\% of prompts on the neutral score. Runs 5-7 and all of Session 5 use the corrected router.
+
+\section{LoRA adapters}
+Three LoRA adapters~\cite{b26} were tested on Stack A to determine whether they recover accuracy lost to quantization. They target q\_\allowbreak{}proj and v\_\allowbreak{}proj, with ranks 16, 8 and 4 for the 4-bit, 8-bit and 16-bit tiers, so that lower precision receives more capacity. All three were trained on the 4-bit NF4 model, split by a prompt complexity label, so they do not constitute tier-specific quantization-aware training.
+
+\textbf{The adapters also form part of the measured Stack A configurations.} The routing experiment attaches an unmerged adapter to every tier, including float16, in all of runs 1-7. Session 1 alone ran without adapters. Stack A energy results therefore describe bitsandbytes with an attached adapter, and do not isolate the quantization kernel. Section 5.1 sets out the implications.
+
+\section{Accuracy and routing evaluation}
+Two accuracy measures are kept separate. Benchmark accuracy comes from lm-eval-harness on tinyMMLU, tinyHellaswag and tinyGSM8k, with 100 items per task. Routing correctness uses a reference-match proxy on the 500 prompts: numeric match for short numeric answers, normalized substring match for references of up to six words, and stem-level token F1 of at least 0.5 otherwise. The proxy is coarse, and only paired differences between policies are interpreted. tinyGSM8k is reported under flexible-extract scoring, as in the project's logs; strict-match scores are also given in section 5.4, because the choice affects the conclusion.
+
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{38.3mm}>{\raggedright\arraybackslash}p{59.3mm}>{\raggedright\arraybackslash}p{44.0mm}}
+\toprule
+\textbf{Policy} & \textbf{Rule} & \textbf{Purpose} \\
+\midrule
+\endhead
+Static & Always one configuration & The baseline a router must outperform \\
+Fuzzy & Algorithm 1 & The system under test \\
+Random-matched & Stack A: exact shuffle of the fuzzy router's tier list, mean of 20 draws. Stack B: random choice with the same mix in expectation, mean of 1,000 draws & Separates routing intelligence from the effect of tier mix \\
+Threshold (Stack A) & The same cuts applied to the plain mean of the five features & Tests what the fuzzy inference adds \\
+Learned (Stack B, 1B/8B pool) & Logistic regression on the same features, predicting whether the cheaper option is correct; 5-fold cross-fitted, thresholds 0.5, 0.7 and 0.9 & Tests one simple learned alternative \\
+Oracle & Stack A: lowest measured energy among correct tiers for that prompt, or lowest overall if none is correct. Stack B: first correct option when ordered by mean energy, or the cheapest on average if none is correct & Indicates the headroom available to routing \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+The experiment script's own oracle assumed that fewer bits are cheaper, which is false on Stack A. This thesis reports the energy-based oracle from the analysis scripts. Only the Stack A form is a per-prompt energy lower bound, which is why the Stack B oracle can cost more than a static tier.
+
+\textbf{Algorithm 3: replay a routing policy}
+
+\begin{enumerate}
+\item Build a grid of measured energy and correctness for every prompt and configuration.
+\item Score each prompt with the sensor and controller, and map the tiers onto the configurations in the pool.
+\item For each policy, select one configuration per prompt and look up its energy and correctness.
+\item Report mean energy per request and proxy accuracy, with paired bootstrap intervals against a reference policy.
+\end{enumerate}
+\section{Statistical analysis}
+Energy savings use a paired bootstrap over prompts, with 2,000 resamples and 95\% percentile intervals, because per-prompt energy need not be normally distributed. Policy comparisons use the same procedure on per-prompt differences.
+
+Three further analyses were computed offline from the existing logs, using training/scripts/thesis\_\allowbreak{}extra\_\allowbreak{}analysis.py. They use the same data and imply no new GPU measurement.
+
+\begin{enumerate}
+\item \textbf{Accuracy by source dataset.} Paired differences against float16 on each source dataset of the 500 prompts, to check benchmark findings on separate items.
+\item \textbf{Threshold sensitivity.} Replay of the fuzzy score at cuts of 25/75, 30/70, 33/66, 40/60 and 45/55, compared with 1,000 random permutations of each resulting tier assignment.
+\item \textbf{Feature signal.} Spearman correlation of each feature with correctness and with sensitivity to quantization, where a prompt is sensitive if float16 is correct and the low-precision tier is not. A logistic regression on all five features gives a 5-fold cross-validated AUC.
+\end{enumerate}
+Energy per correct answer is also reported, as mean J/request divided by proxy accuracy.
+
+\section{Reasons for the chosen methodology}
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{38.8mm}>{\raggedright\arraybackslash}p{51.5mm}>{\raggedright\arraybackslash}p{51.3mm}}
+\toprule
+\textbf{Decision} & \textbf{Reason} & \textbf{Alternative considered} \\
+\midrule
+\endhead
+Hardware energy counter & Measures the GPU directly, without a sampling assumption in the project's own code & Software estimators with coarse sampling, which suit long jobs better than single prompts \\
+Greedy decoding & Deterministic, so one grid can evaluate every policy & Sampling, which would require separate runs per policy \\
+One configuration resident at a time & Avoids memory and cache effects from other tiers & Interleaved tiers, tested in run 2, which distribute drift across tiers but were measured under load \\
+Two stacks on one model & Tests whether the outcome depends on implementation & Varying bit-width alone, which hides the implementation effect \\
+vLLM added after Stack A & The research plan named low-bit kernels as the response if bitsandbytes showed no saving & Reframing as a latency study only \\
+Fuzzy controller & Rules are readable and editable; routing added about 10 ms per prompt on the CPU & A learned router alone, retained instead as a baseline \\
+Matched random baseline & Separates routing intelligence from tier mix & Comparison with static tiers alone, which can flatter a router \\
+Offline replay & Evaluates every policy from one grid, without further GPU time & Live routing runs per policy \\
+\bottomrule
+\end{longtable}
+\endgroup
+

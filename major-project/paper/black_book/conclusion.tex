@@ -1,0 +1,17 @@
+\chapter{Conclusion and Future Work}
+Whether fewer bits save energy in LLM inference depends on the implementation and not on bit-width alone. With bitsandbytes and attached adapters, 4-bit matched float16 per token and 8-bit cost about 1.8 to 1.9 times as much. With vLLM, FP8 and AWQ 4-bit saved 38\% and 64\% per token at 8B, and these savings were stable across runs and batch sizes.
+
+The accuracy cost of these savings is not yet established. Apparent losses on tinyGSM8k depend on the scoring rule and were not reproduced on separate prompts. Measurement validity proved to be a substantive issue: inflated float16 readings passed three safeguards, and throughput with mean power exposed them. The cause was not isolated, and time of day remains confounded with GPU unit.
+
+Green-Weight's fuzzy router performed no better than a random router with its tier mix at any tested cut, and on the 8B pool it cost about twice as much energy per request as static AWQ. Its features predicted sensitivity to quantization at about chance level. The oracle shows headroom in principle, but this work does not show that any predictor available before generation can capture it.
+
+\section{Future work}
+\begin{enumerate}
+\item \textbf{Measure Stack A without adapters.} Run all three tiers in one clean overnight session. This is required to complete RQ1.
+\item \textbf{Resolve the unit and time confound.} Run the diagnostic on both GPU units, by day and by night, with the UUID recorded.
+\item \textbf{Resolve the accuracy question.} Evaluate full GSM8K at 8B, retaining per-item outputs for paired testing.
+\item \textbf{Separate kernel from engine.} Run bitsandbytes and native kernels within one engine where possible, and measure GPU memory bandwidth to test the memory-traffic explanation.
+\item \textbf{Widen the scope.} Complete the planned Qwen and batch-32 runs, then test other GPU models and continuous batching.
+\item \textbf{Measure whole-system energy.} Add CPU and DRAM energy, and validate NVML with an external meter.
+\item \textbf{Test richer routing signals.} Evaluate online or response-level signals, such as bandits~\cite{b48} or self-verification~\cite{b31}, against the same matched baseline, on held-out prompts.
+\end{enumerate}

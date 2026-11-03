@@ -1,0 +1,49 @@
+\chapter{Introduction}
+This project began as an attempt to save inference energy by routing each prompt to the cheapest adequate precision tier. Early measurements showed that the premise held only on some software stacks, and the work therefore became a measurement study in which routing is the evaluated application.
+
+\section{Background}
+The energy cost of machine learning first attracted attention through studies of model training~\cite{b1,b2,b3}. Attention has since moved to inference, which runs continuously once a model is deployed~\cite{b5}. TokenPowerBench cites industry reports attributing more than 90\% of LLM power consumption to inference~\cite{b7}.
+
+Quantization stores weights in fewer bits and reduces memory by a factor of 2 to 4. A proportional energy saving is often assumed, but energy depends on how long the hardware runs and at what power, and therefore on how the low-precision arithmetic is executed.
+
+\section{Problem statement}
+A per-prompt precision router is useful only if three conditions hold:
+
+\begin{enumerate}
+\item Lower precision consumes less energy per unit of useful output.
+\item The accuracy loss is acceptable on the prompts sent to low precision.
+\item Features available before generation predict which prompts tolerate low precision.
+\end{enumerate}
+The project's first plan assumed savings of roughly 40\% from a linear bit-width model. That figure was never measured and is not a result of this thesis. Each condition above was instead tested empirically, with a prior commitment to report the measured outcome in either direction.
+
+\section{Research questions and objectives}
+The title, gaps, method and results are linked as follows. Gaps G1 to G3 are defined in section 2.8.
+
+
+\begingroup\footnotesize\setlength{\tabcolsep}{4pt}
+\begin{longtable}{>{\raggedright\arraybackslash}p{39.4mm}>{\raggedright\arraybackslash}p{26.4mm}>{\raggedright\arraybackslash}p{7.4mm}>{\raggedright\arraybackslash}p{15.9mm}>{\raggedright\arraybackslash}p{15.3mm}>{\raggedright\arraybackslash}p{28.8mm}}
+\toprule
+\textbf{Research question} & \textbf{Objective} & \textbf{Gap} & \textbf{Method} & \textbf{Result} & \textbf{Status} \\
+\midrule
+\endhead
+RQ1: Does lower precision reduce energy per token, and does the answer depend on the inference stack? & Measure per-token energy of each tier on two stacks & G1 & 3.4; 4.3 & 5.1-5.3 & Answered for Stack B. Provisional for Stack A because adapters were attached \\
+RQ2: What accuracy does each tier cost? & Evaluate benchmark and per-prompt accuracy & G1 & 3.8 & 5.4 & Partly answered; arithmetic cost unresolved \\
+RQ3: How reliably can per-token energy be measured on a shared GPU node? & Identify failed safeguards and define a protocol & G2 & 3.2; 3.4 & 5.5 & Answered; cause of the slowdown not isolated \\
+RQ4: Can routing on prompt-complexity features outperform the best static tier? & Evaluate routers using measured energy & G3 & 3.5-3.8 & 5.6 & Answered: no, for the features and pools tested \\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\section{Contributions}
+\begin{enumerate}
+\item \textbf{A paired comparison of quantization implementations.} bitsandbytes and vLLM tiers are each compared with float16 of the same model, using a hardware energy counter, on one GPU model and one prompt set.
+\item \textbf{A measurement validity study.} Three safeguards that accepted inflated readings are documented, including the project's own, together with a monitoring protocol.
+\item \textbf{A measured evaluation of precision routing.} Fuzzy, random-matched, threshold, learned and oracle policies are compared in joules, with a threshold sensitivity analysis.
+\item \textbf{Evidence on why complexity routing failed.} The sensor's features are tested directly as predictors of sensitivity to quantization.
+\end{enumerate}
+\section{Scope and limits}
+The study covers one GPU model on one shared node, two Llama models, and static batches of 1 and 8. Energy means GPU-board energy; CPU, DRAM and cooling are excluded. Continuous batching under live traffic was not tested.
+
+\section{Thesis organization}
+Chapter 2 reviews related work and establishes the research gap. Chapter 3 presents the methodology, and Chapter 4 the experimental configuration. Chapter 5 presents and discusses the results. Chapter 6 concludes and identifies future work.
+

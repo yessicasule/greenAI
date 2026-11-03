@@ -1,0 +1,46 @@
+%----------------------------------------------------------
+% SPIT black book. Compile with pdflatex (Overleaf default).
+% Names: edit details.tex. Chapters: generated from paper/Thesis_draft.docx
+% by training/scripts/build_black_book.py.
+%----------------------------------------------------------
+\documentclass[12pt]{report}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{xcolor}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm]{geometry}
+\usepackage[hidelinks]{hyperref}
+\setlength{\LTcapwidth}{\linewidth}
+\input{details.tex}
+\begin{document}
+\input{be_title.tex}
+\input{be_certificate1.tex}
+\input{be_certificate2.tex}
+\input{sponsorship_letter.tex}
+\input{students_statement.tex}
+\input{acknowledgments.tex}
+\clearpage
+\pagenumbering{roman}
+\tableofcontents
+\pagebreak
+\listoffigures
+\pagebreak
+\listoftables
+\pagebreak
+\input{list_abbreviations.tex}
+\input{abstract.tex}
+\clearpage
+\pagenumbering{arabic}
+\input{introduction.tex}
+\input{literature_survey.tex}
+\input{design.tex}
+\input{implementation.tex}
+\input{results.tex}
+\input{conclusion.tex}
+\input{research_publication.tex}
+\input{appendix.tex}
+\input{bibliography.tex}
+\end{document}
