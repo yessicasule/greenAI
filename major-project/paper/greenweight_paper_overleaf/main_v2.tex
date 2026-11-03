@@ -1,0 +1,235 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+% All numbers are from paper/results.md (Session 5 runs 1-3, 2026-10-28/29).
+
+\begin{document}
+
+\title{Fewer Bits Save Energy Only With the Right Kernels: Measuring Precision and Energy in LLM Inference on a Shared GPU Cluster}
+
+% TODO: add author names (check the venue's review policy first).
+\author{\IEEEauthorblockA{Sardar Patel Institute of Technology, Mumbai, India}}
+
+\maketitle
+
+\begin{abstract}
+Weight quantization is widely assumed to cut the energy of large language model (LLM) inference. We measure per-token GPU energy with the on-board hardware counter of an NVIDIA RTX~6000~Ada, for two inference stacks, two model sizes and two batch sizes, on a shared academic cluster. With bitsandbytes in Hugging Face Transformers, the most common drop-in path, quantization does not save energy: for Llama-3.2-1B at batch size~1, NF4 4-bit costs the same as float16 (1.6--1.7\,J/token) and LLM.int8 8-bit costs 1.8$\times$ more, because both dequantize to 16-bit at every step. With vLLM's native low-precision kernels, it does: for Llama-3.1-8B-Instruct, FP8 uses 38\% and AWQ 4-bit 64\% less energy per token than float16, at batch size 1 and 8, and FP8 saves 35--38\% at 1B. The saving comes from higher throughput at near-constant power. It is not free: 8B accuracy on knowledge and commonsense tasks is unchanged, but grade-school maths drops by 7 (FP8) and 14 (AWQ) points. We also report a measurement pitfall: on the shared node, daytime float16 measurements were inflated up to 7.7$\times$ by a host-side slowdown that passed an end-of-run co-tenancy check, repeat-run agreement and an automated validator, and we give a monitoring protocol that catches it. Finally, per-prompt routing on prompt-complexity features, between precision tiers or between a 1B and an 8B model, does no better than a random router with the same mix; the best policy we measured is to always serve the 4-bit model.
+\end{abstract}
+
+\begin{IEEEkeywords}
+LLM inference, energy measurement, quantization, FP8, AWQ, vLLM, bitsandbytes, measurement methodology, routing
+\end{IEEEkeywords}
+
+\section{Introduction}
+Quantizing an LLM's weights to 8 or 4 bits shrinks its memory footprint by 2--4$\times$, and a matching energy saving is often assumed. Whether it materialises depends on how the low-precision arithmetic is executed. The most widely used drop-in path, bitsandbytes in Hugging Face Transformers, stores weights in fewer bits but dequantizes them to 16-bit before every matrix multiply, and prior benchmarking found that this can raise inference energy~\cite{poddar2025}. Serving engines such as vLLM~\cite{kwon2023vllm} instead run kernels that compute in FP8 on the tensor cores or dequantize inside the matrix-multiply tile.
+
+We set out to build a router that sends each prompt to the cheapest precision tier able to answer it, and found that on bitsandbytes there was no cheaper tier. This paper measures when fewer bits do and do not save energy, on hardware a typical academic group has: one shared two-GPU node. Our contributions:
+\begin{enumerate}
+\item \textbf{The kernel decides (§\ref{sec:results}).} Under bitsandbytes, 4-bit breaks even with float16 and 8-bit costs 1.8$\times$ more. Under vLLM, FP8 and AWQ 4-bit save 38\% and 64\% energy per token at 8B, at batch size 1 and 8. Power stays roughly constant; the saving comes from throughput.
+\item \textbf{The price is paid in reasoning (§\ref{sec:acc}).} At 8B, knowledge and commonsense accuracy are unchanged while GSM8k drops by 7 and 14 points.
+\item \textbf{A measurement pitfall and a protocol (§\ref{sec:pitfall}).} The same float16 model on the same GPU measured between 1.6 and 13.0\,J/token depending on time of day, while the GPU sat idle. Three standard safeguards accepted the inflated values. Continuous host and GPU monitoring catches it.
+\item \textbf{Routing, measured (§\ref{sec:routing}).} A fuzzy per-prompt precision router used 38--49\% more energy than static float16 under bitsandbytes. With vLLM tiers and a 1B/8B model pair, the same router matches a random router with its mix, and always serving AWQ 4-bit beats every routing policy we tried; an oracle shows the headroom a better predictor could reach.
+\end{enumerate}
+
+\section{Related Work}
+\textbf{Energy of LLM inference.} Poddar et al.~\cite{poddar2025} find that bitsandbytes 8- and 4-bit quantization raises inference energy to almost 2$\times$ at equal batch size (A6000, software estimators), with savings only from the larger batches quantization permits. TokenPowerBench~\cite{niu2026tokenpower} measures joules per token from 1B to 405B parameters, and Vellaisamy et al.~\cite{vellaisamy2026} decompose Llama-3.2-1B request energy on H100/H200. We add a controlled comparison of quantization \emph{implementations} on one GPU with a hardware counter, and the effect of shared infrastructure on the measurement itself.
+\textbf{Measurement and quantization.} Zeus~\cite{you2023zeus} and LLMCarbon~\cite{faiz2024llmcarbon} measure or model deep-learning energy and carbon. LLM.int8()~\cite{dettmers2022int8} and NF4~\cite{dettmers2023qlora} target memory; GPTQ~\cite{frantar2023gptq} and AWQ~\cite{lin2024awq} target memory and accuracy, and vLLM~\cite{kwon2023vllm} serves them with fused kernels.
+\textbf{Routing.} RouteLLM~\cite{ong2024routellm} and FrugalGPT~\cite{chen2023frugalgpt} route or cascade between different models for cost. We evaluate routing both between precision tiers of one model and between model sizes, with measured energy as the cost.
+
+\section{Methodology}
+\label{sec:method}
+\textbf{Hardware.} NVIDIA RTX~6000~Ada (48\,GB, driver 610.43.02) in a shared two-GPU SLURM node (dual AMD EPYC, 224 threads); jobs request one GPU and 8 cores.
+
+\textbf{Workload.} 500 deduplicated prompts (200 easy, 150 medium, 150 hard) from TriviaQA, Alpaca, GSM8K and CodeAlpaca; greedy decoding, at most 128 new tokens, seed 42, 5 discarded warm-up generations, one configuration resident at a time.
+
+\textbf{Energy.} Energy per generation call is the change in the GPU's cumulative on-board counter (NVML \texttt{nvmlDeviceGetTotalEnergyConsumption}, mJ resolution) across the call. It is GPU-board energy only. In batched calls, energy is attributed to prompts in proportion to their output tokens.
+
+\textbf{Stack A: bitsandbytes.} Llama-3.2-1B~\cite{llama3} in Transformers: NF4 4-bit with double quantization and float16 compute; LLM.int8(); float16. Each tier carries a LoRA adapter (Section~\ref{sec:acc} shows they do not help). Batch size~1. Energy per call is bracketed by \texttt{torch.cuda.synchronize()}; J/token is the median over prompts with $\geq$16 generated tokens, since the counter often does not advance for 1--2-token generations.
+
+\textbf{Stack B: vLLM.} vLLM~\cite{kwon2023vllm} 0.31.0 with CUDA graphs and float16 activations. Tiers: float16; FP8 (dynamic per-tensor scales, on the Ada GPU's native FP8 tensor cores); AWQ 4-bit~\cite{lin2024awq} (Marlin kernels, public \texttt{hugging-quants} checkpoint). These kernels never materialise 16-bit weight matrices: FP8 multiplies in FP8, and Marlin dequantizes inside the matrix-multiply tile. Models: Llama-3.2-1B (float16, FP8) and Llama-3.1-8B-Instruct (float16, FP8, AWQ 4-bit). Batch sizes 1 and 8 (static batches of consecutive prompts). Each configuration runs in its own process. J/token is total energy over total output tokens. Three runs, all in daytime on 28--29 October 2026.
+
+\textbf{Monitoring.} For Stack B, a thread samples every 2\,s for the whole run: GPU utilisation, power and SM clock; other processes on our GPU (excluding vLLM's own engine process tree); host load average; and the clock of our pinned CPU cores. A configuration is excluded if a co-tenant appears or its throughput falls more than 20\% below the median of the same configuration across runs, the signature of the disruption in Section~\ref{sec:pitfall}.
+
+\textbf{Accuracy.} lm-eval-harness on tinyMMLU, tinyGSM8k and tinyHellaswag (100 items each, IRT-estimated)~\cite{polo2024tiny}; the Transformers backend for Stack A and the vLLM backend for Stack B. Routing uses a reference-match proxy on our prompts (numeric match, normalised substring match, or token-F1 $\geq$ 0.5).
+
+\section{Energy per Token by Precision}
+\label{sec:results}
+
+\textbf{Stack A: quantization does not save energy.} Three clean runs (on different nights) give 1.66--1.71\,J/token for 4-bit, 3.06--3.12 for 8-bit and 1.59--1.73 for float16 (Table~\ref{tab:bnb}). The 4-bit vs.\ float16 difference changes sign across runs ($+$1.4\%, $-$1.4\%, $+$4.4\%), so they are equal. float16 draws the most power but is fastest; the quantized tiers draw less power but run 1.4$\times$ (4-bit) to 2.8$\times$ (8-bit) slower, and the extra time costs more than the lower power saves.
+
+\begin{table}[t]
+\caption{Stack A (bitsandbytes, Llama-3.2-1B, batch 1), clean runs 5--7. Medians over prompts with $\geq$16 tokens.}
+\label{tab:bnb}
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Tier & tok/s & W & J/token \\
+\midrule
+float16 & 80.7--81.8 & 130--142 & 1.59--1.73 \\
+8-bit LLM.int8 & 29.0--29.6 & 91 & 3.06--3.12 \\
+4-bit NF4 & 56.4--57.4 & 96--97 & 1.66--1.71 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Stack B: quantization saves energy.} Table~\ref{tab:vllm} gives per-token energy for every vLLM configuration. At 8B, FP8 saves 38\% and AWQ 4-bit 64\% relative to float16, at both batch sizes, with 95\% paired bootstrap intervals of about $\pm$1 point. Mean power was 284--299\,W for every 8B configuration. At 1B, FP8 saves 35--38\% at batch 1 (median 36\%) and 37--38\% at batch 8. The running throughput of each configuration stayed within 2\% from the first progress report to the end of the run.
+
+\begin{table}[t]
+\caption{Stack B (vLLM): energy per output token and throughput, median over three runs. Saving is relative to the same model's float16 at the same batch size: median of per-run ratios, with the widest 95\% paired bootstrap interval over runs in brackets.}
+\label{tab:vllm}
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llcccc}
+\toprule
+Model & Tier & bs & J/tok & tok/s & Saving \\
+\midrule
+% generated by session5_analysis.py from 3 run(s): run1, run2, run3
+1B & float16 & 1 & 0.945 & 307 & -- \\
+1B & FP8 & 1 & 0.604 & 413 & $36\%$ \footnotesize[34, 39] \\
+8B & float16 & 1 & 5.311 & 56 & -- \\
+8B & FP8 & 1 & 3.299 & 87 & $38\%$ \footnotesize[38, 38] \\
+8B & AWQ 4-bit & 1 & 1.887 & 158 & $64\%$ \footnotesize[64, 65] \\
+\midrule
+1B & float16 & 8 & 0.139 & 1989 & -- \\
+1B & FP8 & 8 & 0.087 & 2743 & $37\%$ \footnotesize[36, 39] \\
+8B & float16 & 8 & 0.679 & 435 & -- \\
+8B & FP8 & 8 & 0.423 & 673 & $38\%$ \footnotesize[37, 38] \\
+8B & AWQ 4-bit & 8 & 0.245 & 1196 & $64\%$ \footnotesize[64, 65] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Why the stacks differ.} Energy is power $\times$ time. In both stacks the quantized tiers draw similar or lower power than float16; what differs is time. Decoding at small batch sizes is limited by reading the weights from memory once per token. vLLM's FP8 and Marlin kernels read 2$\times$ and 4$\times$ fewer weight bytes and compute on them directly, so they decode faster and finish sooner at nearly the same power. bitsandbytes reads fewer bytes too, but then spends extra kernels dequantizing them to float16, which costs more time than the smaller read saves. The measurements bear this out (Fig.~\ref{fig:why}): at 8B, batch 1, float16 decodes at 56\,tok/s, FP8 at 87 and AWQ 4-bit at 158, while mean power stays within 286--299\,W. Throughput rises by 1.55$\times$ and 2.8$\times$, close to the 2$\times$ and 4$\times$ reduction in weight bytes, and energy falls accordingly. At 1B, FP8 is only 1.35$\times$ faster: a 2.5\,GB model leaves less of each step to weight traffic, so the saving is slightly smaller, as the bandwidth argument predicts.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig_s5_why.pdf}
+\caption{Throughput vs.\ mean GPU power at batch 1. vLLM's quantized tiers (filled) are faster at about the same power; bitsandbytes' quantized tiers (open, grey) are slower at lower power.}
+\label{fig:why}
+\end{figure}
+
+\textbf{Batch size.} Batching to 8 cuts energy per token by 6.8--7.8$\times$ for every tier, since the weights read per step are shared by eight sequences, and the relative savings of FP8 and AWQ are unchanged. vLLM's float16 is itself 41--45\% cheaper per token than bitsandbytes' float16 for the same 1B model at batch~1 (0.94 vs.\ 1.59--1.73\,J/token), so the serving stack matters even before quantization.
+
+\section{Accuracy}
+\label{sec:acc}
+
+\begin{table}[t]
+\caption{Accuracy (tinyBenchmarks, 100 items per task). Stack A tiers without and with their LoRA adapter.}
+\label{tab:acc}
+\centering\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{llccc}
+\toprule
+ & Configuration & MMLU & HellaSwag & GSM8k \\
+\midrule
+\multirow{6}{*}{A} & 1B float16 & 0.433 & 0.636 & 0.062 \\
+ & \quad + adapter & 0.400 & 0.623 & 0.061 \\
+ & 1B 8-bit & 0.391 & 0.634 & 0.104 \\
+ & \quad + adapter & 0.388 & 0.640 & 0.075 \\
+ & 1B 4-bit & 0.393 & 0.573 & 0.063 \\
+ & \quad + adapter & 0.368 & 0.594 & 0.041 \\
+\midrule
+\multirow{5}{*}{B} & 1B float16 & 0.433 & 0.629 & 0.092 \\
+ & 1B FP8 & 0.380 & 0.624 & 0.084 \\
+ & 8B float16 & 0.629 & 0.818 & 0.746 \\
+ & 8B FP8 & 0.640 & 0.823 & 0.674 \\
+ & 8B AWQ 4-bit & 0.663 & 0.802 & 0.605 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig_s5_tradeoff.pdf}
+\caption{Energy saving vs.\ accuracy change relative to the same model's float16 (Stack B, batch 1, median of three runs). Black-edged markers: 8B; plain: 1B.}
+\label{fig:tradeoff}
+\end{figure}
+
+Table~\ref{tab:acc} and Fig.~\ref{fig:tradeoff}. At 8B, FP8 and AWQ 4-bit stay within 3.5 points of float16 on tinyMMLU and tinyHellaswag, in both directions, which is within the noise of 100-item tasks. On tinyGSM8k, which requires multi-step arithmetic, FP8 loses 7.2 points and AWQ 4-bit 14.1. At 1B, FP8 loses 5.3 points on tinyMMLU and under 1 point elsewhere; GSM8k is near the floor for a 1B base model. Stack A's LoRA adapters lower tinyMMLU at every tier and do not help elsewhere. Note that our 1B model is the base model and our 8B model is instruction-tuned, so 1B vs.\ 8B accuracy is not a pure size comparison.
+
+\section{Measurement Pitfall on a Shared Cluster}
+\label{sec:pitfall}
+Repeated Stack~A measurements of the same code and GPU reproduced closely for 4- and 8-bit, but float16 ranged from 1.59 to 12.97\,J/token (Table~\ref{tab:pitfall}). Accuracy and every routing decision were identical across runs; only time and energy changed.
+
+\begin{table}[t]
+\caption{Stack A float16 across runs of identical code on the same GPU.}
+\label{tab:pitfall}
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Run & tok/s & W & J/tok \\
+\midrule
+S1, 3 runs (day)$^\dagger$ & 10.5--11.8 & 85 & 7.2--7.8 \\
+Run 4 (day) & 6.2 & 81 & 12.97 \\
+Runs 5--7 (night) & 80.7--81.8 & 130--142 & 1.59--1.73 \\
+\bottomrule
+\multicolumn{4}{l}{\footnotesize $^\dagger$Session~1 ran without LoRA adapters.}
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figs/fig1_16bit_disruption.pdf}
+\caption{Stack A float16 throughput per prompt in a disrupted (run 4) and a clean (run 5) run. Lines: rolling median over 25 prompts.}
+\label{fig:disruption}
+\end{figure}
+
+\textbf{The signature.} Clean float16 runs are fast \emph{and} power-hungry: about 81\,tok/s at 130--142\,W, steady to within $\pm$1\,tok/s across the run (Fig.~\ref{fig:disruption}). Disrupted runs are slow \emph{and} low-power: 4--13\,tok/s at 81--85\,W, close to the GPU's mostly-idle draw. Since a waiting GPU still draws substantial power, energy per token rises roughly in proportion to the slowdown.
+
+\textbf{Host-side, not GPU-side.} The GPU was not shared. A diagnostic timing plain float16 generation ran in daytime at 8.5\,tok/s on average with median GPU SM utilisation of 0\% and the process on-CPU 100\% of the time, and at night at 109.9\,tok/s: 13$\times$ faster on the same code and GPU. The GPU was waiting on a slowed CPU-side launch path. The node also runs CPU-only jobs that share the cores driving the GPU. All three Stack~B runs ran in daytime, with host load between 1.6 and 6 and other users' CPU jobs on the node, yet every configuration kept a median GPU utilisation of 100\% during generation and steady throughput. Across runs, J/token agreed within 2\% for every 8B configuration and within 4.1\% for the 1B ones. vLLM captures each decoding step as a CUDA graph and launches it with one call, so it does far less per-token CPU work than eager Transformers; we expect this to make it less exposed to host contention. We did not repeat Stack~B at night, so this is consistent with, but does not prove, that explanation.
+
+\textbf{Why the safeguards missed it.} (1)~The co-tenancy snapshot was taken once, at the end of a run, and was empty for run~4. (2)~Session~1's three back-to-back runs agreed within 6.6\% and passed our pre-registered gate: agreement measured consistency, not cleanliness. (3)~The validator passed run~4, since its checks cannot see a uniform slowdown.
+
+\textbf{Protocol.} Report throughput and mean power alongside J/token; check throughput stability across the run; sample GPU utilisation, co-tenants, host load and CPU clock continuously, not once; and exclude any configuration that departs from its clean baseline. Stack~B follows this protocol, and none of its 30 configuration-runs were flagged.
+
+\section{Routing}
+\label{sec:routing}
+\textbf{Router.} A sensor computes five features per prompt (Flesch--Kincaid grade, approximate token length, character entropy, dependency-parse depth, a code/maths indicator), normalised to $[0,1]$. A Mamdani fuzzy controller (scikit-fuzzy; triangular memberships, seven rules, centroid defuzzification) maps them to a score in $[0,100]$, cut at 33/66 into a low, middle or high tier. It takes about 10\,ms per prompt on the CPU.
+
+\textbf{Baselines.} Each static tier; \emph{random-matched}, with exactly the router's tier mix; \emph{learned}, a logistic regression on the same five features predicting whether the cheap option answers correctly, cross-fitted over 5 folds so no prompt is routed by a model that saw it; and an \emph{oracle} choosing the cheapest option that answers correctly. Greedy decoding lets every policy be evaluated from one prompt $\times$ configuration grid of measured energy and correctness.
+
+\textbf{Stack A.} The fuzzy router used 65--76\,J/request more than static float16 in runs 5--7 (paired bootstrap; 38--49\% more energy) with no accuracy difference ($-$0.006, CI $-$0.034 to $+$0.020), and matched the oracle less often than a uniform random pick. With no tier cheaper than float16, routing had nothing to save.
+
+\textbf{Stack B.} We evaluate two pools: precision tiers of the 8B model (AWQ 4-bit, FP8, float16), and the 1B and 8B models (1B float16 vs.\ 8B AWQ 4-bit). Table~\ref{tab:route} gives run~1 at batch~1; runs 2 and 3 give the same conclusions.
+
+\begin{table}[t]
+\caption{Routing on Stack B (run 1, batch 1): energy per request and proxy accuracy on our 500 prompts. Runs 2--3 are within 2\,J/request; accuracy is identical (greedy decoding).}
+\label{tab:route}
+\centering\small
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lcc|cc}
+\toprule
+ & \multicolumn{2}{c|}{8B precisions} & \multicolumn{2}{c}{1B vs.\ 8B AWQ} \\
+Policy & J/req & Acc. & J/req & Acc. \\
+\midrule
+Always cheapest (8B AWQ / 1B) & 240 & 0.350 & 104 & 0.164 \\
+Always 8B FP8 & 422 & 0.372 & -- & -- \\
+Always largest (8B fp16 / 8B AWQ) & 678 & 0.364 & 240 & 0.350 \\
+Fuzzy router & 477 & 0.368 & 221 & 0.322 \\
+Random, matched mix & 478 & 0.366 & 219 & 0.321 \\
+Learned (cross-fitted) & -- & -- & 240 & 0.350 \\
+Oracle & 260 & 0.442 & 136 & 0.398 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Precision tiers.} Always serving AWQ 4-bit costs 240\,J/request against 678 for float16, with proxy accuracy within noise of both float16 and FP8 (vs.\ FP8: $-$0.022, paired CI $-$0.054 to $+$0.010). The fuzzy router lands at 477\,J, indistinguishable from a random router with its tier mix, because it sends a third of prompts to float16 without picking the ones that need it.
+\textbf{Model sizes.} Routing between 1B float16 and 8B AWQ, the fuzzy router saves 8\% energy but loses 2.8 accuracy points (CI $-$4.8 to $-$1.0), again matching random. A logistic-regression router on the same features, cross-fitted, learns to always pick the 8B model: the features do not predict which prompts the 1B model gets right.
+\textbf{Headroom.} An oracle would cut energy a further 43\% below always-8B-AWQ while gaining 4.8 points, so model routing is worthwhile in principle. Realising it needs a predictor of answer correctness, not of surface complexity.
+
+\section{Threats to Validity}
+One GPU model and one node. Two model families would strengthen generality; ours are both Llama. Static batches of 1 and 8, not continuous batching under load. GPU-board energy only, excluding CPU, DRAM and the router. The 1B model is a base model and the 8B is instruction-tuned. tinyBenchmarks tasks have 100 items each, so differences of a few points are within noise; the routing proxy metric is coarse. The host mechanism behind the Stack~A disruption is not isolated. One Stack~B configuration hung once while loading (the vLLM engine spun with the GPU idle) until the job's time limit; we reran that configuration alone, and added a watchdog that kills a configuration after 15 minutes without progress.
+
+\section{Conclusion}
+Whether fewer bits save energy in LLM inference depends on the kernel, not the bit-width. bitsandbytes 4-bit saves memory but not energy, and 8-bit costs 1.8$\times$ more than float16, because both compute in 16-bit after dequantizing. vLLM's FP8 and AWQ 4-bit kernels compute on the compressed weights and save 38\% and 64\% energy per token at 8B, at the cost of 7 and 14 points on grade-school maths. Measuring this on a shared cluster required monitoring the host, not just the GPU: a daytime slowdown inflated float16 energy up to 7.7$\times$ and passed every end-of-run safeguard. Routing on prompt-complexity features adds nothing over always serving the 4-bit model; a correctness predictor is what would unlock the large oracle headroom.
+
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}
